@@ -20,6 +20,16 @@ static void RunTests()
         DecodeLicensePlate("CAR#FOO_666").Equals("FOO 666")
         );
 
+    Console.WriteLine(
+    "A motorcycle license plate can be encoded for storage in the database: {0}",
+    EncodeMotorcycleLicensePlate("M-bar 999 ").Equals("MC#M-BAR_999")
+    );
+
+}
+
+static object EncodeMotorcycleLicensePlate(string v)
+{
+    return $"MC#{v.Trim().Replace(' ', '_').ToUpper()}";
 }
 
 static object DecodeLicensePlate(string licensePlate)
