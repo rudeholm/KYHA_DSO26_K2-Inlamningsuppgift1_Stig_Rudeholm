@@ -16,14 +16,15 @@ static void RunTests()
         );
 
     Console.WriteLine(
-        "An encoded car license plate can be decoded to display it properly: {0}",
-        DecodeLicensePlate("CAR#FOO_666").Equals("FOO 666")
-        );
+        "A motorcycle license plate can be encoded for storage in the database: {0}",
+        EncodeMotorcycleLicensePlate("M-bar 999 ").Equals("MC#M-BAR_999")
+    );
 
     Console.WriteLine(
-    "A motorcycle license plate can be encoded for storage in the database: {0}",
-    EncodeMotorcycleLicensePlate("M-bar 999 ").Equals("MC#M-BAR_999")
-    );
+        "An encoded license plate can be decoded to display it properly: {0}",
+        DecodeLicensePlate("CAR#FOO_666").Equals("FOO 666")
+        && DecodeLicensePlate("MC#BAZ_M-222").Equals("BAZ M-222")
+        );
 
 }
 
