@@ -31,12 +31,23 @@ static void RunTests()
         "You can check if a parking space is empty: {0}",
         ParkingSpaceIsEmpty(testGarage, 2) == true
     );
+    testGarage[0] = "OCCUPIED";
+    Console.WriteLine(
+        "You can check if a parking space is NOT empty: {0}",
+        ParkingSpaceIsNotEmpty(testGarage, 1) == true
+    );
 
+}
+
+static bool ParkingSpaceIsNotEmpty(string[] testGarage, int v)
+{
+    return !ParkingSpaceIsEmpty(testGarage, v);
 }
 
 static bool ParkingSpaceIsEmpty(string[] testGarage, int v)
 {
-    return true;
+    int index = v - 1;
+    return string.IsNullOrWhiteSpace(testGarage[index]);
 }
 
 static string DecodeLicensePlate(string licensePlate)
