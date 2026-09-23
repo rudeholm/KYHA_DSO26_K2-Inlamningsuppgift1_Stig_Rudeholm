@@ -22,11 +22,9 @@ static void RunTests()
 
 }
 
-static object DecodeLicensePlate(string v)
+static object DecodeLicensePlate(string licensePlate)
 {
-    v = v.Split('#')[1];
-    v = v.Replace('_', ' ');
-    return v;
+    return licensePlate.Split('#')[1].Replace('_', ' ');
 }
 
 static string EncodeCarLicensePlate(string licensePlate)
