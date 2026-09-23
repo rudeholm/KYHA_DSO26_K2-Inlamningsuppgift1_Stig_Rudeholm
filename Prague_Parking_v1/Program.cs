@@ -27,12 +27,14 @@ static void RunTests()
 
 }
 
-static object EncodeMotorcycleLicensePlate(string licensePlate)
+
+
+static string EncodeMotorcycleLicensePlate(string licensePlate)
 {
     return $"MC#{licensePlate.Trim().Replace(' ', '_').ToUpper()}";
 }
 
-static object DecodeLicensePlate(string licensePlate)
+static string DecodeLicensePlate(string licensePlate)
 {
     return licensePlate.Split('#')[1].Replace('_', ' ');
 }
