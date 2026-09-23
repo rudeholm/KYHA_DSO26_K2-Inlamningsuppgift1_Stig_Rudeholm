@@ -26,6 +26,17 @@ static void RunTests()
         && DecodeLicensePlate("MC#BAZ_M-222").Equals("BAZ M-222")
         );
 
+    string[] testGarage = new string[2];
+    Console.WriteLine(
+        "You can check if a parking space is empty: {0}",
+        ParkingSpaceIsEmpty(testGarage, 2) == true
+    );
+
+}
+
+static bool ParkingSpaceIsEmpty(string[] testGarage, int v)
+{
+    return true;
 }
 
 static string DecodeLicensePlate(string licensePlate)
