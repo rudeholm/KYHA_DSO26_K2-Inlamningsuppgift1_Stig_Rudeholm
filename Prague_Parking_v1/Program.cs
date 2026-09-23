@@ -17,7 +17,7 @@ static void RunTests()
 
 }
 
-static object EncodeCarLicensePlate(string v)
+static string EncodeCarLicensePlate(string licensePlate)
 {
-    return $"CAR#{v.Trim().Replace(' ', '_').ToUpper()}";
+    return $"CAR#{licensePlate.Trim().Replace(' ', '_').ToUpper()}";
 }
