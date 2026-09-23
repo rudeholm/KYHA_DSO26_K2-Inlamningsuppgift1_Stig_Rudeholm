@@ -27,13 +27,6 @@ static void RunTests()
 
 }
 
-
-
-static string EncodeMotorcycleLicensePlate(string licensePlate)
-{
-    return $"MC#{licensePlate.Trim().Replace(' ', '_').ToUpper()}";
-}
-
 static string DecodeLicensePlate(string licensePlate)
 {
     return licensePlate.Split('#')[1].Replace('_', ' ');
@@ -41,5 +34,14 @@ static string DecodeLicensePlate(string licensePlate)
 
 static string EncodeCarLicensePlate(string licensePlate)
 {
-    return $"CAR#{licensePlate.Trim().Replace(' ', '_').ToUpper()}";
+    return EncodeLicensePlate(licensePlate, "CAR");
+}
+static string EncodeMotorcycleLicensePlate(string licensePlate)
+{
+    return EncodeLicensePlate(licensePlate, "MC");
+}
+
+static string EncodeLicensePlate(string licensePlate, string vehicleType)
+{
+    return $"{vehicleType}#{licensePlate.Trim().Replace(' ', '_').ToUpper()}";
 }
