@@ -39,15 +39,15 @@ static void RunTests()
 
 }
 
-static bool ParkingSpaceIsNotEmpty(string[] testGarage, int v)
+static bool ParkingSpaceIsNotEmpty(string[] parkingSpaces, int spaceId)
 {
-    return !ParkingSpaceIsEmpty(testGarage, v);
+    return ParkingSpaceIsEmpty(parkingSpaces, spaceId) == false;
 }
 
-static bool ParkingSpaceIsEmpty(string[] testGarage, int v)
+static bool ParkingSpaceIsEmpty(string[] parkingSpaces, int spaceId)
 {
-    int index = v - 1;
-    return string.IsNullOrWhiteSpace(testGarage[index]);
+    int index = spaceId - 1;
+    return string.IsNullOrWhiteSpace(parkingSpaces[index]);
 }
 
 static string DecodeLicensePlate(string licensePlate)
