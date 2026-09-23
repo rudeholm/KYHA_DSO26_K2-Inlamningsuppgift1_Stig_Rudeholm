@@ -27,9 +27,9 @@ static void RunTests()
 
 }
 
-static object EncodeMotorcycleLicensePlate(string v)
+static object EncodeMotorcycleLicensePlate(string licensePlate)
 {
-    return $"MC#{v.Trim().Replace(' ', '_').ToUpper()}";
+    return $"MC#{licensePlate.Trim().Replace(' ', '_').ToUpper()}";
 }
 
 static object DecodeLicensePlate(string licensePlate)
