@@ -10,3 +10,5 @@
 
 + Påbörjade projektet
 + Initierade Git och pushade till Github
++ Formulerade ett rudimentärt test-system
+
