@@ -11,6 +11,12 @@
 + Påbörjade projektet
 + Initierade Git och pushade till Github
 + Formulerade ett rudimentärt test-system
++ Nu går det att:
+	+ formatera / koda reg-nummer för lagring i databasen
+	+ avkoda reg-nummer för korrekt utskrift
+	+ kontrollera om en pakreringsruta är tom
+	+ kontrollera om en pakreringsruta INTE är tom
+	+ tilldela en tom parkeringsruta åt ett fordon
 
 ##### Anteckningar:
 
