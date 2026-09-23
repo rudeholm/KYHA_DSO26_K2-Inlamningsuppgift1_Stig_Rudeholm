@@ -10,6 +10,12 @@ Console.WriteLine("\n\n\n");
 /// Tests
 static void RunTests()
 {
+    // Setup
+    string[] testGarage = new string[5];
+    int testSpaceId;
+    string testCarLicensePlate = EncodeCarLicensePlate("foo 666");
+
+    // Tests
     Console.WriteLine(
         "A car license plate can be encoded for storage in the database: {0}",
         EncodeCarLicensePlate("  foo 666 ").Equals("CAR#FOO_666")
@@ -26,51 +32,52 @@ static void RunTests()
         && DecodeLicensePlate("MC#BAZ_M-222").Equals("BAZ M-222")
         );
 
-    string[] testGarage = new string[5];
+    testSpaceId = 2;
     Console.WriteLine(
         "You can check if a parking space is empty: {0}",
-        ParkingSpaceIsEmpty(testGarage, 2) == true
+        ParkingSpaceIsEmpty(testSpaceId, testGarage) == true
         );
 
-    testGarage[0] = "OCCUPIED";
+    testSpaceId = 1;
+    AssignParkingSpaceToVehicle(testSpaceId, testCarLicensePlate, testGarage);
     Console.WriteLine(
         "You can check if a parking space is NOT empty: {0}",
-        ParkingSpaceIsNotEmpty(testGarage, 1) == true
+        ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true
         );
 
+    testSpaceId = 2;
     Console.WriteLine(
         "You can assign an empty space to a vehicle: {0}",
-        AssignParkingSpaceToVehicle(
-            2, EncodeCarLicensePlate("foo 666"), testGarage
-            ) == true
+        AssignParkingSpaceToVehicle(testSpaceId, testCarLicensePlate, testGarage) == true
         );
 
-    AssignParkingSpaceToVehicle(2, EncodeCarLicensePlate("foo 666"), testGarage);
+    testSpaceId = 2;
+    AssignParkingSpaceToVehicle(testSpaceId, testCarLicensePlate, testGarage);
     Console.WriteLine(
         "After assigning an empty space to a vehicle, the space is not empty: {0}",
-        ParkingSpaceIsNotEmpty(testGarage, 2) == true
+        ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true
         );
 
-}
-
-static bool AssignParkingSpaceToVehicle(int v1, string v2, string[] testGarage)
-{
-    if (ParkingSpaceIsNotEmpty(testGarage, v1))
-        return false;
-
-    int index = v1 - 1;
-    testGarage[index] = v2;
-    return true;
 }
 
 /*****************************************************************************/
 
-static bool ParkingSpaceIsNotEmpty(string[] parkingSpaces, int spaceId)
+static bool AssignParkingSpaceToVehicle(int spaceId, string licensePlate, string[] parkingSpaces)
 {
-    return ParkingSpaceIsEmpty(parkingSpaces, spaceId) == false;
+    if (ParkingSpaceIsNotEmpty(spaceId, parkingSpaces))
+        return false;
+
+    int index = spaceId - 1;
+    parkingSpaces[index] = licensePlate;
+    return true;
 }
 
-static bool ParkingSpaceIsEmpty(string[] parkingSpaces, int spaceId)
+static bool ParkingSpaceIsNotEmpty(int spaceId, string[] parkingSpaces)
+{
+    return ParkingSpaceIsEmpty(spaceId, parkingSpaces) == false;
+}
+
+static bool ParkingSpaceIsEmpty(int spaceId, string[] parkingSpaces)
 {
     int index = spaceId - 1;
     return string.IsNullOrWhiteSpace(parkingSpaces[index]);
