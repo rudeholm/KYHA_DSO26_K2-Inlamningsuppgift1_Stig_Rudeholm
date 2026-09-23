@@ -38,7 +38,6 @@ static void RunTests()
         ParkingSpaceIsNotEmpty(testGarage, 1) == true
         );
 
-
     Console.WriteLine(
         "You can assign an empty space to a vehicle: {0}",
         AssignParkingSpaceToVehicle(
@@ -46,10 +45,21 @@ static void RunTests()
             ) == true
         );
 
+    AssignParkingSpaceToVehicle(2, EncodeCarLicensePlate("foo 666"), testGarage);
+    Console.WriteLine(
+        "After assigning an empty space to a vehicle, the space is not empty: {0}",
+        ParkingSpaceIsNotEmpty(testGarage, 2) == true
+        );
+
 }
 
 static bool AssignParkingSpaceToVehicle(int v1, string v2, string[] testGarage)
 {
+    if (ParkingSpaceIsNotEmpty(testGarage, v1))
+        return false;
+
+    int index = v1 - 1;
+    testGarage[index] = v2;
     return true;
 }
 
