@@ -18,7 +18,7 @@ static void RunTests()
     Console.WriteLine(
         "A motorcycle license plate can be encoded for storage in the database: {0}",
         EncodeMotorcycleLicensePlate("M-bar 999 ").Equals("MC#M-BAR_999")
-    );
+        );
 
     Console.WriteLine(
         "An encoded license plate can be decoded to display it properly: {0}",
@@ -26,18 +26,34 @@ static void RunTests()
         && DecodeLicensePlate("MC#BAZ_M-222").Equals("BAZ M-222")
         );
 
-    string[] testGarage = new string[2];
+    string[] testGarage = new string[5];
     Console.WriteLine(
         "You can check if a parking space is empty: {0}",
         ParkingSpaceIsEmpty(testGarage, 2) == true
-    );
+        );
+
     testGarage[0] = "OCCUPIED";
     Console.WriteLine(
         "You can check if a parking space is NOT empty: {0}",
         ParkingSpaceIsNotEmpty(testGarage, 1) == true
-    );
+        );
+
+
+    Console.WriteLine(
+        "You can assign an empty space to a vehicle: {0}",
+        AssignParkingSpaceToVehicle(
+            2, EncodeCarLicensePlate("foo 666"), testGarage
+            ) == true
+        );
 
 }
+
+static bool AssignParkingSpaceToVehicle(int v1, string v2, string[] testGarage)
+{
+    return true;
+}
+
+/*****************************************************************************/
 
 static bool ParkingSpaceIsNotEmpty(string[] parkingSpaces, int spaceId)
 {
