@@ -137,6 +137,11 @@ static void RunTests()
     Console.ResetColor();
 }
 
+
+
+
+/*****************************************************************************/
+
 static bool MoveCar(string carLicensePlate, int newSpaceId, string[] parkingSpaces)
 {
     if (CollectCar(carLicensePlate, parkingSpaces) && ParkCar(newSpaceId, carLicensePlate, parkingSpaces))
@@ -144,11 +149,6 @@ static bool MoveCar(string carLicensePlate, int newSpaceId, string[] parkingSpac
 
     return false;
 }
-
-
-
-
-/*****************************************************************************/
 
 static bool CollectCar(string carLicensePlate, string[] parkingSpaces)
 {

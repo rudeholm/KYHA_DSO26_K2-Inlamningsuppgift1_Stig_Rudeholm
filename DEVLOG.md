@@ -72,6 +72,7 @@ Jag skrev en enkel liten "wrapper-metod" som jag kan köra testresultaten igenom
 	+ kolla om en ruta innehåller en bil
 	+ söka efter fordon
 	+ hämta ut bil
+	+ flytta en bil
 
 ###### Anteckningar:
 
@@ -123,3 +124,4 @@ static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] par
     return false;
 }
 ```
+
