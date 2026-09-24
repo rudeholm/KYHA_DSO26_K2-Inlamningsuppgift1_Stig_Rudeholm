@@ -80,3 +80,5 @@ Jag är fullt medveten om att jag nog krånglar till det mycket mer än jag beh�
 Jag lade till en checklista i dev-loggen för att hålla reda på funktioner som behövs.
 
 Jag döpte om `AssignParkingSpaceToVehicle()` till `ParkCar()`. Jag döpte även om några av testerna för att reflektera detta. Motorcyklar får en egen parkerings-metod inom kort.
+
+Skrev ännu en liten hjälp-metod: `LookupParkingSpace()` för att slippa `parkingSpaces[SpaceIdToIndex(spaceId)]` varje gång jag behöver kolla innehållet i en parkeringsruta.

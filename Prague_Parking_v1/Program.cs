@@ -115,16 +115,19 @@ static void RunTests()
     Console.ResetColor();
 }
 
+
+/*****************************************************************************/
+
 static bool FindVehicle(string licensePlate, string[] parkingSpaces, out int foundSpaceId)
 {
-    for (int i = 1; i <= parkingSpaces.Length; i++)
+    for (int spaceId = 1; spaceId <= parkingSpaces.Length; spaceId++)
     {
-        if (ParkingSpaceIsEmpty(i, parkingSpaces))
+        if (ParkingSpaceIsEmpty(spaceId, parkingSpaces))
             continue;
 
-        if (parkingSpaces[SpaceIdToIndex(i)].Equals(licensePlate))
+        if (LookupParkingSpace(spaceId, parkingSpaces).Equals(licensePlate))
         {
-            foundSpaceId = i;
+            foundSpaceId = spaceId;
             return true;
         }
     }
@@ -133,16 +136,12 @@ static bool FindVehicle(string licensePlate, string[] parkingSpaces, out int fou
     return false;
 }
 
-
-/*****************************************************************************/
-
-
 static bool ParkingSpaceContainsCar(int spaceId, string[] parkingSpaces)
 {
     if (ParkingSpaceIsEmpty(spaceId, parkingSpaces))
         return false;
 
-    return parkingSpaces[SpaceIdToIndex(spaceId)].Split('#')[0].Equals("CAR");
+    return LookupParkingSpace(spaceId, parkingSpaces).Split('#')[0].Equals("CAR");
 }
 
 static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] parkingSpaces, out int parkingSpaceId)
@@ -212,6 +211,9 @@ static string EncodeLicensePlate(string licensePlate, string vehicleType)
 {
     return $"{vehicleType}#{licensePlate.Trim().Replace(' ', '_').ToUpper()}";
 }
+
+static string LookupParkingSpace(int spaceId, string[] parkingSpaces)
+    => parkingSpaces[SpaceIdToIndex(spaceId)];
 
 
 /*****************************************************************************/
