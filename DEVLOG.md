@@ -27,7 +27,7 @@
 	+ [ ] bil till annan ruta
 	+ [ ] MC till annan ruta
 + Identifiera / Rapportera
-	+ [ ] första tomma parkeringsruta
+	+ [x] första tomma parkeringsruta
 	+ [ ] tomma rutor
 	+ [ ] rutor med EN motorcykel
 	+ [ ] rutor med TVÅ motorcyklar
@@ -67,6 +67,7 @@ Jag skrev en enkel liten "wrapper-metod" som jag kan köra testresultaten igenom
 + Lade till en checklista
 + Nu går det att:
 	+ tömma en parkeringsruta
+	+ hitta den första tomma parkeringsrutan
 
 ###### Anteckningar:
 
@@ -74,3 +75,5 @@ Jag skrev en enkel liten "wrapper-metod" som jag kan köra testresultaten igenom
 Jag är fullt medveten om att jag nog krånglar till det mycket mer än jag behöver. Men mitt mål är att skriva så robust kod som möjligt och det här är det enda sättet jag känner till för att göra det.
 
 Jag lade till en checklista i dev-loggen för att hålla reda på funktioner som behövs.
+
+Jag döpte om `AssignParkingSpaceToVehicle()` till `ParkCar()`. Jag döpte även om några av testerna för att reflektera detta. Motorcyklar får en egen parkerings-metod inom kort.

@@ -39,7 +39,7 @@ static void RunTests()
         );
 
     testSpaceId = 1;
-    AssignParkingSpaceToVehicle(testSpaceId, testCarLicensePlate, testGarage);
+    ParkCar(testSpaceId, testCarLicensePlate, testGarage);
     Console.WriteLine(
         "You can check if a parking space is NOT empty: {0}",
         FormatTestResult(ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true)
@@ -47,20 +47,20 @@ static void RunTests()
 
     testSpaceId = 2;
     Console.WriteLine(
-        "You can assign an empty space to a vehicle: {0}",
-        FormatTestResult(AssignParkingSpaceToVehicle(testSpaceId, testCarLicensePlate, testGarage) == true)
+        "You can park a car in an empty parking space: {0}",
+        FormatTestResult(ParkCar(testSpaceId, testCarLicensePlate, testGarage) == true)
         );
 
     testSpaceId = 2;
-    AssignParkingSpaceToVehicle(testSpaceId, testCarLicensePlate, testGarage);
+    ParkCar(testSpaceId, testCarLicensePlate, testGarage);
     Console.WriteLine(
-        "After assigning an empty space to a vehicle, the space is not empty: {0}",
+        "After parking a car in an empty space, the space is not empty: {0}",
         FormatTestResult(ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true)
         );
     Console.WriteLine(
-        "A non-empty space can not be assigned to a vehicle: {0}",
+        "A car can not be parked in a non-empty space: {0}",
         FormatTestResult(
-            AssignParkingSpaceToVehicle(testSpaceId, EncodeCarLicensePlate("new 111"), testGarage) == false
+            ParkCar(testSpaceId, EncodeCarLicensePlate("new 111"), testGarage) == false
         ));
     Console.WriteLine(
         "After clearing a non-empty space, the space is empty again: {0}",
@@ -72,7 +72,7 @@ static void RunTests()
 
     testGarage = new string[5];
     testSpaceId = 1;
-    AssignParkingSpaceToVehicle(testSpaceId, testCarLicensePlate, testGarage);
+    ParkCar(testSpaceId, testCarLicensePlate, testGarage);
     Console.WriteLine(
         "You can find the first empty parking space: {0}",
         FormatTestResult(
@@ -111,12 +111,12 @@ static bool ClearParkingSpace(int spaceId, string[] parkingSpaces)
     return ParkingSpaceIsEmpty(spaceId, parkingSpaces);
 }
 
-static bool AssignParkingSpaceToVehicle(int spaceId, string licensePlate, string[] parkingSpaces)
+static bool ParkCar(int spaceId, string carLicensePlate, string[] parkingSpaces)
 {
     if (ParkingSpaceIsNotEmpty(spaceId, parkingSpaces))
         return false;
 
-    parkingSpaces[SpaceIdToIndex(spaceId)] = licensePlate;
+    parkingSpaces[SpaceIdToIndex(spaceId)] = carLicensePlate;
     return true;
 }
 
