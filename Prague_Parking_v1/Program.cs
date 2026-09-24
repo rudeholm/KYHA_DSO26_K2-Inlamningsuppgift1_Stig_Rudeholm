@@ -87,6 +87,8 @@ static void RunTests()
             ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true
             && ParkCarInFirstEmptyParkingSpace(testCarLicensePlate2, testGarage, out int parkingSpaceId) == true
             && parkingSpaceId == testSpaceId + 1
+            && FindVehicle(testCarLicensePlate2, testGarage, out int foo) == true
+            && foo == parkingSpaceId
         ));
 
     testGarage = new string[5];
@@ -116,11 +118,31 @@ static void RunTests()
             && ParkingSpaceIsEmpty(testSpaceId, testGarage) == true
         ));
 
+    testGarage = new string[5];
+    testSpaceId = 1;
+    ParkCar(testSpaceId, testCarLicensePlate, testGarage);
+    Console.WriteLine(
+        "A parked car can be moved to another parking space: {0}",
+        FormatTestResult(
+            ParkingSpaceContainsCar(testSpaceId, testGarage) == true
+            && MoveCar(testCarLicensePlate, testSpaceId + 1, testGarage) == true
+            && FindVehicle(testCarLicensePlate, testGarage, out int newSpaceId) == true
+            && newSpaceId == testSpaceId + 1
+        ));
+
 
     DumpParkingGarage(testGarage);
 
 
     Console.ResetColor();
+}
+
+static bool MoveCar(string carLicensePlate, int newSpaceId, string[] parkingSpaces)
+{
+    if (CollectCar(carLicensePlate, parkingSpaces) && ParkCar(newSpaceId, carLicensePlate, parkingSpaces))
+        return true;
+
+    return false;
 }
 
 
@@ -165,7 +187,7 @@ static bool ParkingSpaceContainsCar(int spaceId, string[] parkingSpaces)
 static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] parkingSpaces, out int parkingSpaceId)
 {
     if (FindFirstEmptyParkingSpace(parkingSpaces, out parkingSpaceId) == true)
-        return true;
+        return ParkCar(parkingSpaceId, carLicensePlate, parkingSpaces);
 
     parkingSpaceId = -1;
     return false;

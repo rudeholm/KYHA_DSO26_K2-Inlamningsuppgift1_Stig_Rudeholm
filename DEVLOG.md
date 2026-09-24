@@ -84,3 +84,42 @@ Jag döpte om `AssignParkingSpaceToVehicle()` till `ParkCar()`. Jag döpte även
 
 Skrev ännu en liten hjälp-metod: `LookupParkingSpace()` för att slippa `parkingSpaces[SpaceIdToIndex(spaceId)]` varje gång jag behöver kolla innehållet i en parkeringsruta.
 
+Medan jag jobbade på att kunna flytta en bil upptäckte jag en väldigt förarglig bugg i metoden som parkerar en bil i första lediga ruta!
+
+```
+static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] parkingSpaces, out int parkingSpaceId)
+{
+    if (FindFirstEmptyParkingSpace(parkingSpaces, out parkingSpaceId) == true)
+        return true;
+
+    parkingSpaceId = -1;
+    return false;
+}
+```
+
+Jag insåg att jag hade glömt att testa att bilen faktiskt blev parkerad... Pinsamt!
+
+```
+    Console.WriteLine(
+        "You can park a car in the first available empty parking space: {0}",
+        FormatTestResult(
+            ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true
+            && ParkCarInFirstEmptyParkingSpace(testCarLicensePlate2, testGarage, out int parkingSpaceId) == true
+            && parkingSpaceId == testSpaceId + 1
+        ));
+```
+
+Efter ett tillägg i testet så protesterade det som förväntat. En bra påminnelse om hur viktigt det är att testa RÄTT saker!
+
+En snabb ändring i parkerings-metoden löste problemet:
+
+```
+static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] parkingSpaces, out int parkingSpaceId)
+{
+    if (FindFirstEmptyParkingSpace(parkingSpaces, out parkingSpaceId) == true)
+        return ParkCar(parkingSpaceId, carLicensePlate, parkingSpaces);
+
+    parkingSpaceId = -1;
+    return false;
+}
+```
