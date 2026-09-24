@@ -71,14 +71,15 @@ static void RunTests()
     Console.ResetColor();
 }
 
-static bool ClearParkingSpace(int testSpaceId, string[] testGarage)
-{
-    int index = testSpaceId - 1;
-    testGarage[index] = "";
-    return ParkingSpaceIsEmpty(testSpaceId, testGarage);
-}
 
 /*****************************************************************************/
+
+static bool ClearParkingSpace(int spaceId, string[] parkingSpaces)
+{
+    int index = spaceId - 1;
+    parkingSpaces[index] = "";
+    return ParkingSpaceIsEmpty(spaceId, parkingSpaces);
+}
 
 static bool AssignParkingSpaceToVehicle(int spaceId, string licensePlate, string[] parkingSpaces)
 {
