@@ -36,7 +36,7 @@
 	+ [x] om en ruta innehåller en bil
 	+ [ ] om en ruta innehåller en eller flera motorcyklar
 + Sök
-	+ [ ] fordon med reg-nummer
+	+ [x] fordon med reg-nummer
 
 
 ---
@@ -70,6 +70,7 @@ Jag skrev en enkel liten "wrapper-metod" som jag kan köra testresultaten igenom
 	+ hitta den första tomma parkeringsrutan
 	+ parkera en bil i första tomma rutan
 	+ kolla om en ruta innehåller en bil
+	+ söka efter fordon
 
 ###### Anteckningar:
 

@@ -99,6 +99,15 @@ static void RunTests()
             && ParkingSpaceContainsCar(testSpaceId, testGarage) == true
             && ParkingSpaceContainsCar(testSpaceId + 1, testGarage) == false
         ));
+    Console.WriteLine(
+        "Find vehicle by license plate tells you if vehicle found and parking space id: {0}",
+        FormatTestResult(
+            ParkingSpaceContainsCar(testSpaceId, testGarage) == true
+            && FindVehicle(testCarLicensePlate, testGarage, out int foundSpaceId) == true
+            && foundSpaceId == testSpaceId
+            && FindVehicle(testCarLicensePlate2, testGarage, out int notFoundSpaceId) == false
+            && notFoundSpaceId == -1
+        ));
 
 
 
@@ -106,8 +115,27 @@ static void RunTests()
     Console.ResetColor();
 }
 
+static bool FindVehicle(string licensePlate, string[] parkingSpaces, out int foundSpaceId)
+{
+    for (int i = 1; i <= parkingSpaces.Length; i++)
+    {
+        if (ParkingSpaceIsEmpty(i, parkingSpaces))
+            continue;
+
+        if (parkingSpaces[SpaceIdToIndex(i)].Equals(licensePlate))
+        {
+            foundSpaceId = i;
+            return true;
+        }
+    }
+
+    foundSpaceId = -1;
+    return false;
+}
+
 
 /*****************************************************************************/
+
 
 static bool ParkingSpaceContainsCar(int spaceId, string[] parkingSpaces)
 {
@@ -184,6 +212,7 @@ static string EncodeLicensePlate(string licensePlate, string vehicleType)
 {
     return $"{vehicleType}#{licensePlate.Trim().Replace(' ', '_').ToUpper()}";
 }
+
 
 /*****************************************************************************/
 
