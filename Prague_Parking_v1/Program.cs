@@ -70,6 +70,17 @@ static void RunTests()
             && ParkingSpaceIsEmpty(testSpaceId, testGarage) == true
         ));
 
+    testGarage = new string[5];
+    testSpaceId = 1;
+    AssignParkingSpaceToVehicle(testSpaceId, testCarLicensePlate, testGarage);
+    Console.WriteLine(
+        "You can find the first empty parking space: {0}",
+        FormatTestResult(
+            ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true
+            && FindFirstEmptyParkingSpace(testGarage, out int firstEmptySpaceId) == true
+            && firstEmptySpaceId == testSpaceId + 1
+        ));
+
 
 
 
@@ -77,8 +88,22 @@ static void RunTests()
 }
 
 
-
 /*****************************************************************************/
+
+static bool FindFirstEmptyParkingSpace(string[] parkingSpaces, out int firstEmptySpaceId)
+{
+    for (int i = 1; i <= parkingSpaces.Length; i++)
+    {
+        if (ParkingSpaceIsEmpty(i, parkingSpaces))
+        {
+            firstEmptySpaceId = i;
+            return true;
+        }
+    }
+
+    firstEmptySpaceId = -1;
+    return false;
+}
 
 static bool ClearParkingSpace(int spaceId, string[] parkingSpaces)
 {
