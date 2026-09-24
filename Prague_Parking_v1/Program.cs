@@ -89,11 +89,36 @@ static void RunTests()
             && parkingSpaceId == testSpaceId + 1
         ));
 
+    testGarage = new string[5];
+    testSpaceId = 1;
+    ParkCar(testSpaceId, testCarLicensePlate, testGarage);
+    Console.WriteLine(
+        "You can check if a parking space contains a car: {0}",
+        FormatTestResult(
+            ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true
+            && ParkingSpaceContainsCar(testSpaceId, testGarage) == true
+            && ParkingSpaceContainsCar(testSpaceId + 1, testGarage) == false
+        ));
+
 
 
 
     Console.ResetColor();
 }
+
+static bool ParkingSpaceContainsCar(int testSpaceId, string[] testGarage)
+{
+    if (ParkingSpaceIsEmpty(testSpaceId, testGarage))
+        return false;
+
+    if (testGarage[SpaceIdToIndex(testSpaceId)].Split('#')[0].Equals("CAR"))
+        return true;
+
+    return false;
+}
+
+
+/*****************************************************************************/
 
 static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] parkingSpaces, out int parkingSpaceId)
 {
@@ -103,9 +128,6 @@ static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] par
     parkingSpaceId = -1;
     return false;
 }
-
-
-/*****************************************************************************/
 
 static bool FindFirstEmptyParkingSpace(string[] parkingSpaces, out int firstEmptySpaceId)
 {
