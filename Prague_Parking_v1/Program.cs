@@ -108,15 +108,33 @@ static void RunTests()
             && FindVehicle(testCarLicensePlate2, testGarage, out int notFoundSpaceId) == false
             && notFoundSpaceId == -1
         ));
+    Console.WriteLine(
+        "After collecting a car from a parking space, the space will be empty: {0}",
+        FormatTestResult(
+            ParkingSpaceContainsCar(testSpaceId, testGarage) == true
+            && CollectCar(testCarLicensePlate, testGarage) == true
+            && ParkingSpaceIsEmpty(testSpaceId, testGarage) == true
+        ));
 
 
+    DumpParkingGarage(testGarage);
 
 
     Console.ResetColor();
 }
 
 
+
+
 /*****************************************************************************/
+
+static bool CollectCar(string carLicensePlate, string[] parkingSpaces)
+{
+    if (FindVehicle(carLicensePlate, parkingSpaces, out int spaceId))
+        return ClearParkingSpace(spaceId, parkingSpaces);
+
+    return false;
+}
 
 static bool FindVehicle(string licensePlate, string[] parkingSpaces, out int foundSpaceId)
 {
@@ -216,6 +234,7 @@ static string LookupParkingSpace(int spaceId, string[] parkingSpaces)
     => parkingSpaces[SpaceIdToIndex(spaceId)];
 
 
+
 /*****************************************************************************/
 
 static bool FormatTestResult(bool result)
@@ -232,3 +251,13 @@ static bool FormatTestResult(bool result)
     return result;
 }
 static int SpaceIdToIndex(int spaceId) => spaceId - 1;
+
+static void DumpParkingGarage(string[] parkingSpaces)
+{
+    Console.WriteLine("\n");
+
+    for (int i = 1; i <= parkingSpaces.Length; i++)
+    {
+        Console.WriteLine($"{i}: {LookupParkingSpace(i, parkingSpaces)}");
+    }
+}

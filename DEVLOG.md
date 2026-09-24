@@ -20,7 +20,7 @@
 	+ [ ] MC i första tomma ruta
 	+ [ ] MC i första ruta med en ledig plats
 + Hämta ut
-	+ [ ] bil
+	+ [x] bil
 	+ [ ] MC
 	+ [x] töm parkeringsruta
 + Flytta
@@ -71,6 +71,7 @@ Jag skrev en enkel liten "wrapper-metod" som jag kan köra testresultaten igenom
 	+ parkera en bil i första tomma rutan
 	+ kolla om en ruta innehåller en bil
 	+ söka efter fordon
+	+ hämta ut bil
 
 ###### Anteckningar:
 
@@ -82,3 +83,4 @@ Jag lade till en checklista i dev-loggen för att hålla reda på funktioner som
 Jag döpte om `AssignParkingSpaceToVehicle()` till `ParkCar()`. Jag döpte även om några av testerna för att reflektera detta. Motorcyklar får en egen parkerings-metod inom kort.
 
 Skrev ännu en liten hjälp-metod: `LookupParkingSpace()` för att slippa `parkingSpaces[SpaceIdToIndex(spaceId)]` varje gång jag behöver kolla innehållet i en parkeringsruta.
+
