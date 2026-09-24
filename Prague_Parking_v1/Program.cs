@@ -106,19 +106,16 @@ static void RunTests()
     Console.ResetColor();
 }
 
-static bool ParkingSpaceContainsCar(int testSpaceId, string[] testGarage)
-{
-    if (ParkingSpaceIsEmpty(testSpaceId, testGarage))
-        return false;
-
-    if (testGarage[SpaceIdToIndex(testSpaceId)].Split('#')[0].Equals("CAR"))
-        return true;
-
-    return false;
-}
-
 
 /*****************************************************************************/
+
+static bool ParkingSpaceContainsCar(int spaceId, string[] parkingSpaces)
+{
+    if (ParkingSpaceIsEmpty(spaceId, parkingSpaces))
+        return false;
+
+    return parkingSpaces[SpaceIdToIndex(spaceId)].Split('#')[0].Equals("CAR");
+}
 
 static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] parkingSpaces, out int parkingSpaceId)
 {

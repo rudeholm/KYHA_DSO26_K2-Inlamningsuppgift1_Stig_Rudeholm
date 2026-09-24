@@ -33,7 +33,7 @@
 	+ [ ] rutor med TVÅ motorcyklar
 	+ [ ] rutor med EN bil
 	+ [ ] första ruta med EN motorcykel
-	+ [ ] om en ruta innehåller en bil
+	+ [x] om en ruta innehåller en bil
 	+ [ ] om en ruta innehåller en eller flera motorcyklar
 + Sök
 	+ [ ] fordon med reg-nummer
@@ -69,6 +69,7 @@ Jag skrev en enkel liten "wrapper-metod" som jag kan köra testresultaten igenom
 	+ tömma en parkeringsruta
 	+ hitta den första tomma parkeringsrutan
 	+ parkera en bil i första tomma rutan
+	+ kolla om en ruta innehåller en bil
 
 ###### Anteckningar:
 
