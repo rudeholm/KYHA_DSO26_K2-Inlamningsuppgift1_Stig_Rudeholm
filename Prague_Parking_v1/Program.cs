@@ -14,6 +14,7 @@ static void RunTests()
     string[] testGarage = new string[5];
     int testSpaceId;
     string testCarLicensePlate = EncodeCarLicensePlate("foo 666");
+    string testCarLicensePlate2 = EncodeCarLicensePlate("bar 333");
 
     // Tests
     Console.WriteLine(
@@ -80,11 +81,27 @@ static void RunTests()
             && FindFirstEmptyParkingSpace(testGarage, out int firstEmptySpaceId) == true
             && firstEmptySpaceId == testSpaceId + 1
         ));
+    Console.WriteLine(
+        "You can park a car in the first available empty parking space: {0}",
+        FormatTestResult(
+            ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true
+            && ParkCarInFirstEmptyParkingSpace(testCarLicensePlate2, testGarage, out int parkingSpaceId) == true
+            && parkingSpaceId == testSpaceId + 1
+        ));
 
 
 
 
     Console.ResetColor();
+}
+
+static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] parkingSpaces, out int parkingSpaceId)
+{
+    if (FindFirstEmptyParkingSpace(parkingSpaces, out parkingSpaceId) == true)
+        return true;
+
+    parkingSpaceId = -1;
+    return false;
 }
 
 

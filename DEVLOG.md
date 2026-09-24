@@ -15,7 +15,7 @@
 	+ [ ] att reg-nummer är unikt och inte parkeras dubbelt
 + Parkera
 	+ [x] bil i specifik ruta
-	+ [ ] bil i första tomma ruta
+	+ [x] bil i första tomma ruta
 	+ [ ] MC i specifik ruta
 	+ [ ] MC i första tomma ruta
 	+ [ ] MC i första ruta med en ledig plats
@@ -68,6 +68,7 @@ Jag skrev en enkel liten "wrapper-metod" som jag kan köra testresultaten igenom
 + Nu går det att:
 	+ tömma en parkeringsruta
 	+ hitta den första tomma parkeringsrutan
+	+ parkera en bil i första tomma rutan
 
 ###### Anteckningar:
 
