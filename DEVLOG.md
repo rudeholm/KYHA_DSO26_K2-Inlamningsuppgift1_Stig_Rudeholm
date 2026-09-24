@@ -18,7 +18,7 @@
 	+ kontrollera om en pakreringsruta INTE är tom
 	+ tilldela en tom parkeringsruta åt ett fordon
 
-##### Anteckningar:
+###### Anteckningar:
 
 Jag gillar att använda TDD, "test-driven development", till mina mjukvaru-projekt. Det är en metod som passar mig och jag vill gärna använda den även till denna uppgift. Det känns dock lite överdrivet att köra en riktig test-svit, typ xUnit, så jag bestämde mig för att försöka formulera ett eget, väldigt rudimentärt test-system. TDD hjälper mig både att prioritera och att fokusera när jag skriver kod. Jag tror därför att det är värt det lilla extra besväret.
 
@@ -26,5 +26,11 @@ Jag skrev en enkel liten "wrapper-metod" som jag kan köra testresultaten igenom
 
 #### 2026-09-24
 
++ Eliminerade ett "magiskt nummer"
 + Nu går det att:
 	+ tömma en parkeringsruta
+
+###### Anteckningar:
+
+`int index = spaceId -1` dyker upp lite för ofta och känns som ett "magiskt nummer", så jag skrev en liten hjälp-metod för att eliminera detta: `SpaceIdToIndex(spaceId)`.
+Jag är fullt medveten om att jag nog krånglar till det mycket mer än jag behöver. Men mitt mål är att skriva så robust kod som möjligt och det här är det enda sättet jag känner till för att göra det.

@@ -72,12 +72,12 @@ static void RunTests()
 }
 
 
+
 /*****************************************************************************/
 
 static bool ClearParkingSpace(int spaceId, string[] parkingSpaces)
 {
-    int index = spaceId - 1;
-    parkingSpaces[index] = "";
+    parkingSpaces[SpaceIdToIndex(spaceId)] = "";
     return ParkingSpaceIsEmpty(spaceId, parkingSpaces);
 }
 
@@ -86,8 +86,7 @@ static bool AssignParkingSpaceToVehicle(int spaceId, string licensePlate, string
     if (ParkingSpaceIsNotEmpty(spaceId, parkingSpaces))
         return false;
 
-    int index = spaceId - 1;
-    parkingSpaces[index] = licensePlate;
+    parkingSpaces[SpaceIdToIndex(spaceId)] = licensePlate;
     return true;
 }
 
@@ -98,8 +97,7 @@ static bool ParkingSpaceIsNotEmpty(int spaceId, string[] parkingSpaces)
 
 static bool ParkingSpaceIsEmpty(int spaceId, string[] parkingSpaces)
 {
-    int index = spaceId - 1;
-    return string.IsNullOrWhiteSpace(parkingSpaces[index]);
+    return string.IsNullOrWhiteSpace(parkingSpaces[SpaceIdToIndex(spaceId)]);
 }
 
 static string DecodeLicensePlate(string licensePlate)
@@ -136,3 +134,4 @@ static bool FormatTestResult(bool result)
 
     return result;
 }
+static int SpaceIdToIndex(int spaceId) => spaceId - 1;
