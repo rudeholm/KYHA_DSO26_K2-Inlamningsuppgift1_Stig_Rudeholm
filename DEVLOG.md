@@ -2,6 +2,43 @@
 
 ## Prague Parking v1
 
+### Checklista
+
++ Behandla registreringsnummer
+	+ [x] Koda reg-nummer för bil
+	+ [x] Koda reg-nummer för MC
+	+ [x] Avkoda reg-nummer
+	+ [ ] Säkerställ maxlängd 10 tecken
++ Kontrollera
+	+ [x] om en parkeringsruta är tom
+	+ [ ] om det finns en ledig MC-plats
+	+ [ ] att reg-nummer är unikt och inte parkeras dubbelt
++ Parkera
+	+ [x] bil i specifik ruta
+	+ [ ] bil i första tomma ruta
+	+ [ ] MC i specifik ruta
+	+ [ ] MC i första tomma ruta
+	+ [ ] MC i första ruta med en ledig plats
++ Hämta ut
+	+ [ ] bil
+	+ [ ] MC
+	+ [x] töm parkeringsruta
++ Flytta
+	+ [ ] bil till annan ruta
+	+ [ ] MC till annan ruta
++ Identifiera / Rapportera
+	+ [ ] första tomma parkeringsruta
+	+ [ ] tomma rutor
+	+ [ ] rutor med EN motorcykel
+	+ [ ] rutor med TVÅ motorcyklar
+	+ [ ] rutor med EN bil
+	+ [ ] första ruta med EN motorcykel
+	+ [ ] om en ruta innehåller en bil
+	+ [ ] om en ruta innehåller en eller flera motorcyklar
++ Sök
+	+ [ ] fordon med reg-nummer
+
+
 ---
 
 ### Utvecklingslogg
@@ -27,6 +64,7 @@ Jag skrev en enkel liten "wrapper-metod" som jag kan köra testresultaten igenom
 #### 2026-09-24
 
 + Eliminerade ett "magiskt nummer"
++ Lade till en checklista
 + Nu går det att:
 	+ tömma en parkeringsruta
 
@@ -34,3 +72,5 @@ Jag skrev en enkel liten "wrapper-metod" som jag kan köra testresultaten igenom
 
 `int index = spaceId -1` dyker upp lite för ofta och känns som ett "magiskt nummer", så jag skrev en liten hjälp-metod för att eliminera detta: `SpaceIdToIndex(spaceId)`.
 Jag är fullt medveten om att jag nog krånglar till det mycket mer än jag behöver. Men mitt mål är att skriva så robust kod som möjligt och det här är det enda sättet jag känner till för att göra det.
+
+Jag lade till en checklista i dev-loggen för att hålla reda på funktioner som behövs.

@@ -58,6 +58,11 @@ static void RunTests()
         FormatTestResult(ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true)
         );
     Console.WriteLine(
+        "A non-empty space can not be assigned to a vehicle: {0}",
+        FormatTestResult(
+            AssignParkingSpaceToVehicle(testSpaceId, EncodeCarLicensePlate("new 111"), testGarage) == false
+        ));
+    Console.WriteLine(
         "After clearing a non-empty space, the space is empty again: {0}",
         FormatTestResult(
             ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true
