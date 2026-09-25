@@ -15,6 +15,8 @@ static void RunTests()
     int testSpaceId;
     string testCarLicensePlate = EncodeCarLicensePlate("foo 666");
     string testCarLicensePlate2 = EncodeCarLicensePlate("bar 333");
+    string testMotorcycleLicensePlate = EncodeMotorcycleLicensePlate("m-poo 123");
+    string testMotorcycleLicensePlate2 = EncodeMotorcycleLicensePlate("m-goo 456");
 
     // Tests
     Console.WriteLine(
@@ -130,6 +132,14 @@ static void RunTests()
             && newSpaceId == testSpaceId + 1
         ));
 
+    testGarage = new string[5];
+    testSpaceId = 1;
+    Console.WriteLine(
+        "You can park a motorcycle in an empty parking space: {0}",
+        FormatTestResult(
+            ParkMotorcycle(testSpaceId, testMotorcycleLicensePlate, testGarage) == true
+        ));
+
 
     DumpParkingGarage(testGarage);
 
@@ -140,7 +150,17 @@ static void RunTests()
 
 
 
+
 /*****************************************************************************/
+
+static bool ParkMotorcycle(int spaceId, string motorcycleLicensePlate, string[] parkingSpaces)
+{
+    parkingSpaces[SpaceIdToIndex(spaceId)] = motorcycleLicensePlate;
+    if (LookupParkingSpace(spaceId, parkingSpaces).Equals(motorcycleLicensePlate))
+        return true;
+
+    return false;
+}
 
 static bool MoveCar(string carLicensePlate, int newSpaceId, string[] parkingSpaces)
 {

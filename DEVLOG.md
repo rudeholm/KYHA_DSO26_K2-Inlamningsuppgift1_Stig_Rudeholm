@@ -16,8 +16,9 @@
 + Parkera
 	+ [x] bil i specifik ruta
 	+ [x] bil i första tomma ruta
-	+ [ ] MC i specifik ruta
+	+ [x] MC i specifik tom ruta
 	+ [ ] MC i första tomma ruta
+	+ [ ] MC i specifik ruta med en ledig plats
 	+ [ ] MC i första ruta med en ledig plats
 + Hämta ut
 	+ [x] bil
