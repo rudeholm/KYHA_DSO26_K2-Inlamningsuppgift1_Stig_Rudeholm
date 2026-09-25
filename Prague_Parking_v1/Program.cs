@@ -133,11 +133,19 @@ static void RunTests()
         ));
 
     testGarage = new string[5];
-    testSpaceId = 1;
+    ParkCarInFirstEmptyParkingSpace(testCarLicensePlate, testGarage, out int _);
+    testSpaceId = 2;
     Console.WriteLine(
         "You can park a motorcycle in an empty parking space: {0}",
         FormatTestResult(
             ParkMotorcycle(testSpaceId, testMotorcycleLicensePlate, testGarage) == true
+        ));
+    Console.WriteLine(
+        "You can check if a parking space contains motorcycles: {0}",
+        FormatTestResult(
+            ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true
+            && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage) == true
+            && ParkingSpaceContainsMotorcycles(testSpaceId + 1, testGarage) == false
         ));
 
 
@@ -151,7 +159,19 @@ static void RunTests()
 
 
 
+
 /*****************************************************************************/
+
+static bool ParkingSpaceContainsMotorcycles(int spaceId, string[] parkingSpaces)
+{
+    if (ParkingSpaceIsEmpty(spaceId, parkingSpaces))
+        return false;
+
+    if (ParkingSpaceContainsCar(spaceId, parkingSpaces))
+        return false;
+
+    return LookupParkingSpace(spaceId, parkingSpaces).Split('#')[0].Equals("MC");
+}
 
 static bool ParkMotorcycle(int spaceId, string motorcycleLicensePlate, string[] parkingSpaces)
 {

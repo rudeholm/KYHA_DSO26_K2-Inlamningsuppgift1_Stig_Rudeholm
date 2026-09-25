@@ -35,7 +35,7 @@
 	+ [ ] rutor med EN bil
 	+ [ ] första ruta med EN motorcykel
 	+ [x] om en ruta innehåller en bil
-	+ [ ] om en ruta innehåller en eller flera motorcyklar
+	+ [x] om en ruta innehåller en eller flera motorcyklar
 + Sök
 	+ [x] fordon med reg-nummer
 
@@ -130,7 +130,8 @@ static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] par
 
 + 
 + Nu går det att:
-	+ 
+	+ parkera en motorykel i en tom parkeringsruta
+	+ kolla om en ruta innehåller en eller flera motorcyklar
 
 ###### Anteckningar:
 
