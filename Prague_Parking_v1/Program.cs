@@ -154,12 +154,21 @@ static void RunTests()
         ParkingSpaceHasRoomForMotorcycle(testSpaceId, testGarage) == true
         && ParkingSpaceHasRoomForMotorcycle(testSpaceId - 1, testGarage) == false
         && ParkingSpaceHasRoomForMotorcycle(testSpaceId + 1, testGarage) == true
-    ));
+        ));
     Console.WriteLine(
         "You can find the first available parking space with room for a motorcycle: {0}",
         FormatTestResult(
             FindFirstParkingSpaceWithRoomForMotorcycle(testGarage, out int foundMotorcycleSpaceId) == true
             && foundMotorcycleSpaceId == testSpaceId
+        ));
+    Console.WriteLine(
+        "You can park a motorcycle in a parking space with another motorcycle: {0}",
+        FormatTestResult(
+            ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out int originalNrOfMotorcyclesInParkingSpace) == true
+            && originalNrOfMotorcyclesInParkingSpace == 1
+            && ParkMotorcycle(testSpaceId, testMotorcycleLicensePlate2, testGarage) == true
+            && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out int newNrOfMotorcyclesInParkingSpace) == true
+            && newNrOfMotorcyclesInParkingSpace == 2
         ));
 
 
@@ -174,6 +183,27 @@ static void RunTests()
 
 
 /*****************************************************************************/
+
+static bool ParkMotorcycle(int spaceId, string motorcycleLicensePlate, string[] parkingSpaces)
+{
+    if (ParkingSpaceContainsCar(spaceId, parkingSpaces))
+        return false;
+
+    if (ParkingSpaceContainsMotorcycles(spaceId, parkingSpaces, out int nrOfMotorcycles) && nrOfMotorcycles > 1)
+        return false;
+
+    if (nrOfMotorcycles == 1)
+    {
+        parkingSpaces[SpaceIdToIndex(spaceId)] += '|' + motorcycleLicensePlate;
+        return true;
+    }
+
+    parkingSpaces[SpaceIdToIndex(spaceId)] = motorcycleLicensePlate;
+    if (LookupParkingSpace(spaceId, parkingSpaces).Equals(motorcycleLicensePlate))
+        return true;
+
+    return false;
+}
 
 static bool FindFirstParkingSpaceWithRoomForMotorcycle(string[] parkingSpaces, out int foundSpaceId)
 {
@@ -226,15 +256,6 @@ static bool ParkingSpaceContainsMotorcycles(int spaceId, string[] parkingSpaces,
     }
 
     nrOfMotorcycles = 0;
-    return false;
-}
-
-static bool ParkMotorcycle(int spaceId, string motorcycleLicensePlate, string[] parkingSpaces)
-{
-    parkingSpaces[SpaceIdToIndex(spaceId)] = motorcycleLicensePlate;
-    if (LookupParkingSpace(spaceId, parkingSpaces).Equals(motorcycleLicensePlate))
-        return true;
-
     return false;
 }
 

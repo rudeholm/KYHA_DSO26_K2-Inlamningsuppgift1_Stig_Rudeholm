@@ -18,7 +18,7 @@
 	+ [x] bil i första tomma ruta
 	+ [x] MC i specifik tom ruta
 	+ [ ] ~~MC i första tomma ruta~~
-	+ [ ] MC i specifik ruta med en ledig plats
+	+ [x] MC i specifik ruta med en ledig plats
 	+ [ ] MC i första ruta med en ledig plats
 + Hämta ut
 	+ [x] bil
