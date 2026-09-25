@@ -19,7 +19,7 @@
 	+ [x] MC i specifik tom ruta
 	+ [ ] ~~MC i första tomma ruta~~
 	+ [x] MC i specifik ruta med en ledig plats
-	+ [ ] MC i första ruta med en ledig plats
+	+ [x] MC i första ruta med en ledig plats
 + Hämta ut
 	+ [x] bil
 	+ [x] MC
@@ -137,6 +137,7 @@ static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] par
 	+ parkera motorcykel tillsammans med en annan motorcykel
 	+ hämta ut en motorcykel
 	+ flytta en motorcykel
+	+ parkera motorcykel på första lediga plats
 
 ###### Anteckningar:
 

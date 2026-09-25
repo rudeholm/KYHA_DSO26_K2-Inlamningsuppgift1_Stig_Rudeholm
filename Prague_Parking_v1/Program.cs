@@ -191,6 +191,16 @@ static void RunTests()
             && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out nrOfMotorcyclesInParkingSpace) == true
             && nrOfMotorcyclesInParkingSpace == 2
         ));
+    CollectMotorcycle(testMotorcycleLicensePlate2, testGarage);
+    Console.WriteLine(
+        "You can park a motorcycle in the first available space with room: {0}",
+        FormatTestResult(
+            ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out nrOfMotorcyclesInParkingSpace) == true
+            && nrOfMotorcyclesInParkingSpace == 1
+            && ParkMotorcycleInFirstAvailableSpace(testMotorcycleLicensePlate2, testGarage) == true
+            && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out nrOfMotorcyclesInParkingSpace) == true
+            && nrOfMotorcyclesInParkingSpace == 2
+        ));
 
 
 
@@ -198,6 +208,12 @@ static void RunTests()
 
 
     Console.ResetColor();
+}
+
+static bool ParkMotorcycleInFirstAvailableSpace(string motorcycleLicensePlate, string[] parkingSpaces)
+{
+    return FindFirstParkingSpaceWithRoomForMotorcycle(parkingSpaces, out int spaceId)
+        && ParkMotorcycle(spaceId, motorcycleLicensePlate, parkingSpaces);
 }
 
 
