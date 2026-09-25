@@ -228,6 +228,12 @@ static void RunTests()
         FormatTestResult(
             CountParkingSpacesWithTwoMotorcycles(testGarage) == 1
         ));
+    ParkCarInFirstEmptyParkingSpace(testCarLicensePlate2, testGarage, out _);
+    Console.WriteLine(
+        "You can know the number of parking spaces occupied by cars: {0}",
+        FormatTestResult(
+            CountParkingSpacesWithCars(testGarage) == 2
+        ));
 
 
 
@@ -240,6 +246,18 @@ static void RunTests()
 
 
 /*****************************************************************************/
+
+static int CountParkingSpacesWithCars(string[] parkingSpaces)
+{
+    int count = 0;
+    for (int spaceId = 1; spaceId <= parkingSpaces.Length; spaceId++)
+    {
+        if (ParkingSpaceContainsCar(spaceId, parkingSpaces))
+            count++;
+    }
+
+    return count;
+}
 
 static int CountParkingSpacesWithTwoMotorcycles(string[] parkingSpaces)
 {
