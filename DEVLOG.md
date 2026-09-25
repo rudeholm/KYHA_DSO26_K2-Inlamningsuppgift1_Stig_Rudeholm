@@ -37,7 +37,7 @@
 	+ [x] första parkeringsruta med plats för en motorcykel
 + Räkna
 	+ [x] tomma parkeringsrutor
-	+ [ ] rutor med EN motorcykel
+	+ [x] rutor med EN motorcykel
 	+ [ ] rutor med TVÅ motorcyklar
 	+ [ ] rutor med EN bil
 
@@ -182,3 +182,15 @@ Det har verkligen gjort skillnad, men jag funderar fortfarande på att gå över
 /////
 
 När jag började förbereda för ett nytt test insåg jag att jag har glömt att ange en out-variabel för `ParkMotorcycleInFirstAvailableSpace()`. Jag är inte säker på att den behövs, men jag lägger till den. Jag tror att jag kan ha nytta av den när jag skapar användargränssnittet.
+
+/////
+
+Nu när jag skriver metoderna som räknar parkeringsrutor så kommer den där for-loopen tillbaka igen:
+
+```
+for (int i = 1; i < parkingSpaces.Length; i++)
+{ }
+```
+
+Jag behöver verkligen hitta en bättre lösning än att kopiera och klistra in den om och om igen...
+
