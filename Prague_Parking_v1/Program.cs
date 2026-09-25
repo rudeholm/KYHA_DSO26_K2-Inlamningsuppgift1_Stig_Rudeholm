@@ -181,6 +181,16 @@ static void RunTests()
             && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out nrOfMotorcyclesInParkingSpace) == true
             && nrOfMotorcyclesInParkingSpace == 1
         ));
+    ParkMotorcycle(3, testMotorcycleLicensePlate, testGarage);
+    Console.WriteLine(
+        "You can move a motorcycle to another parking space: {0}",
+        FormatTestResult(
+            ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out nrOfMotorcyclesInParkingSpace) == true
+            && nrOfMotorcyclesInParkingSpace == 1
+            && MoveMotorcycle(testMotorcycleLicensePlate, testSpaceId, testGarage) == true
+            && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out nrOfMotorcyclesInParkingSpace) == true
+            && nrOfMotorcyclesInParkingSpace == 2
+        ));
 
 
 
@@ -195,6 +205,12 @@ static void RunTests()
 
 
 /*****************************************************************************/
+
+static bool MoveMotorcycle(string motorcycleLicensePlate, int spaceId, string[] parkingSpaces)
+{
+    return CollectMotorcycle(motorcycleLicensePlate, parkingSpaces)
+        && ParkMotorcycle(spaceId, motorcycleLicensePlate, parkingSpaces);
+}
 
 static bool CollectMotorcycle(string motorcycleLicensePlate, string[] parkingSpaces)
 {

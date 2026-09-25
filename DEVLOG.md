@@ -26,7 +26,7 @@
 	+ [x] töm parkeringsruta
 + Flytta
 	+ [x] bil till annan ruta
-	+ [ ] MC till annan ruta
+	+ [x] MC till annan ruta
 + Identifiera / Rapportera
 	+ [ ] tomma rutor
 	+ [ ] rutor med EN motorcykel
@@ -136,6 +136,7 @@ static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] par
 	+ hitta första rutan med plats för en motorcykel
 	+ parkera motorcykel tillsammans med en annan motorcykel
 	+ hämta ut en motorcykel
+	+ flytta en motorcykel
 
 ###### Anteckningar:
 
