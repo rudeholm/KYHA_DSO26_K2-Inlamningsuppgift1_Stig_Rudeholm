@@ -17,7 +17,7 @@
 	+ [x] bil i specifik ruta
 	+ [x] bil i första tomma ruta
 	+ [x] MC i specifik tom ruta
-	+ [ ] MC i första tomma ruta
+	+ [ ] ~~MC i första tomma ruta~~
 	+ [ ] MC i specifik ruta med en ledig plats
 	+ [ ] MC i första ruta med en ledig plats
 + Hämta ut
@@ -28,7 +28,6 @@
 	+ [x] bil till annan ruta
 	+ [ ] MC till annan ruta
 + Identifiera / Rapportera
-	+ [x] första tomma parkeringsruta
 	+ [ ] tomma rutor
 	+ [ ] rutor med EN motorcykel
 	+ [ ] rutor med TVÅ motorcyklar
@@ -38,6 +37,8 @@
 	+ [x] om en ruta innehåller en eller flera motorcyklar
 + Sök
 	+ [x] fordon med reg-nummer
+	+ [x] första tomma parkeringsruta
+	+ [x] första parkeringsruta med plats för en motorcykel
 
 
 ---
@@ -132,8 +133,23 @@ static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] par
 	+ parkera en motorykel i en tom parkeringsruta
 	+ kolla om en ruta innehåller en eller flera motorcyklar
 	+ kolla om en ruta har plats för en motorcykel
+	+ hitta första rutan med plats för en motorcykel
 
 ###### Anteckningar:
 
 Valde att bygga ut `ParkingSpaceContainsMotorcycles()` så att den även rapporterar antalet motorcyklar i en ruta, genom en out-variabel, istället för att skapa en egen `NumberOfMotorcyclesInParkingSpace()`-metod.
 
+Möblerade om lite i checklistan och strök en post som inte behövs. Räknar med att det blir fler ändringar innan jag är klar.
+
+Som jag misstänkte från början så loopar jag igenom "databasen"
+många gånger och det blir dubblettkod på flera ställen. Planen är
+att bryta ut loopen till en egen metod.
+
+```
+    for (int i = 1; i < parkingSpaces.Length; i++)
+    { }
+```
+
+Jag borde kunna skriva en generisk metod för att scanna igenom
+databasen och testa varje parkeringsruta mot en metod som jag
+skickar in som parameter...
