@@ -50,13 +50,12 @@ static void RunTests()
         FormatTestResult(ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true)
         );
 
+    testGarage = new string[5];
     testSpaceId = 2;
     Console.WriteLine(
         "You can park a car in an empty parking space: {0}",
         FormatTestResult(ParkCar(testSpaceId, testCarLicensePlate, testGarage) == true)
         );
-
-    testSpaceId = 2;
     ParkCar(testSpaceId, testCarLicensePlate, testGarage);
     Console.WriteLine(
         "After parking a car in an empty space, the space is not empty: {0}",

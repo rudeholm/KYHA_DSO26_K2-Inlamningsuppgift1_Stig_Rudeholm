@@ -197,3 +197,5 @@ Jag behöver verkligen hitta en bättre lösning än att kopiera och klistra in 
 /////
 
 Trodde jag var färdig för ikväll, men upptäckte precis att några av mina tester lyser rött! Jag vet inte hur länge de har gjort det, jag har helt missat dem p.g.a. att jag inte har scrollat upp och dubbelkollat resultaten.
+
+Det var lätt fixat, tack och lov!
