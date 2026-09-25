@@ -38,7 +38,7 @@
 + Räkna
 	+ [x] tomma parkeringsrutor
 	+ [x] rutor med EN motorcykel
-	+ [ ] rutor med TVÅ motorcyklar
+	+ [x] rutor med TVÅ motorcyklar
 	+ [ ] rutor med EN bil
 
 

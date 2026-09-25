@@ -222,6 +222,12 @@ static void RunTests()
         FormatTestResult(
             CountParkingSpacesWithSingleMotorcycles(testGarage) == 1
         ));
+    ParkMotorcycleInFirstAvailableSpace(testMotorcycleLicensePlate2, testGarage, out _);
+    Console.WriteLine(
+        "You can know the number of parking spaces with two motorcycles: {0}",
+        FormatTestResult(
+            CountParkingSpacesWithTwoMotorcycles(testGarage) == 1
+        ));
 
 
 
@@ -229,6 +235,22 @@ static void RunTests()
 
 
     Console.ResetColor();
+}
+
+
+
+/*****************************************************************************/
+
+static int CountParkingSpacesWithTwoMotorcycles(string[] parkingSpaces)
+{
+    int count = 0;
+    for (int spaceId = 1; spaceId <= parkingSpaces.Length; spaceId++)
+    {
+        if (ParkingSpaceContainsMotorcycles(spaceId, parkingSpaces, out int nrOfMotorcycles) && nrOfMotorcycles == 2)
+            count++;
+    }
+
+    return count;
 }
 
 static int CountParkingSpacesWithSingleMotorcycles(string[] parkingSpaces)
@@ -242,10 +264,6 @@ static int CountParkingSpacesWithSingleMotorcycles(string[] parkingSpaces)
 
     return count;
 }
-
-
-
-/*****************************************************************************/
 
 static int CountEmptyParkingSpaces(string[] parkingSpaces)
 {
