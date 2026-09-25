@@ -13,6 +13,8 @@ static void RunTests()
     // Setup
     string[] testGarage = new string[5];
     int testSpaceId;
+    int foundSpaceId;
+    int nrOfMotorcyclesInParkingSpace;
     string testCarLicensePlate = EncodeCarLicensePlate("foo 666");
     string testCarLicensePlate2 = EncodeCarLicensePlate("bar 333");
     string testMotorcycleLicensePlate = EncodeMotorcycleLicensePlate("m-poo 123");
@@ -89,8 +91,8 @@ static void RunTests()
             ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true
             && ParkCarInFirstEmptyParkingSpace(testCarLicensePlate2, testGarage, out int parkingSpaceId) == true
             && parkingSpaceId == testSpaceId + 1
-            && FindVehicle(testCarLicensePlate2, testGarage, out int foo) == true
-            && foo == parkingSpaceId
+            && FindVehicle(testCarLicensePlate2, testGarage, out foundSpaceId) == true
+            && foundSpaceId == parkingSpaceId
         ));
 
     testGarage = new string[5];
@@ -107,7 +109,7 @@ static void RunTests()
         "Find vehicle by license plate tells you if vehicle found and parking space id: {0}",
         FormatTestResult(
             ParkingSpaceContainsCar(testSpaceId, testGarage) == true
-            && FindVehicle(testCarLicensePlate, testGarage, out int foundSpaceId) == true
+            && FindVehicle(testCarLicensePlate, testGarage, out foundSpaceId) == true
             && foundSpaceId == testSpaceId
             && FindVehicle(testCarLicensePlate2, testGarage, out int notFoundSpaceId) == false
             && notFoundSpaceId == -1
@@ -128,8 +130,8 @@ static void RunTests()
         FormatTestResult(
             ParkingSpaceContainsCar(testSpaceId, testGarage) == true
             && MoveCar(testCarLicensePlate, testSpaceId + 1, testGarage) == true
-            && FindVehicle(testCarLicensePlate, testGarage, out int newSpaceId) == true
-            && newSpaceId == testSpaceId + 1
+            && FindVehicle(testCarLicensePlate, testGarage, out foundSpaceId) == true
+            && foundSpaceId == testSpaceId + 1
         ));
 
     testGarage = new string[5];
@@ -144,7 +146,7 @@ static void RunTests()
         "You can check if a parking space contains motorcycles: {0}",
         FormatTestResult(
             ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true
-            && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out int nrOfMotorcyclesInParkingSpace) == true
+            && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out nrOfMotorcyclesInParkingSpace) == true
             && nrOfMotorcyclesInParkingSpace == 1
             && ParkingSpaceContainsMotorcycles(testSpaceId + 1, testGarage, out int _) == false
         ));
@@ -158,27 +160,28 @@ static void RunTests()
     Console.WriteLine(
         "You can find the first available parking space with room for a motorcycle: {0}",
         FormatTestResult(
-            FindFirstParkingSpaceWithRoomForMotorcycle(testGarage, out int foundMotorcycleSpaceId) == true
-            && foundMotorcycleSpaceId == testSpaceId
+            FindFirstParkingSpaceWithRoomForMotorcycle(testGarage, out foundSpaceId) == true
+            && foundSpaceId == testSpaceId
         ));
     Console.WriteLine(
         "You can park a motorcycle in a parking space with another motorcycle: {0}",
         FormatTestResult(
-            ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out int originalNrOfMotorcyclesInParkingSpace) == true
-            && originalNrOfMotorcyclesInParkingSpace == 1
+            ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out nrOfMotorcyclesInParkingSpace) == true
+            && nrOfMotorcyclesInParkingSpace == 1
             && ParkMotorcycle(testSpaceId, testMotorcycleLicensePlate2, testGarage) == true
-            && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out int newNrOfMotorcyclesInParkingSpace) == true
-            && newNrOfMotorcyclesInParkingSpace == 2
+            && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out nrOfMotorcyclesInParkingSpace) == true
+            && nrOfMotorcyclesInParkingSpace == 2
         ));
     Console.WriteLine(
         "You can collect a motorcycle: {0}",
         FormatTestResult(
-            ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out int bikes) == true
-            && bikes == 2
+            ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out nrOfMotorcyclesInParkingSpace) == true
+            && nrOfMotorcyclesInParkingSpace == 2
             && CollectMotorcycle(testMotorcycleLicensePlate, testGarage) == true
-            && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out bikes) == true
-            && bikes == 1
+            && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out nrOfMotorcyclesInParkingSpace) == true
+            && nrOfMotorcyclesInParkingSpace == 1
         ));
+
 
 
     DumpParkingGarage(testGarage);

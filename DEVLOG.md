@@ -22,7 +22,7 @@
 	+ [ ] MC i första ruta med en ledig plats
 + Hämta ut
 	+ [x] bil
-	+ [ ] MC
+	+ [x] MC
 	+ [x] töm parkeringsruta
 + Flytta
 	+ [x] bil till annan ruta
@@ -103,13 +103,13 @@ static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] par
 Jag insåg att jag hade glömt att testa att bilen faktiskt blev parkerad... Pinsamt!
 
 ```
-    Console.WriteLine(
-        "You can park a car in the first available empty parking space: {0}",
-        FormatTestResult(
-            ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true
-            && ParkCarInFirstEmptyParkingSpace(testCarLicensePlate2, testGarage, out int parkingSpaceId) == true
-            && parkingSpaceId == testSpaceId + 1
-        ));
+Console.WriteLine(
+    "You can park a car in the first available empty parking space: {0}",
+    FormatTestResult(
+        ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true
+        && ParkCarInFirstEmptyParkingSpace(testCarLicensePlate2, testGarage, out int parkingSpaceId) == true
+        && parkingSpaceId == testSpaceId + 1
+    ));
 ```
 
 Efter ett tillägg i testet så protesterade det som förväntat. En bra påminnelse om hur viktigt det är att testa RÄTT saker!
@@ -134,6 +134,8 @@ static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] par
 	+ kolla om en ruta innehåller en eller flera motorcyklar
 	+ kolla om en ruta har plats för en motorcykel
 	+ hitta första rutan med plats för en motorcykel
+	+ parkera motorcykel tillsammans med en annan motorcykel
+	+ hämta ut en motorcykel
 
 ###### Anteckningar:
 
@@ -150,8 +152,8 @@ många gånger och det blir dubblettkod på flera ställen. Planen är
 att bryta ut loopen till en egen metod.
 
 ```
-    for (int i = 1; i < parkingSpaces.Length; i++)
-    { }
+for (int i = 1; i < parkingSpaces.Length; i++)
+{ }
 ```
 
 Jag borde kunna skriva en generisk metod för att scanna igenom
@@ -164,4 +166,13 @@ Det börjar kännas otympligt med alla out-variabler, som i `ParkingSpaceContain
 Det kan vara värt att gå ifrån "bool + int out" och bara returnera en int istället... Eventuellt kan det vara så att det bara känns otympligt i testerna och det kanske kan lösas genom att återanvända fler variabelnamn.
 
 /////
+
+Jag deklarerade ett par nya standard-variabler högst upp i `RunTests()`:
+
+```
+int foundSpaceId;
+int nrOfMotorcyclesInParkingSpace;
+```
+
+Det har verkligen gjort skillnad, men jag funderar fortfarande på att gå över till att returnera `int` istället för `bool`.
 
