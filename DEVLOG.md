@@ -128,7 +128,6 @@ static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] par
 
 #### 2026-09-25
 
-+ 
 + Nu går det att:
 	+ parkera en motorykel i en tom parkeringsruta
 	+ kolla om en ruta innehåller en eller flera motorcyklar
@@ -136,4 +135,5 @@ static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] par
 
 ###### Anteckningar:
 
- 
+Valde att bygga ut `ParkingSpaceContainsMotorcycles()` så att den även rapporterar antalet motorcyklar i en ruta, genom en out-variabel, istället för att skapa en egen `NumberOfMotorcyclesInParkingSpace()`-metod.
+

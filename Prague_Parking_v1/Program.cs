@@ -144,8 +144,9 @@ static void RunTests()
         "You can check if a parking space contains motorcycles: {0}",
         FormatTestResult(
             ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true
-            && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage) == true
-            && ParkingSpaceContainsMotorcycles(testSpaceId + 1, testGarage) == false
+            && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out int nrOfMotorcyclesInParkingSpace) == true
+            && nrOfMotorcyclesInParkingSpace == 1
+            && ParkingSpaceContainsMotorcycles(testSpaceId + 1, testGarage, out int _) == false
         ));
     Console.WriteLine(
     "You can check if a parking space has room for a motorcycle: {0}",
@@ -176,24 +177,35 @@ static bool ParkingSpaceHasRoomForMotorcycle(int spaceId, string[] parkingSpaces
     if (ParkingSpaceContainsCar(spaceId, parkingSpaces))
         return false;
 
-    if (LookupParkingSpace(spaceId, parkingSpaces).Split('|').Length > 1)
-        return false;
-
-    if (ParkingSpaceContainsMotorcycles(spaceId, parkingSpaces))
+    if (ParkingSpaceContainsMotorcycles(spaceId, parkingSpaces, out int nrOfMotorcycles) && nrOfMotorcycles < 2)
         return true;
 
     return false;
 }
 
-static bool ParkingSpaceContainsMotorcycles(int spaceId, string[] parkingSpaces)
+static bool ParkingSpaceContainsMotorcycles(int spaceId, string[] parkingSpaces, out int nrOfMotorcycles)
 {
+
     if (ParkingSpaceIsEmpty(spaceId, parkingSpaces))
+    {
+        nrOfMotorcycles = 0;
         return false;
+    }
 
     if (ParkingSpaceContainsCar(spaceId, parkingSpaces))
+    {
+        nrOfMotorcycles = 0;
         return false;
+    }
 
-    return LookupParkingSpace(spaceId, parkingSpaces).Split('#')[0].Equals("MC");
+    if (LookupParkingSpace(spaceId, parkingSpaces).Split('#')[0].Equals("MC"))
+    {
+        nrOfMotorcycles = LookupParkingSpace(spaceId, parkingSpaces).Split('|').Length;
+        return true;
+    }
+
+    nrOfMotorcycles = 0;
+    return false;
 }
 
 static bool ParkMotorcycle(int spaceId, string motorcycleLicensePlate, string[] parkingSpaces)
