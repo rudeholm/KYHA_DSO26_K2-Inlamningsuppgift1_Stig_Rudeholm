@@ -24,7 +24,7 @@
 	+ [ ] MC
 	+ [x] töm parkeringsruta
 + Flytta
-	+ [ ] bil till annan ruta
+	+ [x] bil till annan ruta
 	+ [ ] MC till annan ruta
 + Identifiera / Rapportera
 	+ [x] första tomma parkeringsruta
@@ -57,7 +57,7 @@
 
 ###### Anteckningar:
 
-Jag gillar att använda TDD, "test-driven development", till mina mjukvaru-projekt. Det är en metod som passar mig och jag vill gärna använda den även till denna uppgift. Det känns dock lite överdrivet att köra en riktig test-svit, typ xUnit, så jag bestämde mig för att försöka formulera ett eget, väldigt rudimentärt test-system. TDD hjälper mig både att prioritera och att fokusera när jag skriver kod. Jag tror därför att det är värt det lilla extra besväret.
+Jag gillar att använda TDD, "test-driven development", till mina mjukvaru-projekt. Det är en metod som passar mig och jag vill gärna använda den även till denna uppgift. Det känns dock lite överdrivet att köra en riktig test-svit, typ xUnit, så jag bestämde mig för att försöka formulera ett eget, väldigt rudimentärt test-system. TDD hjälper mig både att prioritera och att fokusera när jag skriver kod. Jag tror därför att det är värt det lilla extra besväret. (Här vill jag passa på att understryka att jag *inte ens nästan* tror att jag *behärskar* TDD på något sätt. Jag är fullt medveten om att jag bara har skrapat på ytan när det gäller detta ämne.)
 
 Jag skrev en enkel liten "wrapper-metod" som jag kan köra testresultaten igenom för att sätta lite färg på dem: grönt för `true`, rött för `false`.
 
@@ -125,3 +125,12 @@ static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] par
 }
 ```
 
+#### 2026-09-25
+
++ 
++ Nu går det att:
+	+ 
+
+###### Anteckningar:
+
+ 
