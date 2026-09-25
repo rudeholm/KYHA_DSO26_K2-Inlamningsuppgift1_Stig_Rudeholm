@@ -139,7 +139,11 @@ static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] par
 
 Valde att bygga ut `ParkingSpaceContainsMotorcycles()` så att den även rapporterar antalet motorcyklar i en ruta, genom en out-variabel, istället för att skapa en egen `NumberOfMotorcyclesInParkingSpace()`-metod.
 
+/////
+
 Möblerade om lite i checklistan och strök en post som inte behövs. Räknar med att det blir fler ändringar innan jag är klar.
+
+/////
 
 Som jag misstänkte från början så loopar jag igenom "databasen"
 många gånger och det blir dubblettkod på flera ställen. Planen är
@@ -153,3 +157,11 @@ att bryta ut loopen till en egen metod.
 Jag borde kunna skriva en generisk metod för att scanna igenom
 databasen och testa varje parkeringsruta mot en metod som jag
 skickar in som parameter...
+
+/////
+
+Det börjar kännas otympligt med alla out-variabler, som i `ParkingSpaceContainsMotorcycles(int, string[], out int)`.
+Det kan vara värt att gå ifrån "bool + int out" och bara returnera en int istället... Eventuellt kan det vara så att det bara känns otympligt i testerna och det kanske kan lösas genom att återanvända fler variabelnamn.
+
+/////
+
