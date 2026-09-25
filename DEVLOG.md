@@ -178,3 +178,6 @@ int nrOfMotorcyclesInParkingSpace;
 
 Det har verkligen gjort skillnad, men jag funderar fortfarande på att gå över till att returnera `int` istället för `bool`.
 
+/////
+
+När jag började förbereda för ett nytt test insåg jag att jag har glömt att ange en out-variabel för `ParkMotorcycleInFirstAvailableSpace()`. Jag är inte säker på att den behövs, men jag lägger till den. Jag tror att jag kan ha nytta av den när jag skapar användargränssnittet.

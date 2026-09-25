@@ -197,7 +197,7 @@ static void RunTests()
         FormatTestResult(
             ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out nrOfMotorcyclesInParkingSpace) == true
             && nrOfMotorcyclesInParkingSpace == 1
-            && ParkMotorcycleInFirstAvailableSpace(testMotorcycleLicensePlate2, testGarage) == true
+            && ParkMotorcycleInFirstAvailableSpace(testMotorcycleLicensePlate2, testGarage, out _) == true
             && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out nrOfMotorcyclesInParkingSpace) == true
             && nrOfMotorcyclesInParkingSpace == 2
         ));
@@ -209,6 +209,10 @@ static void RunTests()
             && ParkCar(testSpaceId + 1, testCarLicensePlate, testGarage) == false
         ));
 
+    testGarage = new string[5];
+    ParkCarInFirstEmptyParkingSpace(testCarLicensePlate, testGarage, out _);
+    ParkMotorcycleInFirstAvailableSpace(testMotorcycleLicensePlate, testGarage, out _);
+
 
 
     DumpParkingGarage(testGarage);
@@ -218,15 +222,13 @@ static void RunTests()
 }
 
 
-
-
-
 /*****************************************************************************/
 
-static bool ParkMotorcycleInFirstAvailableSpace(string motorcycleLicensePlate, string[] parkingSpaces)
+static bool ParkMotorcycleInFirstAvailableSpace(string motorcycleLicensePlate, string[] parkingSpaces, out int foundSpaceId)
 {
-    return FindFirstParkingSpaceWithRoomForMotorcycle(parkingSpaces, out int spaceId)
-        && ParkMotorcycle(spaceId, motorcycleLicensePlate, parkingSpaces);
+
+    return FindFirstParkingSpaceWithRoomForMotorcycle(parkingSpaces, out foundSpaceId)
+        && ParkMotorcycle(foundSpaceId, motorcycleLicensePlate, parkingSpaces);
 }
 
 static bool MoveMotorcycle(string motorcycleLicensePlate, int spaceId, string[] parkingSpaces)
