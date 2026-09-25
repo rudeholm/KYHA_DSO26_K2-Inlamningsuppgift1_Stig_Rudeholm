@@ -201,6 +201,13 @@ static void RunTests()
             && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out nrOfMotorcyclesInParkingSpace) == true
             && nrOfMotorcyclesInParkingSpace == 2
         ));
+    testSpaceId = 4;
+    Console.WriteLine(
+        "A vehicle license plate can only be parked in a single parking space at a time: {0}",
+        FormatTestResult(
+            ParkMotorcycle(testSpaceId, testMotorcycleLicensePlate, testGarage) == false
+            && ParkCar(testSpaceId + 1, testCarLicensePlate, testGarage) == false
+        ));
 
 
 
@@ -210,17 +217,17 @@ static void RunTests()
     Console.ResetColor();
 }
 
-static bool ParkMotorcycleInFirstAvailableSpace(string motorcycleLicensePlate, string[] parkingSpaces)
-{
-    return FindFirstParkingSpaceWithRoomForMotorcycle(parkingSpaces, out int spaceId)
-        && ParkMotorcycle(spaceId, motorcycleLicensePlate, parkingSpaces);
-}
-
 
 
 
 
 /*****************************************************************************/
+
+static bool ParkMotorcycleInFirstAvailableSpace(string motorcycleLicensePlate, string[] parkingSpaces)
+{
+    return FindFirstParkingSpaceWithRoomForMotorcycle(parkingSpaces, out int spaceId)
+        && ParkMotorcycle(spaceId, motorcycleLicensePlate, parkingSpaces);
+}
 
 static bool MoveMotorcycle(string motorcycleLicensePlate, int spaceId, string[] parkingSpaces)
 {
@@ -249,6 +256,9 @@ static bool CollectMotorcycle(string motorcycleLicensePlate, string[] parkingSpa
 
 static bool ParkMotorcycle(int spaceId, string motorcycleLicensePlate, string[] parkingSpaces)
 {
+    if (FindVehicle(motorcycleLicensePlate, parkingSpaces, out int _))
+        return false;
+
     if (ParkingSpaceContainsCar(spaceId, parkingSpaces))
         return false;
 
@@ -396,6 +406,9 @@ static bool ClearParkingSpace(int spaceId, string[] parkingSpaces)
 
 static bool ParkCar(int spaceId, string carLicensePlate, string[] parkingSpaces)
 {
+    if (FindVehicle(carLicensePlate, parkingSpaces, out int _))
+        return false;
+
     if (ParkingSpaceIsNotEmpty(spaceId, parkingSpaces))
         return false;
 

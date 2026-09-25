@@ -12,7 +12,7 @@
 + Kontrollera
 	+ [x] om en parkeringsruta är tom
 	+ [x] om det finns en ledig MC-plats
-	+ [ ] att reg-nummer är unikt och inte parkeras dubbelt
+	+ [x] att reg-nummer är unikt och inte parkeras dubbelt
 + Parkera
 	+ [x] bil i specifik ruta
 	+ [x] bil i första tomma ruta
