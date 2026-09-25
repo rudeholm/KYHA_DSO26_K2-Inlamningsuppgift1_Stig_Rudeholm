@@ -212,6 +212,11 @@ static void RunTests()
     testGarage = new string[5];
     ParkCarInFirstEmptyParkingSpace(testCarLicensePlate, testGarage, out _);
     ParkMotorcycleInFirstAvailableSpace(testMotorcycleLicensePlate, testGarage, out _);
+    Console.WriteLine(
+        "You can know the number of empty parking spaces: {0}",
+        FormatTestResult(
+            CountEmptyParkingSpaces(testGarage) == 3
+        ));
 
 
 
@@ -220,6 +225,19 @@ static void RunTests()
 
     Console.ResetColor();
 }
+
+static int CountEmptyParkingSpaces(string[] parkingSpaces)
+{
+    int count = 0;
+    for (int spaceId = 1; spaceId <= parkingSpaces.Length; spaceId++)
+    {
+        if (ParkingSpaceIsEmpty(spaceId, parkingSpaces))
+            count++;
+    }
+
+    return count;
+}
+
 
 
 /*****************************************************************************/

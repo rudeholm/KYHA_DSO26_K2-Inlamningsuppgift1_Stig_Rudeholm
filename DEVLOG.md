@@ -28,17 +28,18 @@
 	+ [x] bil till annan ruta
 	+ [x] MC till annan ruta
 + Identifiera / Rapportera
-	+ [ ] tomma rutor
-	+ [ ] rutor med EN motorcykel
-	+ [ ] rutor med TVÅ motorcyklar
-	+ [ ] rutor med EN bil
-	+ [ ] första ruta med EN motorcykel
+	+ [ ] ~~första ruta med EN motorcykel~~
 	+ [x] om en ruta innehåller en bil
 	+ [x] om en ruta innehåller en eller flera motorcyklar
 + Sök
 	+ [x] fordon med reg-nummer
 	+ [x] första tomma parkeringsruta
 	+ [x] första parkeringsruta med plats för en motorcykel
++ Räkna
+	+ [x] tomma parkeringsrutor
+	+ [ ] rutor med EN motorcykel
+	+ [ ] rutor med TVÅ motorcyklar
+	+ [ ] rutor med EN bil
 
 
 ---
