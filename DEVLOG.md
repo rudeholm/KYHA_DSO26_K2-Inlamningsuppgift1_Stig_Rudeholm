@@ -11,7 +11,7 @@
 	+ [ ] Säkerställ maxlängd 10 tecken
 + Kontrollera
 	+ [x] om en parkeringsruta är tom
-	+ [ ] om det finns en ledig MC-plats
+	+ [x] om det finns en ledig MC-plats
 	+ [ ] att reg-nummer är unikt och inte parkeras dubbelt
 + Parkera
 	+ [x] bil i specifik ruta
@@ -132,6 +132,7 @@ static bool ParkCarInFirstEmptyParkingSpace(string carLicensePlate, string[] par
 + Nu går det att:
 	+ parkera en motorykel i en tom parkeringsruta
 	+ kolla om en ruta innehåller en eller flera motorcyklar
+	+ kolla om en ruta har plats för en motorcykel
 
 ###### Anteckningar:
 

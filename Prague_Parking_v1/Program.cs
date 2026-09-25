@@ -147,6 +147,13 @@ static void RunTests()
             && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage) == true
             && ParkingSpaceContainsMotorcycles(testSpaceId + 1, testGarage) == false
         ));
+    Console.WriteLine(
+    "You can check if a parking space has room for a motorcycle: {0}",
+    FormatTestResult(
+        ParkingSpaceHasRoomForMotorcycle(testSpaceId, testGarage) == true
+        && ParkingSpaceHasRoomForMotorcycle(testSpaceId - 1, testGarage) == false
+        && ParkingSpaceHasRoomForMotorcycle(testSpaceId + 1, testGarage) == true
+    ));
 
 
     DumpParkingGarage(testGarage);
@@ -159,8 +166,24 @@ static void RunTests()
 
 
 
-
 /*****************************************************************************/
+
+static bool ParkingSpaceHasRoomForMotorcycle(int spaceId, string[] parkingSpaces)
+{
+    if (ParkingSpaceIsEmpty(spaceId, parkingSpaces))
+        return true;
+
+    if (ParkingSpaceContainsCar(spaceId, parkingSpaces))
+        return false;
+
+    if (LookupParkingSpace(spaceId, parkingSpaces).Split('|').Length > 1)
+        return false;
+
+    if (ParkingSpaceContainsMotorcycles(spaceId, parkingSpaces))
+        return true;
+
+    return false;
+}
 
 static bool ParkingSpaceContainsMotorcycles(int spaceId, string[] parkingSpaces)
 {
