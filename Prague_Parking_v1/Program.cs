@@ -1,14 +1,83 @@
 ﻿
+Console.CursorVisible = false;
+
 string[] parkingGarage = new string[100];
+string[] mainMenuOptions = [
+    "Park Vehicle",
+    "Collect Vehicle",
+    "Find Vehicle",
+    "Move Vehicle",
+    "List Vehicles",
+    "Show Parking Spaces",
+    ];
 
-Console.Clear();
+Console.Title = "Park-o-tron 9000";
+
+while (true)
+{
+    Console.Clear();
+
+    int choice = GetMenuChoice(mainMenuOptions);
+    
+}
 
 
 
+static int GetMenuChoice(string[] options)
+{
+    int currentChoice = 0;
+    ConsoleKeyInfo keypress;
+
+    do
+    {
+        DisplayMenu(options, currentChoice);
+
+        keypress = Console.ReadKey(true);
+
+        switch (keypress.Key)
+        {
+            case ConsoleKey.Enter:
+                break;
+            case ConsoleKey.UpArrow:
+                if (currentChoice > 0)
+                    currentChoice--;
+                break;
+            case ConsoleKey.DownArrow:
+                if (currentChoice < options.Length - 1)
+                    currentChoice++;
+                break;
+            default:
+                break;
+        }
+
+    }
+    while (keypress.Key != ConsoleKey.Enter);
+
+    return currentChoice;
+}
 
 
+static void DisplayMenu(string[] options, int currentChoice)
+{
+    Console.CursorTop = 2;
 
+    for (int i = 0; i < options.Length; i++)
+    {
+        if (currentChoice == i)
+        {
+            Console.BackgroundColor = ConsoleColor.White;
+            Console.ForegroundColor = ConsoleColor.Black;
+        }
+        else
+        {
+            Console.ResetColor();
+        }
 
+        Console.WriteLine($"   {options[i]} ");
+    }
+
+    Console.ResetColor();
+}
 
 
 

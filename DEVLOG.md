@@ -203,3 +203,25 @@ Det var lätt fixat, tack och lov!
 /////
 
 Nu tror jag att jag är redo att sätta igång med användargränssnittet! Ska försöka motstå frestelsen att installera Spectre.Console och bygga ett textbaserat UI själv.
+
+#### 2026-09-26
+
+Ok, dags att bygga ett UI!
+
+Planen är att bygga ett enkelt och tydligt meny-system med menyer till vänster och statistik till höger.
+
+/////
+
+Den första menyn som behövs är en huvudmeny som allt annat utgår ifrån.
+
++ Huvudmeny:
+	+ Parkera fordon
+	+ Hämta fordon
+	+ Sök fordon
+	+ Flytta fordon
+	+ Lista fordon
+	+ Visa parkeringsrutor
+
+/////
+
+Ett första försök till meny är på plats. Upp/ner, enter returnerar menyval som en int. Verkar fungera bra.
