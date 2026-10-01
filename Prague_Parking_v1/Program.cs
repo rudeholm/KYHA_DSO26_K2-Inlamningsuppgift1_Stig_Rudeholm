@@ -27,19 +27,7 @@ static void ShowMainMenu(string[] parkingSpaces)
         "8: Show Stats",
     ];
 
-    PlaceCursor(TITLE_X, TITLE_Y);
-    WriteTitle(title);
-    PlaceCursor(0, TITLE_Y + 3);
-
-    foreach (var option in menuOptions)
-    {
-        MoveCursor(TITLE_X + 2, 0);
-        Console.WriteLine(option);
-    }
-
-    Console.WriteLine();
-    MoveCursor(TITLE_X, 0);
-    Console.Write("> ");
+    DisplayMenu(title, menuOptions);
 
     string? choice = Console.ReadLine();
 
@@ -52,6 +40,24 @@ static void ShowMainMenu(string[] parkingSpaces)
     }
 }
 
+static void DisplayMenu(string title, string[] options)
+{
+    Console.Clear();
+
+    PlaceCursor(TITLE_X, TITLE_Y);
+    WriteTitle(title);
+    PlaceCursor(0, TITLE_Y + 3);
+
+    foreach (var option in options)
+    {
+        MoveCursor(TITLE_X + 2, 0);
+        Console.WriteLine(option);
+    }
+
+    Console.WriteLine();
+    MoveCursor(TITLE_X, 0);
+    Console.Write("> ");
+}
 
 static void PlaceCursor(int x, int y)
 {

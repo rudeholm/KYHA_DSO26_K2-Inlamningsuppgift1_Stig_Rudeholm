@@ -39,3 +39,7 @@ const int TITLE_Y = 2;
 ```
 
 Det är mycket möjligt att det kommer att ändras senare och då är det skönt att bara behöva ändra på ett ställe.
+
+---
+
+Metoden för att visa menyn är alldeles för lång, så jag delar upp den i ett par olika delar med olika ansvarsområden.
