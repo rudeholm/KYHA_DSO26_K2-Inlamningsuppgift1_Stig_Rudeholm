@@ -43,3 +43,58 @@ Det är mycket möjligt att det kommer att ändras senare och då är det skönt
 ---
 
 Metoden för att visa menyn är alldeles för lång, så jag delar upp den i ett par olika delar med olika ansvarsområden.
+
+---
+
+För att hantera reg-nummer / reg-skyltar behöver jag en bunt metoder, så nu är det dags att börja skriva tester!
+
+Och då behöver jag börja med att skriva någon sorts test-metod:
+
+```
+static void Test(string description, Func<bool> test)
+{
+    var currentForegroundColor = Console.ForegroundColor;
+    var currentBackgroundColor = Console.BackgroundColor;
+
+    Console.Write($"{description} ");
+    bool result = test();
+    if (result == true)
+    {
+        Console.Write(" [√] PASS! ");
+        Console.WriteLine();
+    }
+    else
+    {
+        Console.ForegroundColor = ConsoleColor.Black;
+        Console.BackgroundColor = ConsoleColor.DarkGreen;
+        Console.Write(" [x] FAIL! ");
+        Console.WriteLine();
+    }
+
+
+    Console.ForegroundColor = currentForegroundColor;
+    Console.BackgroundColor = currentBackgroundColor;
+}
+```
+
+Denna metod låter mig sen skriva tester så här:
+
+```
+    Test(
+        "A test can pass",
+        () => true == true
+        );
+
+    Test(
+        "A test can fail",
+        () => {
+            var a = 1;
+            var b = 2;
+            return a == b;
+        });
+```
+
+Vi får se om det fungerar som planerat...
+
+---
+

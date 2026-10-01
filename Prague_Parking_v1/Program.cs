@@ -33,7 +33,11 @@ static void ShowMainMenu(string[] parkingSpaces)
 
     switch (choice.ToLower())
     {
-        case "exit": Environment.Exit(0);
+        case "test":
+            RunTests();
+            break;
+        case "exit":
+            Environment.Exit(0);
             break;
         default:
             break;
@@ -76,3 +80,52 @@ static void WriteTitle(string title)
 {
     Console.WriteLine(title.ToUpper());
 }
+
+static void RunTests()
+{
+    Console.Clear();
+    WriteTitle("Run tests");
+    Console.WriteLine();
+
+    Test(
+        "A test can pass",
+        () => true == true
+        );
+
+    Test(
+        "A test can fail",
+        () => {
+            var a = 1;
+            var b = 2;
+            return a == b;
+        });
+
+
+    Console.ReadKey();
+}
+
+static void Test(string description, Func<bool> test)
+{
+    var currentForegroundColor = Console.ForegroundColor;
+    var currentBackgroundColor = Console.BackgroundColor;
+
+    Console.Write($"{description} ");
+    bool result = test();
+    if (result == true)
+    {
+        Console.Write(" [√] PASS! ");
+        Console.WriteLine();
+    }
+    else
+    {
+        Console.ForegroundColor = ConsoleColor.Black;
+        Console.BackgroundColor = ConsoleColor.DarkGreen;
+        Console.Write(" [x] FAIL! ");
+        Console.WriteLine();
+    }
+
+
+    Console.ForegroundColor = currentForegroundColor;
+    Console.BackgroundColor = currentBackgroundColor;
+}
+
