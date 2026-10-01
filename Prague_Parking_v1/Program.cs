@@ -84,32 +84,26 @@ static void WriteTitle(string title)
 static void RunTests()
 {
     Console.Clear();
-    WriteTitle("Run tests");
+    WriteTitle("Testing...");
     Console.WriteLine();
 
     Test(
-        "A test can pass",
-        () => true == true
+        "A vehicle license plate can be cleaned up",
+        () => TidyLicensePlate("  foo 666 ").Equals("FOO 666")
         );
-
-    Test(
-        "A test can fail",
-        () => {
-            var a = 1;
-            var b = 2;
-            return a == b;
-        });
-
 
     Console.ReadKey();
 }
+
+static string TidyLicensePlate(string input)
+    => input.Trim().ToUpper();
 
 static void Test(string description, Func<bool> test)
 {
     var currentForegroundColor = Console.ForegroundColor;
     var currentBackgroundColor = Console.BackgroundColor;
 
-    Console.Write($"{description} ");
+    Console.Write($"○ {description} →→→");
     bool result = test();
     if (result == true)
     {
