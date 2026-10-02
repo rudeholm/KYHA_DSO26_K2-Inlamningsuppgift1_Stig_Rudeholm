@@ -112,10 +112,8 @@ static void RunTests()
     Console.ReadKey();
 }
 
-static object DecodeLicensePlate(string v)
-{
-    return "";
-}
+static string DecodeLicensePlate(string licensePlate)
+    => licensePlate.Split('#')[1].Replace('_', ' ');
 
 static string EncodeMotorcycleLicensePlate(string licensePlate)
     => $"MC#{TidyLicensePlate(licensePlate).Replace(' ', '_')}";
@@ -133,18 +131,18 @@ static void Test(string description, Func<bool> test)
     var currentForegroundColor = Console.ForegroundColor;
     var currentBackgroundColor = Console.BackgroundColor;
 
-    Console.Write($"○ {description} →→→");
+    Console.Write($"○ {description} →→→ ");
     bool result = test();
     if (result == true)
     {
-        Console.Write(" [√] PASS! ");
+        Console.Write("[√] PASS!");
         Console.WriteLine();
     }
     else
     {
         Console.ForegroundColor = ConsoleColor.Black;
         Console.BackgroundColor = ConsoleColor.DarkGreen;
-        Console.Write(" [x] FAIL! ");
+        Console.Write("[x] FAIL!");
         Console.WriteLine();
     }
 
