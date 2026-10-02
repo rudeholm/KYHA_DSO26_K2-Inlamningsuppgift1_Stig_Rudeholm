@@ -146,6 +146,15 @@ static void RunTests()
             return ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true;
         });
 
+       Test("Parking a car in a parking space stores the car's encoded license plate in that space", () =>
+        {
+            var testGarage = GetEmptyParkingGarage(5);
+            var testSpaceId = 1;
+            var licensePlate = EncodeCarLicensePlate("foo 666");
+            ParkCar(testSpaceId, licensePlate, testGarage);
+            return testGarage[testSpaceId].Equals(licensePlate);
+        });
+
 
 
     Console.ReadKey();
@@ -156,7 +165,7 @@ static bool ParkCar(int spaceId, string licensePlate, string[] parkingSpaces)
     if (ParkingSpaceIsNotEmpty(spaceId, parkingSpaces))
         return false;
 
-    parkingSpaces[spaceId] = "x";
+    parkingSpaces[spaceId] = licensePlate;
     return true;
 }
 
