@@ -109,12 +109,22 @@ static void RunTests()
         () => DecodeLicensePlate("CAR#FOO_666").Equals("FOO 666")
         );
 
-    string[] testGarage = new string[6];
+    string[] testGarage = new string[5 + 1];
     int testSpaceId = 1;
     Test(
         "A parking space is empty by default",
         () => ParkingSpaceIsEmpty(testSpaceId, testGarage) == true
         );
+
+    testGarage = GetEmptyParkingGarage(5);
+    testSpaceId = 1;
+    testGarage[testSpaceId] = "xxx";
+    Test(
+        "A parking space that contains something is not empty",
+        () => ParkingSpaceIsEmpty(testSpaceId, testGarage) == false
+        );
+
+
 
     Console.ReadKey();
 }
@@ -161,3 +171,5 @@ static void Test(string description, Func<bool> test)
     Console.BackgroundColor = currentBackgroundColor;
 }
 
+static string[] GetEmptyParkingGarage(int size)
+    => new string[size + 1];

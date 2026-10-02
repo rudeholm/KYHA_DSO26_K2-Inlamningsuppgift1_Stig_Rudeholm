@@ -144,3 +144,10 @@ Efter att äntligen ha fattat hur jag kunde skriva det nya test-systemet känner
 
 ---
 
+Jag har bestämt mig för att använda storlek n+1 för ett parkeringshus med n parkeringsrutor, för att slippa behöva tjafsa med `array[index-1]` hela tiden. Till testerna behöver jag väldigt ofta ett fräscht, tomt p-hus. Så jag skrev en liten hjälpmetod för att underlätta:
+
+```
+static string[] GetEmptyParkingGarage(int size)
+    => new string[size + 1];
+```
+
