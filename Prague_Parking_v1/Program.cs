@@ -109,8 +109,18 @@ static void RunTests()
         () => DecodeLicensePlate("CAR#FOO_666").Equals("FOO 666")
         );
 
+    string[] testGarage = new string[6];
+    int testSpaceId = 1;
+    Test(
+        "A parking space is empty by default",
+        () => ParkingSpaceIsEmpty(testSpaceId, testGarage) == true
+        );
+
     Console.ReadKey();
 }
+
+static bool ParkingSpaceIsEmpty(int spaceId, string[] parkingSpaces)
+    => string.IsNullOrWhiteSpace(parkingSpaces[spaceId]);
 
 static string DecodeLicensePlate(string licensePlate)
     => licensePlate.Split('#')[1].Replace('_', ' ');
