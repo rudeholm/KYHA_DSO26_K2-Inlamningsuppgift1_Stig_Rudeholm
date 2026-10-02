@@ -154,3 +154,12 @@ static string[] GetEmptyParkingGarage(int size)
 ---
 
 Nu när jag har skrivit några tester börjar det bli mycket upprepningar före varje test. Enligt min erfarenhet är det svårt att undvika, men jag kan snygga upp det. Med det nya testsystemet kan jag flytta in "setup-koden" i själva testerna.
+
+---
+
+Nu är det dags att börja parkera bilar! Anledningen till att jag ville starta med att få till en meny är att jag har en tendens att fastna i att skriva tester och kod som inte behövs. Jag är alltså dålig på att följa "You ain't gonna need it", eller "YAGNI-principen", som ska hjälpa oss hålla oss inom ramarna för den givna uppgiften.
+
+Med ett grovt UI på plats kan jag fokusera på vad som behövs bakom kulisserna för att få den funktionalitet som användargränssnittet kräver.
+
+---
+

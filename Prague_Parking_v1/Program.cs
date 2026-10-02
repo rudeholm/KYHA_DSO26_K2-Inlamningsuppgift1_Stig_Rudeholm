@@ -89,68 +89,74 @@ static void RunTests()
     WriteTitle("Testing...");
     Console.WriteLine();
 
-    Test(
-        "A vehicle license plate can be cleaned up",
+    Test("A vehicle license plate can be cleaned up",
         () => TidyLicensePlate("  foo 666 ").Equals("FOO 666")
         );
 
-    Test(
-        "A car license plate can be encoded for storage in the database",
+    Test("A car license plate can be encoded for storage in the database",
         () => EncodeCarLicensePlate("  foo 666 ").Equals("CAR#FOO_666")
         );
 
-    Test(
-        "A motorcycle license plate can be encoded for storage in the database",
+    Test("A motorcycle license plate can be encoded for storage in the database",
         () => EncodeMotorcycleLicensePlate("M-bar 999 ").Equals("MC#M-BAR_999")
         );
 
-    Test(
-        "An encoded license plate can be decoded to display it properly",
+    Test("An encoded license plate can be decoded to display it properly",
         () => DecodeLicensePlate("CAR#FOO_666").Equals("FOO 666")
         );
 
-    Test(
-        "A parking space is empty by default",
-        () =>
+    Test("A parking space is empty by default", () =>
         {
             var testGarage = GetEmptyParkingGarage(5);
             var testSpaceId = 1;
             return ParkingSpaceIsEmpty(testSpaceId, testGarage) == true;
-        }
-        );
+        });
 
-    Test(
-        "A parking space that contains something is not empty",
-        () =>
+    Test("A parking space that contains something is not empty", () =>
         {
             var testGarage = GetEmptyParkingGarage(5);
             var testSpaceId = 1;
             testGarage[testSpaceId] = "xxx";
             return ParkingSpaceIsEmpty(testSpaceId, testGarage) == false;
-        }
-        );
+        });
 
-    Test(
-        "After clearing a non-empty parking space, the space will be empty",
-        () =>
+    Test("After clearing a non-empty parking space, the space will be empty", () =>
         {
             var testGarage = GetEmptyParkingGarage(5);
             var testSpaceId = 1;
             testGarage[testSpaceId] = "xxx";
             ClearParkingSpace(testSpaceId, testGarage);
             return ParkingSpaceIsEmpty(testSpaceId, testGarage) == true;
-        }
-        );
+        });
+
+    Test("A car can be parked in an empty parking space", () =>
+        {
+            var testGarage = GetEmptyParkingGarage(5);
+            var testSpaceId = 1;
+            var licensePlate = EncodeCarLicensePlate("foo 666");
+            return ParkCar(testSpaceId, licensePlate, testGarage) == true;
+        });
 
 
 
     Console.ReadKey();
 }
 
+static bool ParkCar(int spaceId, string licensePlate, string[] parkingSpaces)
+{
+    if (ParkingSpaceIsNotEmpty(spaceId, parkingSpaces))
+        return false;
+
+    return true;
+}
+
 static void ClearParkingSpace(int spaceId, string[] parkingSpaces)
 {
     parkingSpaces[spaceId] = "";
 }
+
+static bool ParkingSpaceIsNotEmpty(int spaceId, string[] parkingSpaces)
+    => string.IsNullOrWhiteSpace(parkingSpaces[spaceId]) == false;
 
 static bool ParkingSpaceIsEmpty(int spaceId, string[] parkingSpaces)
     => string.IsNullOrWhiteSpace(parkingSpaces[spaceId]);
