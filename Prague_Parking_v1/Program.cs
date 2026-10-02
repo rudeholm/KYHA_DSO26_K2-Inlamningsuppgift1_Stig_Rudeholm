@@ -133,6 +133,11 @@ static void RunTests()
         () => DecodeLicensePlate("CAR#FOO_666").Equals("FOO 666")
         );
 
+    Test("A license plate can not be empty",
+        () => ValidLicensePlate("") == false
+        );
+
+
     Test("A parking space is empty by default", () =>
         {
             var testGarage = GetEmptyParkingGarage(5);
@@ -186,6 +191,11 @@ static void RunTests()
 
 
     WaitKey();
+}
+
+static bool ValidLicensePlate(string licensePlate)
+{
+    return string.IsNullOrWhiteSpace(licensePlate) == false;
 }
 
 static bool ParkCar(int spaceId, string licensePlate, string[] parkingSpaces)

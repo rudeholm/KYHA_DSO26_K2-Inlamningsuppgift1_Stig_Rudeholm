@@ -167,3 +167,7 @@ Med ett grovt UI på plats kan jag fokusera på vad som behövs bakom kulisserna
 
 ---
 
+Innan jag går vidare med att parkera bilar så behöver jag en metod för att validera reg-nummer.
+
+---
+
