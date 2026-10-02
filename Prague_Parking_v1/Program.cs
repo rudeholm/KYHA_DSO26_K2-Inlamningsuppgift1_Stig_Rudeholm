@@ -137,6 +137,15 @@ static void RunTests()
             return ParkCar(testSpaceId, licensePlate, testGarage) == true;
         });
 
+    Test("After a car has been parked in an empty parking space, the space is not empty", () =>
+        {
+            var testGarage = GetEmptyParkingGarage(5);
+            var testSpaceId = 1;
+            var licensePlate = EncodeCarLicensePlate("foo 666");
+            ParkCar(testSpaceId, licensePlate, testGarage);
+            return ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true;
+        });
+
 
 
     Console.ReadKey();
@@ -147,6 +156,7 @@ static bool ParkCar(int spaceId, string licensePlate, string[] parkingSpaces)
     if (ParkingSpaceIsNotEmpty(spaceId, parkingSpaces))
         return false;
 
+    parkingSpaces[spaceId] = "x";
     return true;
 }
 
