@@ -151,3 +151,5 @@ static string[] GetEmptyParkingGarage(int size)
     => new string[size + 1];
 ```
 
+---
+

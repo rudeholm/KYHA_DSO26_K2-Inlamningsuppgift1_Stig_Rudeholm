@@ -124,9 +124,25 @@ static void RunTests()
         () => ParkingSpaceIsEmpty(testSpaceId, testGarage) == false
         );
 
+    testGarage = GetEmptyParkingGarage(5);
+    testSpaceId = 1;
+    testGarage[testSpaceId] = "xxx";
+    Test(
+        "After clearing a non-empty parking space, the space will be empty",
+        () => {
+            ClearParkingSpace(testSpaceId, testGarage);
+            return ParkingSpaceIsEmpty(testSpaceId, testGarage) == true;
+        }
+        );
+
 
 
     Console.ReadKey();
+}
+
+static void ClearParkingSpace(int spaceId, string[] parkingSpaces)
+{
+    parkingSpaces[spaceId] = "";
 }
 
 static bool ParkingSpaceIsEmpty(int spaceId, string[] parkingSpaces)
