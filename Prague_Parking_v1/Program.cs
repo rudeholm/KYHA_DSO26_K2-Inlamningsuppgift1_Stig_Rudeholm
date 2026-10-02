@@ -4,19 +4,15 @@ const int TITLE_Y = 2;
 
 Console.Title = "Prague Parking v1.0";
 Console.ForegroundColor = ConsoleColor.Green;
-string[] parkingGarage = new string[101];
+string[] parkingGarage = new string[1 + 100];
 
-//while (true)
-//{
-//    ShowMainMenu(parkingGarage);
-//}
-
-RunTests();
+while (true)
+{
+    ShowMainMenu(parkingGarage);
+}
 
 static void ShowMainMenu(string[] parkingSpaces)
 {
-    Console.Clear();
-
     string title = "Park-o-matix 9000";
     string[] menuOptions = [
         "1: Park Car",
@@ -35,6 +31,12 @@ static void ShowMainMenu(string[] parkingSpaces)
 
     switch (choice.ToLower())
     {
+        case "1":
+            ShowParkCarDialogue(parkingSpaces);
+            break;
+        case "7":
+            DumpParkingGarage(parkingSpaces);
+            break;
         case "test":
             RunTests();
             break;
@@ -44,6 +46,27 @@ static void ShowMainMenu(string[] parkingSpaces)
         default:
             break;
     }
+}
+
+static void ShowParkCarDialogue(string[] parkingSpaces)
+{
+    Console.Clear();
+
+    PlaceCursor(TITLE_X, TITLE_Y);
+    WriteTitle("Park car");
+    PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
+    Console.WriteLine("Please enter car license plate: ");
+    Console.WriteLine();
+    MoveCursor(TITLE_X, 0);
+    Console.Write("> ");
+
+    var input = Console.ReadLine();
+
+    var licensePlate = EncodeCarLicensePlate(input);
+
+    ParkCar(1, licensePlate, parkingSpaces);
+
+    WaitKey();
 }
 
 static void DisplayMenu(string title, string[] options)
@@ -81,6 +104,11 @@ static void MoveCursor(int x, int y)
 static void WriteTitle(string title)
 {
     Console.WriteLine(title.ToUpper());
+}
+
+static void DrawHorizontalBar(int width)
+{
+    Console.WriteLine(new string('─', width));
 }
 
 static void RunTests()
@@ -146,18 +174,18 @@ static void RunTests()
             return ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true;
         });
 
-       Test("Parking a car in a parking space stores the car's encoded license plate in that space", () =>
-        {
-            var testGarage = GetEmptyParkingGarage(5);
-            var testSpaceId = 1;
-            var licensePlate = EncodeCarLicensePlate("foo 666");
-            ParkCar(testSpaceId, licensePlate, testGarage);
-            return testGarage[testSpaceId].Equals(licensePlate);
-        });
+    Test("Parking a car in a parking space stores the car's encoded license plate in that space", () =>
+     {
+         var testGarage = GetEmptyParkingGarage(5);
+         var testSpaceId = 1;
+         var licensePlate = EncodeCarLicensePlate("foo 666");
+         ParkCar(testSpaceId, licensePlate, testGarage);
+         return testGarage[testSpaceId].Equals(licensePlate);
+     });
 
 
 
-    Console.ReadKey();
+    WaitKey();
 }
 
 static bool ParkCar(int spaceId, string licensePlate, string[] parkingSpaces)
@@ -221,3 +249,25 @@ static void Test(string description, Func<bool> test)
 
 static string[] GetEmptyParkingGarage(int size)
     => new string[size + 1];
+
+static void WaitKey(string message = "[ Press any key to continue ]")
+{
+    int left = (Console.BufferWidth / 2) - (message.Length / 2);
+    int bottom = Console.BufferHeight - 1;
+    PlaceCursor(left, bottom);
+    Console.Write("[ Press any key to continue ]");
+    Console.ReadKey();
+}
+
+static void DumpParkingGarage(string[] parkingSpaces)
+{
+    for (int i = 1; i < parkingSpaces.Length; i++)
+    {
+        Console.WriteLine($"{i:000}: {parkingSpaces[i]}");
+    }
+
+    DrawHorizontalBar(20);
+
+    WaitKey();
+}
+

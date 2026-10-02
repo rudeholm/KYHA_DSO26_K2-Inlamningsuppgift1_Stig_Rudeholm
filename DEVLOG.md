@@ -163,3 +163,7 @@ Med ett grovt UI på plats kan jag fokusera på vad som behövs bakom kulisserna
 
 ---
 
+**Fundering:** Jag kan eventuellt använda index 0 i p-huset för att skicka meddelanden mellan olika delar av appen. Eller kanske som en lite 1-rads logg, typ senast händelse / arbetsorder. Kanske visa den bredvid huvudmenyn?
+
+---
+
