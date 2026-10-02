@@ -99,9 +99,17 @@ static void RunTests()
         () => EncodeCarLicensePlate("  foo 666 ").Equals("CAR#FOO_666")
         );
 
+    Test(
+        "A motorcycle license plate can be encoded for storage in the database",
+        () => EncodeMotorcycleLicensePlate("M-bar 999 ").Equals("MC#M-BAR_999")
+        );
+
 
     Console.ReadKey();
 }
+
+static string EncodeMotorcycleLicensePlate(string licensePlate)
+    => $"MC#{TidyLicensePlate(licensePlate).Replace(' ', '_')}";
 
 static string EncodeCarLicensePlate(string licensePlate)
     => $"CAR#{TidyLicensePlate(licensePlate).Replace(' ', '_')}";
