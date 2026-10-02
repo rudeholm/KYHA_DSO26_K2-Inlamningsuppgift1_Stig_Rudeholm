@@ -104,8 +104,17 @@ static void RunTests()
         () => EncodeMotorcycleLicensePlate("M-bar 999 ").Equals("MC#M-BAR_999")
         );
 
+    Test(
+        "An encoded license plate can be decoded to display it properly",
+        () => DecodeLicensePlate("CAR#FOO_666").Equals("FOO 666")
+        );
 
     Console.ReadKey();
+}
+
+static object DecodeLicensePlate(string v)
+{
+    return "";
 }
 
 static string EncodeMotorcycleLicensePlate(string licensePlate)

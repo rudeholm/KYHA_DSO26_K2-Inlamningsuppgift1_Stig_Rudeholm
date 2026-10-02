@@ -102,3 +102,45 @@ Vi får se om det fungerar som planerat...
 
 Det verkar funka! Fortsätter med tester och kod för att hantera reg-skyltar.
 
+---
+
+Det ser ut att fungera bra och det känns otroligt bra. I mitt förra försök hade jag en mycket enklare variant, eftersom jag inte riktigt hade klurat ut hur jag kunde skicka in en anonym funktion som ett argument till en metod. Jag visste att det måste gå, men jag hade liksom inte grokkat det än.
+
+Jämför det förra systemet:
+
+```
+    Console.WriteLine(
+        "An encoded license plate can be decoded to display it properly: {0}",
+        FormatTestResult(
+            DecodeLicensePlate("CAR#FOO_666").Equals("FOO 666")
+        ));
+```
+
+...med det nya:
+
+```
+    Test(
+        "An encoded license plate can be decoded to display it properly",
+        () => DecodeLicensePlate("CAR#FOO_666").Equals("FOO 666")
+        );
+```
+
+Om jag inte hade börjat om så hade jag inte skrivit det nya systemet. Och då hade jag fortfarande undrat hur jag skulle lösa problemet med den ständigt återkommande for-loopen. Så här skrev jag i förra versionen av utvecklingsloggen:
+
+> Som jag misstänkte från början så loopar jag igenom "databasen"
+många gånger och det blir dubblettkod på flera ställen. Planen är
+att bryta ut loopen till en egen metod.
+
+```
+for (int i = 1; i < parkingSpaces.Length; i++)
+{ }
+```
+
+>Jag borde kunna skriva en generisk metod för att scanna igenom
+databasen och testa varje parkeringsruta mot en metod som jag
+skickar in som parameter...
+
+Efter att äntligen ha fattat hur jag kunde skriva det nya test-systemet känner jag mig mycket säkrare på att jag även kan lösa detta.
+
+---
+
