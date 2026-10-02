@@ -109,27 +109,34 @@ static void RunTests()
         () => DecodeLicensePlate("CAR#FOO_666").Equals("FOO 666")
         );
 
-    string[] testGarage = new string[5 + 1];
-    int testSpaceId = 1;
     Test(
         "A parking space is empty by default",
-        () => ParkingSpaceIsEmpty(testSpaceId, testGarage) == true
+        () =>
+        {
+            var testGarage = GetEmptyParkingGarage(5);
+            var testSpaceId = 1;
+            return ParkingSpaceIsEmpty(testSpaceId, testGarage) == true;
+        }
         );
 
-    testGarage = GetEmptyParkingGarage(5);
-    testSpaceId = 1;
-    testGarage[testSpaceId] = "xxx";
     Test(
         "A parking space that contains something is not empty",
-        () => ParkingSpaceIsEmpty(testSpaceId, testGarage) == false
+        () =>
+        {
+            var testGarage = GetEmptyParkingGarage(5);
+            var testSpaceId = 1;
+            testGarage[testSpaceId] = "xxx";
+            return ParkingSpaceIsEmpty(testSpaceId, testGarage) == false;
+        }
         );
 
-    testGarage = GetEmptyParkingGarage(5);
-    testSpaceId = 1;
-    testGarage[testSpaceId] = "xxx";
     Test(
         "After clearing a non-empty parking space, the space will be empty",
-        () => {
+        () =>
+        {
+            var testGarage = GetEmptyParkingGarage(5);
+            var testSpaceId = 1;
+            testGarage[testSpaceId] = "xxx";
             ClearParkingSpace(testSpaceId, testGarage);
             return ParkingSpaceIsEmpty(testSpaceId, testGarage) == true;
         }

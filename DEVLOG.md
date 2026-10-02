@@ -153,3 +153,4 @@ static string[] GetEmptyParkingGarage(int size)
 
 ---
 
+Nu när jag har skrivit några tester börjar det bli mycket upprepningar före varje test. Enligt min erfarenhet är det svårt att undvika, men jag kan snygga upp det. Med det nya testsystemet kan jag flytta in "setup-koden" i själva testerna.
