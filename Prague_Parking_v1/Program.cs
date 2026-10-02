@@ -137,6 +137,10 @@ static void RunTests()
         () => ValidLicensePlate("") == false
         );
 
+    Test("A license plate can not be longer than 10 characters",
+        () => ValidLicensePlate("xxx xxx xxx") == false
+        );
+
 
     Test("A parking space is empty by default", () =>
         {
@@ -195,7 +199,13 @@ static void RunTests()
 
 static bool ValidLicensePlate(string licensePlate)
 {
-    return string.IsNullOrWhiteSpace(licensePlate) == false;
+    if (string.IsNullOrWhiteSpace(licensePlate))
+        return false;
+
+    if (licensePlate.Length > 10)
+        return false;
+
+    return true;
 }
 
 static bool ParkCar(int spaceId, string licensePlate, string[] parkingSpaces)
