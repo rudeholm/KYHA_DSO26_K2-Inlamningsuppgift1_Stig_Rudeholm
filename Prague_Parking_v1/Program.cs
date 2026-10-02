@@ -6,10 +6,12 @@ Console.Title = "Prague Parking v1.0";
 Console.ForegroundColor = ConsoleColor.Green;
 string[] parkingGarage = new string[101];
 
-while (true)
-{
-    ShowMainMenu(parkingGarage);
-}
+//while (true)
+//{
+//    ShowMainMenu(parkingGarage);
+//}
+
+RunTests();
 
 static void ShowMainMenu(string[] parkingSpaces)
 {
@@ -92,11 +94,22 @@ static void RunTests()
         () => TidyLicensePlate("  foo 666 ").Equals("FOO 666")
         );
 
+    Test(
+        "A car license plate can be encoded for storage in the database",
+        () => EncodeCarLicensePlate("  foo 666 ").Equals("CAR#FOO_666")
+        );
+
+
     Console.ReadKey();
 }
 
+static string EncodeCarLicensePlate(string licensePlate)
+    => $"CAR#{TidyLicensePlate(licensePlate).Replace(' ', '_')}";
+
 static string TidyLicensePlate(string input)
     => input.Trim().ToUpper();
+
+/*****************************************************************************/
 
 static void Test(string description, Func<bool> test)
 {

@@ -98,3 +98,7 @@ Vi får se om det fungerar som planerat...
 
 ---
 
+#### 2026-10-02
+
+Det verkar funka! Fortsätter med tester och kod för att hantera reg-skyltar.
+
