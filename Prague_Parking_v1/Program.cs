@@ -38,6 +38,9 @@ static void ShowMainMenu(string[] parkingSpaces)
         case "4":
             ShowFindVehicleDialogue(parkingSpaces);
             break;
+        case "6":
+            ShowInspectParkingSpaceDialogue(parkingSpaces);
+            break;
         case "7":
             DumpParkingGarage(parkingSpaces);
             break;
@@ -52,15 +55,30 @@ static void ShowMainMenu(string[] parkingSpaces)
     }
 }
 
+static void ShowInspectParkingSpaceDialogue(string[] parkingSpaces)
+{
+    Console.Clear();
+
+    PlaceCursor(TITLE_X, TITLE_Y);
+    WriteTitle("Inspect parking space");
+    PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
+    Console.WriteLine("Please enter parking space ID:");
+    Console.WriteLine();
+    MoveCursor(TITLE_X, 0);
+    Console.Write("> ");
+
+    var input = Console.ReadLine();
+
+}
+
 static void ShowFindVehicleDialogue(string[] parkingSpaces)
 {
     Console.Clear();
 
-
     PlaceCursor(TITLE_X, TITLE_Y);
     WriteTitle("Find vehicle");
     PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
-    Console.WriteLine("Please enter vehicle license plate: ");
+    Console.WriteLine("Please enter vehicle license plate:");
     Console.WriteLine();
     MoveCursor(TITLE_X, 0);
     Console.Write("> ");
@@ -87,7 +105,7 @@ static void ShowParkCarDialogue(string[] parkingSpaces)
     PlaceCursor(TITLE_X, TITLE_Y);
     WriteTitle("Park car");
     PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
-    Console.WriteLine("Please enter car license plate: ");
+    Console.WriteLine("Please enter car license plate:");
     Console.WriteLine();
     MoveCursor(TITLE_X, 0);
     Console.Write("> ");
@@ -303,10 +321,25 @@ static void RunTests()
         return InspectParkingSpace(testSpaceId, testGarage).Equals(testContents);
     });
 
+    Test("A valid parking space ID is greater than zero", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var validSpaceId = 1;
+        var invalidSpaceId = 0;
+        return ValidSpaceId(validSpaceId) == true
+            && ValidSpaceId(invalidSpaceId) == false;
+    });
+
     WaitKey();
 }
 
-static object InspectParkingSpace(int spaceId, string[] parkingSpaces)
+static bool ValidSpaceId(int spaceId)
+{
+    var isGreaterThanZero = spaceId > 0;
+    return isGreaterThanZero;
+}
+
+static string InspectParkingSpace(int spaceId, string[] parkingSpaces)
 {
     if (ParkingSpaceIsEmpty(spaceId, parkingSpaces))
         return string.Empty;
