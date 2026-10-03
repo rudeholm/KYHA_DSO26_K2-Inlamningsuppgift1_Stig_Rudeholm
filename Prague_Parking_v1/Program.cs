@@ -251,6 +251,7 @@ static void RunTests()
         () => ValidLicensePlate("xxx xxx xxx") == false
         );
 
+
     Test("A parking space is empty by default", () =>
         {
             var testGarage = GetEmptyParkingGarage(5);
@@ -356,22 +357,7 @@ static void RunTests()
             && ValidSpaceId(invalidSpaceId, testGarage) == false;
     });
 
-    Test("An encoded license plate can be used to identify vehicle type", () =>
-    {
-        var carLicensePlate = EncodeCarLicensePlate("c foo");
-        var motorcycleLicensePlate = EncodeMotorcycleLicensePlate("m bar");
-        return IdentifyVehicleType(carLicensePlate).Equals("CAR")
-            && IdentifyVehicleType(motorcycleLicensePlate).Equals("MC");
-    });
-
-
-
     WaitKey();
-}
-
-static string IdentifyVehicleType(string encodedLicensePlate)
-{
-    return encodedLicensePlate.Split('#')[0];
 }
 
 static bool ValidSpaceId(int spaceId, string[] parkingSpaces)
