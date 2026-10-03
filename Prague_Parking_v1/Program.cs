@@ -35,6 +35,9 @@ static void ShowMainMenu(string[] parkingSpaces)
         case "1":
             ShowParkCarDialogue(parkingSpaces);
             break;
+        case "4":
+            ShowFindVehicleDialogue(parkingSpaces);
+            break;
         case "7":
             DumpParkingGarage(parkingSpaces);
             break;
@@ -47,6 +50,33 @@ static void ShowMainMenu(string[] parkingSpaces)
         default:
             break;
     }
+}
+
+static void ShowFindVehicleDialogue(string[] parkingSpaces)
+{
+    Console.Clear();
+
+
+    PlaceCursor(TITLE_X, TITLE_Y);
+    WriteTitle("Find vehicle");
+    PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
+    Console.WriteLine("Please enter vehicle license plate: ");
+    Console.WriteLine();
+    MoveCursor(TITLE_X, 0);
+    Console.Write("> ");
+
+    var input = Console.ReadLine();
+
+    var licensePlate = EncodeCarLicensePlate(input);
+
+    //if (FindVehicle(licensePlate, parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
+    //{
+    //    SplashMessage($"Vehicle [{DecodeLicensePlate(licensePlate)}] is parked in space #{foundSpaceId}");
+    //}
+    //else
+    //{
+    //    SplashMessage("Could not locate vehicle. Please double check license plate.");
+    //}
 }
 
 static void ShowParkCarDialogue(string[] parkingSpaces)
@@ -257,37 +287,10 @@ static void RunTests()
             && emptySpaceId == testSpaceId;
     });
 
-    Test("It is possible to find a parked vehicle by license plate", () =>
-    {
-        var testGarage = GetEmptyParkingGarage(5);
-        var testSpaceId = 2;
-        var licensePlateToFind = EncodeCarLicensePlate("foo 666");
-        var licensePlate = EncodeCarLicensePlate("bar 333");
-        var licensePlate2 = EncodeCarLicensePlate("baz 999");
-        ParkCar(testSpaceId - 1, licensePlate, testGarage);
-        ParkCar(testSpaceId, licensePlateToFind, testGarage);
-        ParkCar(testSpaceId + 1, licensePlate2, testGarage);
-        return FindVehicle(licensePlateToFind, testGarage, out int foundSpaceId) == true
-            && foundSpaceId == testSpaceId;
-    });
 
     WaitKey();
 }
 
-static bool FindVehicle(string licensePlate, string[] parkingSpaces, out int foundSpaceId)
-{
-    for (int i = 1; i < parkingSpaces.Length; i++)
-    {
-        if (parkingSpaces[i].Equals(licensePlate))
-        {
-            foundSpaceId = i;
-            return true;
-        }
-    }
-
-    foundSpaceId = -1;
-    return false;
-}
 
 static bool FindFirstEmptyParkingSpace(string[] parkingSpaces, out int emptySpaceId)
 {

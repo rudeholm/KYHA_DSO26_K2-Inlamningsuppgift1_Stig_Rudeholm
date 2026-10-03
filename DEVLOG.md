@@ -193,3 +193,7 @@ Slarvigt, lätt fixat.
 
 /////
 
+Sökfunktionen är alldeles för snäv och fungerar bara för bilar. Dessutom glömde jag testa hur sökfunktionen hanterar när en parkeringsruta är null. Backar ett steg eller två och gör om.
+
+/////
+
