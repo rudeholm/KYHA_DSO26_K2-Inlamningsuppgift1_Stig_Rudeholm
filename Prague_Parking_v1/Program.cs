@@ -202,8 +202,32 @@ static void RunTests()
         return ParkCar(testSpaceId, licensePlate2, testGarage) == false;
     });
 
+    Test("It is possible to find the first available empty parking space", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 2;
+        var licensePlate = EncodeCarLicensePlate("foo 666");
+        ParkCar(testSpaceId - 1, licensePlate, testGarage);
+        return FindFirstEmptyParkingSpace(testGarage, out int emptySpaceId) == true
+            && emptySpaceId == testSpaceId;
+    });
 
     WaitKey();
+}
+
+static bool FindFirstEmptyParkingSpace(string[] parkingSpaces, out int emptySpaceId)
+{
+    for (int i = 1; i <= parkingSpaces.Length; i++)
+    {
+        if (ParkingSpaceIsEmpty(i, parkingSpaces))
+        {
+            emptySpaceId = i;
+            return true;
+        }
+    }
+
+    emptySpaceId = -1;
+    return false;
 }
 
 static bool ValidLicensePlate(string licensePlate)
