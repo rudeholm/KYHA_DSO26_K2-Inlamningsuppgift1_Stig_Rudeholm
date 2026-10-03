@@ -350,7 +350,22 @@ static void RunTests()
             && ValidSpaceId(invalidSpaceId, testGarage) == false;
     });
 
+    Test("A motorcycle can be parked in an empty parking space", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        var licensePlate = EncodeMotorcycleLicensePlate("foo m-666");
+        return ParkMotorcycle(testSpaceId, licensePlate, testGarage) == true;
+    });
+
+
+
     WaitKey();
+}
+
+static bool ParkMotorcycle(int testSpaceId, string licensePlate, string[] testGarage)
+{
+    return true;
 }
 
 static bool ValidSpaceId(int spaceId, string[] parkingSpaces)

@@ -206,3 +206,8 @@ Suck... Jag har trasslat till det med Git. Behöver lära mig mer så att jag ka
 /////
 
 Tror jag har löst Git-strulet.
+
+/////
+
+Nu börjar vi parkera motorcyklar.
+
