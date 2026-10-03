@@ -326,17 +326,28 @@ static void RunTests()
         var testGarage = GetEmptyParkingGarage(5);
         var validSpaceId = 1;
         var invalidSpaceId = 0;
-        return ValidSpaceId(validSpaceId) == true
-            && ValidSpaceId(invalidSpaceId) == false;
+        return ValidSpaceId(validSpaceId, testGarage) == true
+            && ValidSpaceId(invalidSpaceId, testGarage) == false;
+    });
+
+    Test("A valid parking space ID is smaller than or equal to the parking garage capacity", () =>
+    {
+        var capacity = 5;
+        var testGarage = GetEmptyParkingGarage(capacity);
+        var validSpaceId = capacity;
+        var invalidSpaceId = capacity + 1;
+        return ValidSpaceId(validSpaceId, testGarage) == true
+            && ValidSpaceId(invalidSpaceId, testGarage) == false;
     });
 
     WaitKey();
 }
 
-static bool ValidSpaceId(int spaceId)
+static bool ValidSpaceId(int spaceId, string[] parkingSpaces)
 {
     var isGreaterThanZero = spaceId > 0;
-    return isGreaterThanZero;
+    var isWithinCapacity = spaceId < parkingSpaces.Length;
+    return isGreaterThanZero && isWithinCapacity;
 }
 
 static string InspectParkingSpace(int spaceId, string[] parkingSpaces)
