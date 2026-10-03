@@ -294,6 +294,15 @@ static void RunTests()
         return InspectParkingSpace(testSpaceId, testGarage).Equals(string.Empty);
     });
 
+    Test("When inspecting a non-empty parking space, return contents of space", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 2;
+        var testContents = "xxx";
+        testGarage[testSpaceId] = testContents;
+        return InspectParkingSpace(testSpaceId, testGarage).Equals(testContents);
+    });
+
     WaitKey();
 }
 
@@ -302,7 +311,7 @@ static object InspectParkingSpace(int spaceId, string[] parkingSpaces)
     if (ParkingSpaceIsEmpty(spaceId, parkingSpaces))
         return string.Empty;
 
-    return "foo";
+    return parkingSpaces[spaceId];
 }
 
 static bool FindFirstEmptyParkingSpace(string[] parkingSpaces, out int emptySpaceId)
