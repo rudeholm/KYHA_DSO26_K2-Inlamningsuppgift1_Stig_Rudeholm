@@ -118,7 +118,7 @@ static void ShowParkCarDialogue(string[] parkingSpaces)
     {
         if (ParkCar(emptySpaceId, licensePlate, parkingSpaces))
         {
-            SplashMessage($"Park car [{DecodeLicensePlate(licensePlate)}] in space #{emptySpaceId}", "instruction");
+            SplashMessage($"Park car [{DecodeLicensePlate(licensePlate, out _)}] in space #{emptySpaceId}", "instruction");
         }
         else
         {
@@ -223,7 +223,17 @@ static void RunTests()
         );
 
     Test("An encoded license plate can be decoded to display it properly",
-        () => DecodeLicensePlate("CAR#FOO_666").Equals("FOO 666")
+        () => DecodeLicensePlate("CAR#FOO_666", out _).Equals("FOO 666")
+        );
+
+    Test("An encoded license plate can be decoded to identify vehicle type as car",
+        () => DecodeLicensePlate("CAR#FOO_666", out string vehicleType).Equals("FOO 666")
+            && vehicleType.Equals("CAR")
+        );
+
+    Test("An encoded license plate can be decoded to identify vehicle type as motorcycle",
+        () => DecodeLicensePlate("MC#FOO_666", out string vehicleType).Equals("FOO 666")
+            && vehicleType.Equals("MC")
         );
 
     Test("A license plate can not be empty",
@@ -404,8 +414,13 @@ static bool ParkingSpaceIsNotEmpty(int spaceId, string[] parkingSpaces)
 static bool ParkingSpaceIsEmpty(int spaceId, string[] parkingSpaces)
     => string.IsNullOrWhiteSpace(parkingSpaces[spaceId]);
 
-static string DecodeLicensePlate(string licensePlate)
-    => licensePlate.Split('#')[1].Replace('_', ' ');
+static string DecodeLicensePlate(string licensePlate, out string vehicleType)
+{
+    var parts = licensePlate.Split('#');
+    vehicleType = parts[0];
+    return parts[1].Replace('_', ' ');
+
+}
 
 static string EncodeMotorcycleLicensePlate(string licensePlate)
     => $"MC#{TidyLicensePlate(licensePlate).Replace(' ', '_')}";
