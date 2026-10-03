@@ -202,3 +202,7 @@ Byggde ut DecodeLicensePlate() så att den även levererar fordonstyp (CAR / MC)
 /////
 
 Suck... Jag har trasslat till det med Git. Behöver lära mig mer så att jag kan hantera det bättre.
+
+/////
+
+Tror jag har löst Git-strulet.
