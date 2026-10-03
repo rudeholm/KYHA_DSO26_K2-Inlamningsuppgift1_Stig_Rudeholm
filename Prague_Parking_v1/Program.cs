@@ -192,6 +192,15 @@ static void RunTests()
          return testGarage[testSpaceId].Equals(licensePlate);
      });
 
+    Test("A car can not be parked in a non-empty space", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        var licensePlate = EncodeCarLicensePlate("foo 666");
+        var licensePlate2 = EncodeCarLicensePlate("bar 999");
+        ParkCar(testSpaceId, licensePlate, testGarage);
+        return ParkCar(testSpaceId, licensePlate2, testGarage) == false;
+    });
 
 
     WaitKey();
