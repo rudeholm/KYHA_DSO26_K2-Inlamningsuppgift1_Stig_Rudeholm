@@ -69,6 +69,23 @@ static void ShowInspectParkingSpaceDialogue(string[] parkingSpaces)
 
     var input = Console.ReadLine();
 
+    var validInput = int.TryParse(input, out int spaceId);
+
+    if (validInput && ValidSpaceId(spaceId, parkingSpaces))
+    {
+        if (ParkingSpaceIsEmpty(spaceId, parkingSpaces))
+        {
+            SplashMessage($"Parking space #{spaceId} is currently empty.");
+        }
+        else
+        {
+            SplashMessage($"Parking space #{spaceId} currently holds: {GetParkingSpaceContents(spaceId, parkingSpaces)}");
+        }
+    }
+    else
+    {
+        SplashMessage($"Invalid parking space ID. Please enter an ID between 1 and {parkingSpaces.Length - 1}");
+    }
 }
 
 static void ShowFindVehicleDialogue(string[] parkingSpaces)
@@ -309,7 +326,7 @@ static void RunTests()
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = 2;
-        return InspectParkingSpace(testSpaceId, testGarage).Equals(string.Empty);
+        return GetParkingSpaceContents(testSpaceId, testGarage).Equals(string.Empty);
     });
 
     Test("When inspecting a non-empty parking space, return contents of space", () =>
@@ -318,7 +335,7 @@ static void RunTests()
         var testSpaceId = 2;
         var testContents = "xxx";
         testGarage[testSpaceId] = testContents;
-        return InspectParkingSpace(testSpaceId, testGarage).Equals(testContents);
+        return GetParkingSpaceContents(testSpaceId, testGarage).Equals(testContents);
     });
 
     Test("A valid parking space ID is greater than zero", () =>
@@ -350,7 +367,7 @@ static bool ValidSpaceId(int spaceId, string[] parkingSpaces)
     return isGreaterThanZero && isWithinCapacity;
 }
 
-static string InspectParkingSpace(int spaceId, string[] parkingSpaces)
+static string GetParkingSpaceContents(int spaceId, string[] parkingSpaces)
 {
     if (ParkingSpaceIsEmpty(spaceId, parkingSpaces))
         return string.Empty;
