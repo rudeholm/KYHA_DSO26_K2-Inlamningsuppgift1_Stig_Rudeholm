@@ -4,7 +4,8 @@ const int TITLE_Y = 2;
 
 Console.Title = "Prague Parking v1.0";
 Console.ForegroundColor = ConsoleColor.Green;
-string[] parkingGarage = new string[1 + 100];
+//string[] parkingGarage = new string[1 + 100];
+string[] parkingGarage = new string[1 + 2];
 
 while (true)
 {
@@ -52,6 +53,7 @@ static void ShowParkCarDialogue(string[] parkingSpaces)
 {
     Console.Clear();
 
+
     PlaceCursor(TITLE_X, TITLE_Y);
     WriteTitle("Park car");
     PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
@@ -68,15 +70,48 @@ static void ShowParkCarDialogue(string[] parkingSpaces)
     {
         if (ParkCar(emptySpaceId, licensePlate, parkingSpaces))
         {
-            Console.WriteLine($"Park car [{DecodeLicensePlate(licensePlate)}] in space #{emptySpaceId}");
+            SplashMessage($"Park car [{DecodeLicensePlate(licensePlate)}] in space #{emptySpaceId}", "instruction");
+        }
+        else
+        {
+            SplashMessage("Could not park car.", "warning");
         }
     }
     else
     {
-        Console.WriteLine("No parking space available.");
+        SplashMessage("No parking space available.", "warning");
     }
+}
 
-    WaitKey();
+static void SplashMessage(string message, string type = "info")
+{
+    var currentForegroundColor = Console.ForegroundColor;
+    var currentBackgroundColor = Console.BackgroundColor;
+
+    message = $"{type.ToUpper()} - {message}";
+    var barLength = message.Length + 4;
+    var continueInstruction = "[Press any key to continue]";
+    var centerX = Console.WindowWidth / 2;
+    var centerY = Console.WindowHeight / 2;
+
+    PlaceCursor(centerX - barLength / 2, centerY - 4);
+    DrawHorizontalBar(barLength);
+
+    MoveCursor(centerX - message.Length / 2, 1);
+    Console.WriteLine(message);
+
+    MoveCursor(centerX - barLength / 2, 1);
+    DrawHorizontalBar(barLength);
+
+    MoveCursor(centerX - continueInstruction.Length / 2, 2);
+
+    Console.ForegroundColor = ConsoleColor.Black;
+    Console.BackgroundColor = ConsoleColor.Green;
+    Console.WriteLine(continueInstruction);
+    Console.ForegroundColor = currentForegroundColor;
+    Console.BackgroundColor = currentBackgroundColor;
+
+    Console.ReadKey();
 }
 
 static void DisplayMenu(string title, string[] options)
@@ -227,7 +262,7 @@ static void RunTests()
 
 static bool FindFirstEmptyParkingSpace(string[] parkingSpaces, out int emptySpaceId)
 {
-    for (int i = 1; i <= parkingSpaces.Length; i++)
+    for (int i = 1; i < parkingSpaces.Length; i++)
     {
         if (ParkingSpaceIsEmpty(i, parkingSpaces))
         {

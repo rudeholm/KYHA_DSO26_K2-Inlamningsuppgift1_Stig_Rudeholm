@@ -174,3 +174,22 @@ Innan jag går vidare med att parkera bilar så behöver jag en metod för att v
 #### 2026-10-03
 
 Nu tilldelas automatiskt första tillgängliga plats när en bil tas emot. Behöver snygga upp meddelandena. Och så behöver jag se till att samma reg-nummer inte kan lagras dubbelt. Det blir lätt när jag lägger till möjligheten att söka fordon.
+
+/////
+
+Upptäckte precis ett problem med `FindFirstEmptyParkingSpace()` när parkeringshuset är fullt:
+
+```
+Unhandled exception. System.IndexOutOfRangeException: Index was outside the bounds of the array.
+```
+
+Det var ett förargligt litet `<=` som skulle vara `<` som var orsaken:
+
+```
+    for (int i = 1; i <= parkingSpaces.Length; i++)
+```
+
+Slarvigt, lätt fixat.
+
+/////
+
