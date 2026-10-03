@@ -173,3 +173,4 @@ Innan jag går vidare med att parkera bilar så behöver jag en metod för att v
 
 #### 2026-10-03
 
+Nu tilldelas automatiskt första tillgängliga plats när en bil tas emot. Behöver snygga upp meddelandena. Och så behöver jag se till att samma reg-nummer inte kan lagras dubbelt. Det blir lätt när jag lägger till möjligheten att söka fordon.

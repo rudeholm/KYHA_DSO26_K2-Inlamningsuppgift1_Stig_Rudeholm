@@ -64,7 +64,17 @@ static void ShowParkCarDialogue(string[] parkingSpaces)
 
     var licensePlate = EncodeCarLicensePlate(input);
 
-    ParkCar(1, licensePlate, parkingSpaces);
+    if (FindFirstEmptyParkingSpace(parkingSpaces, out int emptySpaceId) && emptySpaceId > 0)
+    {
+        if (ParkCar(emptySpaceId, licensePlate, parkingSpaces))
+        {
+            Console.WriteLine($"Park car [{DecodeLicensePlate(licensePlate)}] in space #{emptySpaceId}");
+        }
+    }
+    else
+    {
+        Console.WriteLine("No parking space available.");
+    }
 
     WaitKey();
 }
