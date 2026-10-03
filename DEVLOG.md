@@ -197,3 +197,8 @@ Sökfunktionen är alldeles för snäv och fungerar bara för bilar. Dessutom gl
 
 /////
 
+Byggde ut DecodeLicensePlate() så att den även levererar fordonstyp (CAR / MC) via en out-variabel.
+
+/////
+
+Suck... Jag har trasslat till det med Git. Behöver lära mig mer så att jag kan hantera det bättre.
