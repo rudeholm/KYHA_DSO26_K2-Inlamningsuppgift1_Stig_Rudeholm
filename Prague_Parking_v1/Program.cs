@@ -5,7 +5,7 @@ const int TITLE_Y = 2;
 Console.Title = "Prague Parking v1.0";
 Console.ForegroundColor = ConsoleColor.Green;
 //string[] parkingGarage = new string[1 + 100];
-string[] parkingGarage = new string[1 + 2];
+string[] parkingGarage = new string[1 + 10];
 
 while (true)
 {
@@ -257,7 +257,36 @@ static void RunTests()
             && emptySpaceId == testSpaceId;
     });
 
+    Test("It is possible to find a parked vehicle by license plate", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 2;
+        var licensePlateToFind = EncodeCarLicensePlate("foo 666");
+        var licensePlate = EncodeCarLicensePlate("bar 333");
+        var licensePlate2 = EncodeCarLicensePlate("baz 999");
+        ParkCar(testSpaceId - 1, licensePlate, testGarage);
+        ParkCar(testSpaceId, licensePlateToFind, testGarage);
+        ParkCar(testSpaceId + 1, licensePlate2, testGarage);
+        return FindVehicle(licensePlateToFind, testGarage, out int foundSpaceId) == true
+            && foundSpaceId == testSpaceId;
+    });
+
     WaitKey();
+}
+
+static bool FindVehicle(string licensePlate, string[] parkingSpaces, out int foundSpaceId)
+{
+    for (int i = 1; i < parkingSpaces.Length; i++)
+    {
+        if (parkingSpaces[i].Equals(licensePlate))
+        {
+            foundSpaceId = i;
+            return true;
+        }
+    }
+
+    foundSpaceId = -1;
+    return false;
 }
 
 static bool FindFirstEmptyParkingSpace(string[] parkingSpaces, out int emptySpaceId)
