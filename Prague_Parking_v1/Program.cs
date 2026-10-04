@@ -568,6 +568,14 @@ static void RunTests()
         return ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out _) == false;
     });
 
+    Test("A parking space with something that is not a motorcycle does not contain motorcycles", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        testGarage[testSpaceId] = "xxx";
+        return ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out _) == false;
+    });
+
 
 
     WaitKey();
@@ -581,8 +589,14 @@ static bool ParkingSpaceContainsMotorcycles(int spaceId, string[] parkingSpaces,
         return false;
     }
 
+    if (InspectParkingSpace(spaceId,parkingSpaces).StartsWith("MC#"))
+    {
+        qty = 1;
+        return true;
+    }
+
     qty = 0;
-    return true;
+    return false;
 }
 
 static bool FindVehicle(string licensePlate, string[] parkingSpaces, out int foundSpaceId)
