@@ -490,6 +490,15 @@ static void RunTests()
         return ParkingSpaceHasRoomForMotorcycle(testSpaceId, testGarage) == false;
     });
 
+    Test("A motorcycle can not be parked in a parking space with two motorcycles", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo"), testGarage);
+        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("bar"), testGarage);
+        return ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("baz"), testGarage) == false;
+    });
+
 
     WaitKey();
 }
@@ -530,16 +539,21 @@ static bool ParkingSpaceContainsCar(int spaceId, string[] parkingSpaces)
 
 static bool ParkMotorcycle(int spaceId, string licensePlate, string[] parkingSpaces)
 {
-    if (InspectParkingSpace(spaceId, parkingSpaces).StartsWith("MC#"))
+    if (ParkingSpaceHasRoomForMotorcycle(spaceId,parkingSpaces))
     {
-        parkingSpaces[spaceId] += "|" + licensePlate;
+        if (InspectParkingSpace(spaceId, parkingSpaces).StartsWith("MC#"))
+        {
+            parkingSpaces[spaceId] += "|" + licensePlate;
 
+        }
+        else
+        {
+            parkingSpaces[spaceId] = licensePlate;
+        }
+        return true;
     }
-    else
-    {
-        parkingSpaces[spaceId] = licensePlate;
-    }
-    return true;
+
+    return false;
 }
 
 static bool ValidSpaceId(int spaceId, string[] parkingSpaces)
