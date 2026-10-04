@@ -215,3 +215,7 @@ Nu börjar vi parkera motorcyklar.
 
 #### 2026-10-04
 
+Koden för att parkera motorcyklar är på väg att bli väldigt rörig, men jag fokuserar på att få den att fungera ordentligt. Snyggar upp den sen om jag har tid.
+
+---
+
