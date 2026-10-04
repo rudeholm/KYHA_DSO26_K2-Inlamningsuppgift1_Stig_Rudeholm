@@ -661,17 +661,8 @@ static bool ParkingSpaceHasRoomForMotorcycle(int spaceId, string[] parkingSpaces
     if (ParkingSpaceContainsCar(spaceId, parkingSpaces))
         return false;
 
-    if (InspectParkingSpace(spaceId, parkingSpaces).Contains("MC#"))
-    {
-        if (InspectParkingSpace(spaceId, parkingSpaces).Contains('|'))
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
-    }
+    if (ParkingSpaceContainsMotorcycles(spaceId, parkingSpaces, out int qty) && qty < 2)
+        return true;
 
     return false;
 }
