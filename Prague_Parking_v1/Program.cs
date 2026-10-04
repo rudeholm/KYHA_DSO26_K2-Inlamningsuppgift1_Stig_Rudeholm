@@ -376,9 +376,20 @@ static void RunTests()
         return testGarage[testSpaceId].Equals(licensePlate);
     });
 
+    Test("An empty parking space does not contain a car", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        return ParkingSpaceContainsCar(testSpaceId, testGarage) == false;
+    });
 
 
     WaitKey();
+}
+
+static bool ParkingSpaceContainsCar(int spaceId, string[] parkingSpaces)
+{
+    return false;
 }
 
 static bool ParkMotorcycle(int spaceId, string licensePlate, string[] parkingSpaces)
