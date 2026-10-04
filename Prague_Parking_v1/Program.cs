@@ -499,8 +499,33 @@ static void RunTests()
         return ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("baz"), testGarage) == false;
     });
 
+    Test("It is possible to find the first available parking space with room for a motorcycle", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 2;
+        ParkCar(testSpaceId - 1, EncodeCarLicensePlate("car"), testGarage);
+        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("mc"), testGarage);
+        return FindFirstParkingSpaceWithRoomForMotorcycle(testGarage, out int foundSpaceId) == true
+            && foundSpaceId == testSpaceId;
+    });
+
 
     WaitKey();
+}
+
+static bool FindFirstParkingSpaceWithRoomForMotorcycle(string[] parkingSpaces, out int foundSpaceId)
+{
+    for (int i = 1; i < parkingSpaces.Length; i++)
+    {
+        if (ParkingSpaceHasRoomForMotorcycle(i, parkingSpaces))
+        {
+            foundSpaceId = i;
+            return true;
+        }
+    }
+
+    foundSpaceId = -1;
+    return false;
 }
 
 static bool ParkingSpaceHasRoomForMotorcycle(int spaceId, string[] parkingSpaces)
