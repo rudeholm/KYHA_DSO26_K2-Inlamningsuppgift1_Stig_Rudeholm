@@ -367,6 +367,15 @@ static void RunTests()
         return ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true;
     });
 
+    Test("Parking a motorcycle in a parking space stores the motorcycle's encoded license plate in that space", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        var licensePlate = EncodeMotorcycleLicensePlate("foo m-666");
+        ParkMotorcycle(testSpaceId, licensePlate, testGarage);
+        return testGarage[testSpaceId].Equals(licensePlate);
+    });
+
 
 
     WaitKey();
@@ -374,7 +383,7 @@ static void RunTests()
 
 static bool ParkMotorcycle(int spaceId, string licensePlate, string[] parkingSpaces)
 {
-    parkingSpaces[spaceId] = "xxx";
+    parkingSpaces[spaceId] = licensePlate;
     return true;
 }
 

@@ -175,7 +175,7 @@ Innan jag går vidare med att parkera bilar så behöver jag en metod för att v
 
 Nu tilldelas automatiskt första tillgängliga plats när en bil tas emot. Behöver snygga upp meddelandena. Och så behöver jag se till att samma reg-nummer inte kan lagras dubbelt. Det blir lätt när jag lägger till möjligheten att söka fordon.
 
-/////
+---
 
 Upptäckte precis ett problem med `FindFirstEmptyParkingSpace()` när parkeringshuset är fullt:
 
@@ -191,23 +191,27 @@ Det var ett förargligt litet `<=` som skulle vara `<` som var orsaken:
 
 Slarvigt, lätt fixat.
 
-/////
+---
 
 Sökfunktionen är alldeles för snäv och fungerar bara för bilar. Dessutom glömde jag testa hur sökfunktionen hanterar när en parkeringsruta är null. Backar ett steg eller två och gör om.
 
-/////
+---
 
 Byggde ut DecodeLicensePlate() så att den även levererar fordonstyp (CAR / MC) via en out-variabel.
 
-/////
+---
 
 Suck... Jag har trasslat till det med Git. Behöver lära mig mer så att jag kan hantera det bättre.
 
-/////
+---
 
 Tror jag har löst Git-strulet.
 
-/////
+---
 
 Nu börjar vi parkera motorcyklar.
+
+---
+
+#### 2026-10-04
 
