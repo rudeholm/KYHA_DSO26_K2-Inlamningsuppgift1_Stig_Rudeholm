@@ -576,6 +576,15 @@ static void RunTests()
         return ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out _) == false;
     });
 
+    Test("A parking space with a single motorcycle contain one motorcycle", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo"), testGarage);
+        return ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out int qty) == true
+            && qty == 1;
+    });
+
 
 
     WaitKey();
