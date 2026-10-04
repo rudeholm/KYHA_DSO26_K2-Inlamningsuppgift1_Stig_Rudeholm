@@ -522,8 +522,19 @@ static void RunTests()
             && foundSpaceId == testSpaceId;
     });
 
+    Test("When searching for a vehicle, not finding it returns false", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        return FindVehicle("foo") == false;
+    });
+
 
     WaitKey();
+}
+
+static bool FindVehicle(string searchTerm)
+{
+    return false;
 }
 
 static bool FindFirstParkingSpaceWithRoomForMotorcycle(string[] parkingSpaces, out int foundSpaceId)
