@@ -422,6 +422,23 @@ static void RunTests()
         return ParkingSpaceHasRoomForMotorcycle(testSpaceId, testGarage) == true;
     });
 
+    Test("A motorcycle can be parked in a parking space with another motorcycle", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo"), testGarage);
+        return ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("bar"), testGarage) == true;
+    });
+
+    //Test("A parking space with two motorcycles does not have room for another motorcycle", () =>
+    //{
+    //    var testGarage = GetEmptyParkingGarage(5);
+    //    var testSpaceId = 1;
+    //    ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo"), testGarage);
+    //    ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("bar"), testGarage);
+    //    return ParkingSpaceHasRoomForMotorcycle(testSpaceId, testGarage) == false;
+    //});
+
 
     WaitKey();
 }
