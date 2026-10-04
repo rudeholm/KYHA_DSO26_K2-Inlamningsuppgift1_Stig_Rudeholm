@@ -414,6 +414,14 @@ static void RunTests()
         return ParkingSpaceHasRoomForMotorcycle(testSpaceId, testGarage) == false;
     });
 
+    Test("A parking space with one motorcycle has room for another motorcycle", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo"), testGarage);
+        return ParkingSpaceHasRoomForMotorcycle(testSpaceId, testGarage) == true;
+    });
+
 
     WaitKey();
 }
@@ -421,6 +429,12 @@ static void RunTests()
 static bool ParkingSpaceHasRoomForMotorcycle(int spaceId, string[] parkingSpaces)
 {
     if (ParkingSpaceIsEmpty(spaceId, parkingSpaces))
+        return true;
+
+    if (ParkingSpaceContainsCar(spaceId, parkingSpaces))
+        return false;
+
+    if (InspectParkingSpace(spaceId, parkingSpaces).Contains("MC#"))
         return true;
 
     return false;
