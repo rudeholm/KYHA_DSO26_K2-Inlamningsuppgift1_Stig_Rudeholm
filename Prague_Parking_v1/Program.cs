@@ -525,15 +525,31 @@ static void RunTests()
     Test("When searching for a vehicle, not finding it returns false", () =>
     {
         var testGarage = GetEmptyParkingGarage(5);
-        return FindVehicle("foo") == false;
+        return FindVehicle("foo", testGarage) == false;
+    });
+
+    Test("When searching for a car, finding it returns true", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        ParkCar(testGarage.Length - 1, EncodeCarLicensePlate("foo"), testGarage);
+        return FindVehicle(TidyLicensePlate("foo"), testGarage) == true;
     });
 
 
     WaitKey();
 }
 
-static bool FindVehicle(string searchTerm)
+static bool FindVehicle(string licensePlate, string[] parkingSpaces)
 {
+    for (int i = 1; i < parkingSpaces.Length; i++)
+    {
+        if (ParkingSpaceIsEmpty(i, parkingSpaces))
+            continue;
+
+        var storedLicensePlate = InspectParkingSpace(i, parkingSpaces);
+        if (DecodeLicensePlate(storedLicensePlate, out _).Equals(licensePlate))
+            return true;
+    }
     return false;
 }
 
