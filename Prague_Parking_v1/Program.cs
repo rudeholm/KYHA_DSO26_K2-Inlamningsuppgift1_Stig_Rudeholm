@@ -576,13 +576,23 @@ static void RunTests()
         return ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out _) == false;
     });
 
-    Test("A parking space with a single motorcycle contain one motorcycle", () =>
+    Test("A parking space with a single motorcycle contains one motorcycle", () =>
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = 1;
         ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo"), testGarage);
         return ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out int qty) == true
             && qty == 1;
+    });
+
+    Test("A parking space with two motorcycles contains two motorcycles", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo"), testGarage);
+        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("bar"), testGarage);
+        return ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out int qty) == true
+            && qty == 2;
     });
 
 
@@ -598,9 +608,10 @@ static bool ParkingSpaceContainsMotorcycles(int spaceId, string[] parkingSpaces,
         return false;
     }
 
-    if (InspectParkingSpace(spaceId,parkingSpaces).StartsWith("MC#"))
+    var spaceContents = InspectParkingSpace(spaceId, parkingSpaces);
+    if (spaceContents.StartsWith("MC#"))
     {
-        qty = 1;
+        qty = spaceContents.Split('|').Length;
         return true;
     }
 
