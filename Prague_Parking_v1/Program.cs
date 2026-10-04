@@ -545,8 +545,22 @@ static void RunTests()
             && foundSpaceId == testSpaceId;
     });
 
+    Test("An empty parking space does not contain motorcycles", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        return ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out _) == false;
+    });
+
+
 
     WaitKey();
+}
+
+static bool ParkingSpaceContainsMotorcycles(int spaceId, string[] parkingSpaces, out int qty)
+{
+    qty = 0;    
+    return false;
 }
 
 static bool FindVehicle(string licensePlate, string[] parkingSpaces, out int foundSpaceId)
