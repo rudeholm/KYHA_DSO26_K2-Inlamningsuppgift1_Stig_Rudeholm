@@ -399,8 +399,20 @@ static void RunTests()
         return ParkingSpaceContainsCar(testSpaceId, testGarage) == false;
     });
 
+    Test("An empty parking space has room for a motorcycle", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        return ParkingSpaceHasRoomForMotorcycle(testSpaceId, testGarage) == true;
+    });
+
 
     WaitKey();
+}
+
+static bool ParkingSpaceHasRoomForMotorcycle(int testSpaceId, string[] testGarage)
+{
+    return true;
 }
 
 static bool ParkingSpaceContainsCar(int spaceId, string[] parkingSpaces)
