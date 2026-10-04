@@ -35,6 +35,9 @@ static void ShowMainMenu(string[] parkingSpaces)
         case "1":
             ShowParkCarDialogue(parkingSpaces);
             break;
+        case "2":
+            ShowParkMotorcycleDialogue(parkingSpaces);
+            break;
         case "4":
             ShowFindVehicleDialogue(parkingSpaces);
             break;
@@ -53,6 +56,42 @@ static void ShowMainMenu(string[] parkingSpaces)
         default:
             break;
     }
+}
+
+static void ShowParkMotorcycleDialogue(string[] parkingSpaces)
+{
+    Console.Clear();
+
+
+    PlaceCursor(TITLE_X, TITLE_Y);
+    WriteTitle("Park motorcycle");
+    PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
+    Console.WriteLine("Please enter motorcycle license plate:");
+    Console.WriteLine();
+    MoveCursor(TITLE_X, 0);
+    Console.Write("> ");
+
+    var input = Console.ReadLine();
+
+    var licensePlate = EncodeMotorcycleLicensePlate(input);
+
+    ParkMotorcycle(1, licensePlate, parkingSpaces);
+
+    //if (FindFirstEmptyParkingSpace(parkingSpaces, out int emptySpaceId) && emptySpaceId > 0)
+    //{
+    //    if (ParkCar(emptySpaceId, licensePlate, parkingSpaces))
+    //    {
+    //        SplashMessage($"Park car [{DecodeLicensePlate(licensePlate, out _)}] in space #{emptySpaceId}", "instruction");
+    //    }
+    //    else
+    //    {
+    //        SplashMessage("Could not park car.", "warning");
+    //    }
+    //}
+    //else
+    //{
+    //    SplashMessage("No parking space available.", "warning");
+    //}
 }
 
 static void ShowInspectParkingSpaceDialogue(string[] parkingSpaces)
@@ -430,6 +469,18 @@ static void RunTests()
         return ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("bar"), testGarage) == true;
     });
 
+    Test("Parking a second motorcycle in a parking space stores both encoded license plates in that space", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        var licensePlateFoo = EncodeMotorcycleLicensePlate("foo");
+        var licensePlateBar = EncodeMotorcycleLicensePlate("bar");
+        ParkMotorcycle(testSpaceId, licensePlateFoo, testGarage);
+        ParkMotorcycle(testSpaceId, licensePlateBar, testGarage);
+        return testGarage[testSpaceId].Contains(licensePlateFoo)
+            && testGarage[testSpaceId].Contains(licensePlateBar);
+    });
+
     //Test("A parking space with two motorcycles does not have room for another motorcycle", () =>
     //{
     //    var testGarage = GetEmptyParkingGarage(5);
@@ -470,7 +521,15 @@ static bool ParkingSpaceContainsCar(int spaceId, string[] parkingSpaces)
 
 static bool ParkMotorcycle(int spaceId, string licensePlate, string[] parkingSpaces)
 {
-    parkingSpaces[spaceId] = licensePlate;
+    if (InspectParkingSpace(spaceId, parkingSpaces).StartsWith("MC#"))
+    {
+        parkingSpaces[spaceId] += "|" + licensePlate;
+
+    }
+    else
+    {
+        parkingSpaces[spaceId] = licensePlate;
+    }
     return true;
 }
 
