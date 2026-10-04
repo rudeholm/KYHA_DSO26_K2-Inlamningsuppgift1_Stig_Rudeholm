@@ -383,12 +383,23 @@ static void RunTests()
         return ParkingSpaceContainsCar(testSpaceId, testGarage) == false;
     });
 
+    Test("A parking space with a car contains a car", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        ParkCar(testSpaceId, EncodeCarLicensePlate("foo"), testGarage);
+        return ParkingSpaceContainsCar(testSpaceId, testGarage) == true;
+    });
+
 
     WaitKey();
 }
 
 static bool ParkingSpaceContainsCar(int spaceId, string[] parkingSpaces)
 {
+    if (ParkingSpaceIsNotEmpty(spaceId, parkingSpaces))
+        return true;
+
     return false;
 }
 
