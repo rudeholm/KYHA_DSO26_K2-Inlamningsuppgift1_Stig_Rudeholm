@@ -406,13 +406,24 @@ static void RunTests()
         return ParkingSpaceHasRoomForMotorcycle(testSpaceId, testGarage) == true;
     });
 
+    Test("A parking space with a car does not have room for a motorcycle", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        ParkCar(testSpaceId, EncodeCarLicensePlate("foo"), testGarage);
+        return ParkingSpaceHasRoomForMotorcycle(testSpaceId, testGarage) == false;
+    });
+
 
     WaitKey();
 }
 
-static bool ParkingSpaceHasRoomForMotorcycle(int testSpaceId, string[] testGarage)
+static bool ParkingSpaceHasRoomForMotorcycle(int spaceId, string[] parkingSpaces)
 {
-    return true;
+    if (ParkingSpaceIsEmpty(spaceId, parkingSpaces))
+        return true;
+
+    return false;
 }
 
 static bool ParkingSpaceContainsCar(int spaceId, string[] parkingSpaces)
@@ -531,7 +542,6 @@ static void Test(string description, Func<bool> test)
         Console.Write("[x] FAIL!");
         Console.WriteLine();
     }
-
 
     Console.ForegroundColor = currentForegroundColor;
     Console.BackgroundColor = currentBackgroundColor;
