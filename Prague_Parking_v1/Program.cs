@@ -73,25 +73,31 @@ static void ShowParkMotorcycleDialogue(string[] parkingSpaces)
 
     var input = Console.ReadLine();
 
-    var licensePlate = EncodeMotorcycleLicensePlate(input);
+    if (ValidLicensePlate(input))
+    {
+        var licensePlate = EncodeMotorcycleLicensePlate(input);
 
-    ParkMotorcycle(1, licensePlate, parkingSpaces);
+        if (FindFirstParkingSpaceWithRoomForMotorcycle(parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
+        {
+            if (ParkMotorcycle(foundSpaceId, licensePlate, parkingSpaces))
+            {
+                SplashMessage($"Park motorcycle [{DecodeLicensePlate(licensePlate, out _)}] in space #{foundSpaceId}", "instruction");
+            }
+            else
+            {
+                SplashMessage("Could not park motorcycle.", "warning");
+            }
+        }
+        else
+        {
+            SplashMessage("No parking space available.", "warning");
+        }
+    }
+    else
+    {
+        SplashMessage("Invalid license plate. Please try again.", "warning");
+    }
 
-    //if (FindFirstEmptyParkingSpace(parkingSpaces, out int emptySpaceId) && emptySpaceId > 0)
-    //{
-    //    if (ParkCar(emptySpaceId, licensePlate, parkingSpaces))
-    //    {
-    //        SplashMessage($"Park car [{DecodeLicensePlate(licensePlate, out _)}] in space #{emptySpaceId}", "instruction");
-    //    }
-    //    else
-    //    {
-    //        SplashMessage("Could not park car.", "warning");
-    //    }
-    //}
-    //else
-    //{
-    //    SplashMessage("No parking space available.", "warning");
-    //}
 }
 
 static void ShowInspectParkingSpaceDialogue(string[] parkingSpaces)
@@ -151,22 +157,29 @@ static void ShowParkCarDialogue(string[] parkingSpaces)
 
     var input = Console.ReadLine();
 
-    var licensePlate = EncodeCarLicensePlate(input);
-
-    if (FindFirstEmptyParkingSpace(parkingSpaces, out int emptySpaceId) && emptySpaceId > 0)
+    if (ValidLicensePlate(input))
     {
-        if (ParkCar(emptySpaceId, licensePlate, parkingSpaces))
+        var licensePlate = EncodeCarLicensePlate(input);
+
+        if (FindFirstEmptyParkingSpace(parkingSpaces, out int emptySpaceId) && emptySpaceId > 0)
         {
-            SplashMessage($"Park car [{DecodeLicensePlate(licensePlate, out _)}] in space #{emptySpaceId}", "instruction");
+            if (ParkCar(emptySpaceId, licensePlate, parkingSpaces))
+            {
+                SplashMessage($"Park car [{DecodeLicensePlate(licensePlate, out _)}] in space #{emptySpaceId}", "instruction");
+            }
+            else
+            {
+                SplashMessage("Could not park car.", "warning");
+            }
         }
         else
         {
-            SplashMessage("Could not park car.", "warning");
+            SplashMessage("No parking space available.", "warning");
         }
     }
     else
     {
-        SplashMessage("No parking space available.", "warning");
+        SplashMessage("Invalid license plate. Please try again.", "warning");
     }
 }
 
@@ -564,7 +577,7 @@ static bool ParkingSpaceContainsCar(int spaceId, string[] parkingSpaces)
 
 static bool ParkMotorcycle(int spaceId, string licensePlate, string[] parkingSpaces)
 {
-    if (ParkingSpaceHasRoomForMotorcycle(spaceId,parkingSpaces))
+    if (ParkingSpaceHasRoomForMotorcycle(spaceId, parkingSpaces))
     {
         if (InspectParkingSpace(spaceId, parkingSpaces).StartsWith("MC#"))
         {

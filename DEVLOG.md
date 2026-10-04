@@ -219,3 +219,4 @@ Koden för att parkera motorcyklar är på väg att bli väldigt rörig, men jag
 
 ---
 
+Nu går det att parkera både bilar och motorcyklar. Dags för en ny sökfunktion.
