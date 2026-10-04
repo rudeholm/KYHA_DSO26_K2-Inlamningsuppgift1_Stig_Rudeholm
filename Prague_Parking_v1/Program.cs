@@ -391,13 +391,24 @@ static void RunTests()
         return ParkingSpaceContainsCar(testSpaceId, testGarage) == true;
     });
 
+    Test("A parking space with something that is not a car does not contain a car", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        testGarage[testSpaceId] = "xxx";
+        return ParkingSpaceContainsCar(testSpaceId, testGarage) == false;
+    });
+
 
     WaitKey();
 }
 
 static bool ParkingSpaceContainsCar(int spaceId, string[] parkingSpaces)
 {
-    if (ParkingSpaceIsNotEmpty(spaceId, parkingSpaces))
+    if (ParkingSpaceIsEmpty(spaceId, parkingSpaces))
+        return false;
+
+    if (InspectParkingSpace(spaceId, parkingSpaces).Contains("CAR#"))
         return true;
 
     return false;
