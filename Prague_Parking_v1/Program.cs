@@ -130,16 +130,21 @@ static void ShowFindVehicleDialogue(string[] parkingSpaces)
 
     var input = Console.ReadLine();
 
-    var licensePlate = EncodeCarLicensePlate(input);
+    if (ValidLicensePlate(input))
+    {
+        var licensePlate = TidyLicensePlate(input);
 
-    //if (FindVehicle(licensePlate, parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
-    //{
-    //    SplashMessage($"Vehicle [{DecodeLicensePlate(licensePlate)}] is parked in space #{foundSpaceId}");
-    //}
-    //else
-    //{
-    //    SplashMessage("Could not locate vehicle. Please double check license plate.");
-    //}
+        if (FindVehicle(licensePlate, parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
+        {
+            SplashMessage($"Vehicle [{licensePlate}] is parked in space #{foundSpaceId}");
+        }
+        else
+        {
+            SplashMessage("Could not locate vehicle. Please double check license plate.");
+        }
+
+    }
+
 }
 
 static void ShowParkCarDialogue(string[] parkingSpaces)
@@ -522,29 +527,6 @@ static void RunTests()
             && foundSpaceId == testSpaceId;
     });
 
-    Test("When searching for a vehicle, not finding it returns false", () =>
-    {
-        var testGarage = GetEmptyParkingGarage(5);
-        return FindVehicle("foo", testGarage, out _) == false;
-    });
-
-    Test("When searching for a car, finding it returns true", () =>
-    {
-        var testGarage = GetEmptyParkingGarage(5);
-        ParkCar(testGarage.Length - 1, EncodeCarLicensePlate("foo"), testGarage);
-        return FindVehicle(TidyLicensePlate("foo"), testGarage, out _) == true;
-    });
-
-    Test("When searching for a car, finding it delivers the parking space ID", () =>
-    {
-        var testGarage = GetEmptyParkingGarage(5);
-        var testSpaceId = testGarage.Length - 1;
-        ParkCar(testSpaceId, EncodeCarLicensePlate("foo"), testGarage);
-        var search = TidyLicensePlate("foo");
-        return FindVehicle(search, testGarage, out int foundSpaceId) == true
-            && foundSpaceId == testSpaceId;
-    });
-
     Test("An empty parking space does not contain motorcycles", () =>
     {
         var testGarage = GetEmptyParkingGarage(5);
@@ -603,6 +585,40 @@ static void RunTests()
         return ParkingSpaceContainsCar(testSpaceId, testGarage) == false;
     });
 
+    Test("When searching for a vehicle, not finding it returns false", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        return FindVehicle("foo", testGarage, out _) == false;
+    });
+
+    Test("When searching for a vehicle, finding it returns true", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        ParkCar(testGarage.Length - 1, EncodeCarLicensePlate("foo 666"), testGarage);
+        return FindVehicle("foo 666", testGarage, out _) == true;
+    });
+
+    Test("When searching for a vehicle, finding it delivers the parking space ID", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = testGarage.Length - 1;
+        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo m 666"), testGarage);
+        var search = "foo m 666";
+        return FindVehicle(search, testGarage, out int foundSpaceId) == true
+            && foundSpaceId == testSpaceId;
+    });
+
+    Test("Search finds motorcycle parked with another motorcycle", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = testGarage.Length - 1;
+        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo m 666"), testGarage);
+        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("bar m 999"), testGarage);
+        var search = "bar m 999";
+        return FindVehicle(search, testGarage, out int foundSpaceId) == true
+            && foundSpaceId == testSpaceId;
+    });
+
 
     WaitKey();
 }
@@ -633,8 +649,22 @@ static bool FindVehicle(string licensePlate, string[] parkingSpaces, out int fou
         if (ParkingSpaceIsEmpty(i, parkingSpaces))
             continue;
 
+        if (ParkingSpaceContainsMotorcycles(i, parkingSpaces, out int qty))
+        {
+            var parkedVehicles = InspectParkingSpace(i, parkingSpaces).Split('|');
+            foreach (var parkedLicensePlate in parkedVehicles)
+            {
+                if (DecodeLicensePlate(parkedLicensePlate, out _).Equals(licensePlate, StringComparison.OrdinalIgnoreCase))
+                {
+                    foundSpaceId = i;
+                    return true;
+                }
+
+            }
+        }
+
         var storedLicensePlate = InspectParkingSpace(i, parkingSpaces);
-        if (DecodeLicensePlate(storedLicensePlate, out _).Equals(licensePlate))
+        if (DecodeLicensePlate(storedLicensePlate, out _).Equals(licensePlate, StringComparison.OrdinalIgnoreCase))
         {
             foundSpaceId = i;
             return true;

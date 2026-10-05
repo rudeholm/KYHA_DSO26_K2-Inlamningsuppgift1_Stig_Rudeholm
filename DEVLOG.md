@@ -220,3 +220,21 @@ Koden för att parkera motorcyklar är på väg att bli väldigt rörig, men jag
 ---
 
 Nu går det att parkera både bilar och motorcyklar. Dags för en ny sökfunktion.
+
+---
+
+#### 2026-10-05
+
+Sökfunktionen fungerar, men är rörig. Snyggar upp senare.
+
+---
+
+Två saker som behöver brytas ut till egna metoder:
+
+```
+    for (int i = 1; i < parkingSpaces.Length; i++)
+```
+
+```
+    var parkedVehicles = InspectParkingSpace(i, parkingSpaces).Split('|');
+```
