@@ -671,6 +671,21 @@ static void RunTests()
             && ParkingSpaceIsEmpty(testSpaceId, testGarage) == true;
     });
 
+    Test("Collecting a motorcycle from a pair removes it from the database and leaves the other", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = testGarage.Length - 1;
+        var motorcycle1 = EncodeMotorcycleLicensePlate("foo 666");
+        var motorcycle2 = EncodeMotorcycleLicensePlate("bar 999");
+        ParkMotorcycle(testSpaceId, motorcycle1, testGarage);
+        ParkMotorcycle(testSpaceId, motorcycle2, testGarage);
+        return CollectVehicle(testGarage, testSpaceId, "foo 666") == true
+            && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out var qty) == true
+            && qty == 1
+            && FindVehicle("bar 999", testGarage, out var foundSpaceId) == true
+            && foundSpaceId == testSpaceId;
+    });
+
 
 
 
@@ -688,10 +703,30 @@ static bool CollectVehicle(string[] parkingSpaces, int spaceId, string vehicleRe
         return true;
     }
 
-    if (ParkingSpaceContainsMotorcycles(spaceId, parkingSpaces, out var qty) && qty == 1)
+    if (ParkingSpaceContainsMotorcycles(spaceId, parkingSpaces, out var qty))
     {
-        parkingSpaces[spaceId] = "";
-        return true;
+        if (qty == 1)
+        {
+            parkingSpaces[spaceId] = "";
+            return true;
+        }
+
+        if (qty == 2)
+        {
+            var parkedMotorcycles = InspectParkingSpace(spaceId, parkingSpaces).Split('|');
+            var licensePlate = EncodeMotorcycleLicensePlate(vehicleRegistration);
+
+            if (parkedMotorcycles[0].Equals(licensePlate))
+            {
+                parkingSpaces[spaceId] = parkedMotorcycles[1];
+                return true;
+            }
+            else
+            {
+                parkingSpaces[spaceId] = parkedMotorcycles[0];
+                return true;
+            }
+        }
     }
 
 
