@@ -68,9 +68,11 @@ static void ShowParkCarDialogue(string[] parkingSpaces)
 {
     Console.Clear();
 
-    PlaceCursor(TITLE_X, TITLE_Y);
-    WriteTitle("Park car");
-    PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
+    var title = "Park car";
+
+    WriteTitle(title);
+    MoveCursor(TITLE_X + 2, 1);
+
     Console.WriteLine("Please enter car license plate:");
     Console.WriteLine();
     MoveCursor(TITLE_X, 0);
@@ -107,9 +109,11 @@ static void ShowParkMotorcycleDialogue(string[] parkingSpaces)
 {
     Console.Clear();
 
-    PlaceCursor(TITLE_X, TITLE_Y);
-    WriteTitle("Park motorcycle");
-    PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
+    var title = "Park motorcycle";
+
+    WriteTitle(title);
+    MoveCursor(TITLE_X + 2, 1);
+
     Console.WriteLine("Please enter motorcycle license plate:");
     Console.WriteLine();
     MoveCursor(TITLE_X, 0);
@@ -146,9 +150,11 @@ static void ShowCollectVehicleDialogue(string[] parkingSpaces)
 {
     Console.Clear();
 
-    PlaceCursor(TITLE_X, TITLE_Y);
-    WriteTitle("Collect vehicle");
-    PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
+    var title = "Collect vehicle";
+
+    WriteTitle(title);
+    MoveCursor(TITLE_X + 2, 1);
+
     Console.WriteLine("Please enter vehicle license plate:");
     Console.WriteLine();
     MoveCursor(TITLE_X, 0);
@@ -192,9 +198,11 @@ static void ShowFindVehicleDialogue(string[] parkingSpaces)
 {
     Console.Clear();
 
-    PlaceCursor(TITLE_X, TITLE_Y);
-    WriteTitle("Find vehicle");
-    PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
+    var title = "Find vehicle";
+
+    WriteTitle(title);
+    MoveCursor(TITLE_X + 2, 1);
+
     Console.WriteLine("Please enter vehicle license plate:");
     Console.WriteLine();
     MoveCursor(TITLE_X, 0);
@@ -225,9 +233,11 @@ static void ShowInspectParkingSpaceDialogue(string[] parkingSpaces)
 {
     Console.Clear();
 
-    PlaceCursor(TITLE_X, TITLE_Y);
-    WriteTitle("Inspect parking space");
-    PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
+    var title = "Inspect parking space";
+
+    WriteTitle(title);
+    MoveCursor(TITLE_X + 2, 1);
+
     Console.WriteLine("Please enter parking space ID:");
     Console.WriteLine();
     MoveCursor(TITLE_X, 0);
@@ -274,9 +284,8 @@ static void DisplayMenu(string title, string[] options)
 {
     Console.Clear();
 
-    PlaceCursor(TITLE_X, TITLE_Y);
     WriteTitle(title);
-    PlaceCursor(0, TITLE_Y + 3);
+    MoveCursor(0, 1);
 
     foreach (var option in options)
     {
@@ -304,6 +313,7 @@ static void MoveCursor(int x, int y)
 
 static void WriteTitle(string title)
 {
+    PlaceCursor(TITLE_X, TITLE_Y);
     Console.WriteLine(title.ToUpper());
 }
 
