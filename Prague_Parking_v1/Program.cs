@@ -797,6 +797,14 @@ static void RunTests()
         return ParkCar(2, vehicleRegistration, testGarage) == false;
     });
 
+    Test("A motorcycle can not be parked if its vehicle registration is already in the system", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var vehicleRegistration = "foo 666";
+        ParkCar(1, vehicleRegistration, testGarage);
+        return ParkMotorcycle(2, vehicleRegistration, testGarage) == false;
+    });
+
     WaitKey();
 }
 
@@ -962,6 +970,9 @@ static bool ParkingSpaceContainsCar(int spaceId, string[] parkingSpaces)
 static bool ParkMotorcycle(int spaceId, string vehicleRegistration, string[] parkingSpaces)
 {
     var licensePlate = EncodeMotorcycleLicensePlate(vehicleRegistration);
+
+    if (FindVehicle(vehicleRegistration, parkingSpaces, out _))
+        return false;
 
     if (ParkingSpaceHasRoomForMotorcycle(spaceId, parkingSpaces))
     {
