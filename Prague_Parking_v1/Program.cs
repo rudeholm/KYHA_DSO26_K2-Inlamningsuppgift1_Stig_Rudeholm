@@ -168,10 +168,10 @@ static void ShowInspectParkingSpaceDialogue(string[] parkingSpaces)
 
     var spaceId = ReadSpaceIdInput(title, garageCapacity);
 
-    if (ParkingSpaceIsEmpty(spaceId,parkingSpaces))
+    if (ParkingSpaceIsEmpty(spaceId, parkingSpaces))
         SplashMessage($"Parking space #{spaceId} is currently empty.");
     else
-        SplashMessage($"Parking space #{spaceId} is currently occupied by {InspectParkingSpace(spaceId,parkingSpaces)}.");
+        SplashMessage($"Parking space #{spaceId} is currently occupied by {InspectParkingSpace(spaceId, parkingSpaces)}.");
 }
 
 /*****************************************************************************/
@@ -789,6 +789,14 @@ static void RunTests()
             && newSpaceId == destinationSpaceId;
     });
 
+    Test("A car can not be parked if its vehicle registration is already in the system", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var vehicleRegistration = "foo 666";
+        ParkCar(1, vehicleRegistration, testGarage);
+        return ParkCar(2, vehicleRegistration, testGarage) == false;
+    });
+
     WaitKey();
 }
 
@@ -1016,6 +1024,9 @@ static bool ValidVehicleRegistration(string licensePlate)
 static bool ParkCar(int spaceId, string vehicleRegistration, string[] parkingSpaces)
 {
     var licensePlate = EncodeCarLicensePlate(vehicleRegistration);
+
+    if (FindVehicle(vehicleRegistration,parkingSpaces,out _))
+        return false;
 
     if (ParkingSpaceIsNotEmpty(spaceId, parkingSpaces))
         return false;
