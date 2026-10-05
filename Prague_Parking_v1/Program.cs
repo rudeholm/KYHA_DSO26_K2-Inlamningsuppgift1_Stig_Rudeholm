@@ -155,22 +155,21 @@ static void ShowCollectVehicleDialogue(string[] parkingSpaces)
     Console.Write("> ");
 
     var input = Console.ReadLine();
+    var vehicleRegistration = input ?? "";
 
-    if (ValidVehicleRegistration(input!))
+    if (ValidVehicleRegistration(vehicleRegistration))
     {
-        var vehicleRegistration = TidyLicensePlate(input!);
-
         if (FindVehicle(vehicleRegistration, parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
         {
             string message = "";
 
             if (ParkingSpaceContainsCar(foundSpaceId, parkingSpaces))
             {
-                message = $"Collect car [{vehicleRegistration}] from space #{foundSpaceId}";
+                message = $"Collect car [{TidyLicensePlate(vehicleRegistration)}] from space #{foundSpaceId}";
             }
             else if (ParkingSpaceContainsMotorcycles(foundSpaceId, parkingSpaces, out _))
             {
-                message = $"Collect motorcycle [{vehicleRegistration}] from space #{foundSpaceId}";
+                message = $"Collect motorcycle [{TidyLicensePlate(vehicleRegistration)}] from space #{foundSpaceId}";
             }
 
             if (CollectVehicle(parkingSpaces, foundSpaceId, vehicleRegistration))
@@ -186,9 +185,7 @@ static void ShowCollectVehicleDialogue(string[] parkingSpaces)
         {
             SplashMessage("Could not locate vehicle. Please double check license plate.");
         }
-
     }
-
 }
 
 static void ShowFindVehicleDialogue(string[] parkingSpaces)
