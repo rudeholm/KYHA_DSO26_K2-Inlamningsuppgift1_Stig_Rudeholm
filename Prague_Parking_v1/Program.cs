@@ -44,6 +44,9 @@ static void ShowMainMenu(string[] parkingSpaces)
         case "4":
             ShowFindVehicleDialogue(parkingSpaces);
             break;
+        case "5":
+            ShowMoveVehicleDialogue(parkingSpaces);
+            break;
         case "6":
             ShowInspectParkingSpaceDialogue(parkingSpaces);
             break;
@@ -58,6 +61,45 @@ static void ShowMainMenu(string[] parkingSpaces)
             break;
         default:
             break;
+    }
+}
+
+static void ShowParkCarDialogue(string[] parkingSpaces)
+{
+    Console.Clear();
+
+    PlaceCursor(TITLE_X, TITLE_Y);
+    WriteTitle("Park car");
+    PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
+    Console.WriteLine("Please enter car license plate:");
+    Console.WriteLine();
+    MoveCursor(TITLE_X, 0);
+    Console.Write("> ");
+
+    var input = Console.ReadLine();
+    var vehicleRegistration = input ?? "";
+
+    if (ValidVehicleRegistration(vehicleRegistration))
+    {
+        if (FindFirstEmptyParkingSpace(parkingSpaces, out int emptySpaceId) && emptySpaceId > 0)
+        {
+            if (ParkCar(emptySpaceId, vehicleRegistration, parkingSpaces))
+            {
+                SplashMessage($"Park car [{TidyLicensePlate(vehicleRegistration)}] in space #{emptySpaceId}", "instruction");
+            }
+            else
+            {
+                SplashMessage("Could not park car.", "warning");
+            }
+        }
+        else
+        {
+            SplashMessage("No parking space available.", "warning");
+        }
+    }
+    else
+    {
+        SplashMessage("Invalid license plate. Please try again.", "warning");
     }
 }
 
@@ -76,7 +118,7 @@ static void ShowParkMotorcycleDialogue(string[] parkingSpaces)
 
     var input = Console.ReadLine();
 
-    if (ValidLicensePlate(input!))
+    if (ValidVehicleRegistration(input!))
     {
         var licensePlate = EncodeMotorcycleLicensePlate(input!);
 
@@ -103,22 +145,6 @@ static void ShowParkMotorcycleDialogue(string[] parkingSpaces)
 
 }
 
-static void ShowInspectParkingSpaceDialogue(string[] parkingSpaces)
-{
-    Console.Clear();
-
-    PlaceCursor(TITLE_X, TITLE_Y);
-    WriteTitle("Inspect parking space");
-    PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
-    Console.WriteLine("Please enter parking space ID:");
-    Console.WriteLine();
-    MoveCursor(TITLE_X, 0);
-    Console.Write("> ");
-
-    var input = Console.ReadLine();
-
-}
-
 static void ShowCollectVehicleDialogue(string[] parkingSpaces)
 {
     Console.Clear();
@@ -133,7 +159,7 @@ static void ShowCollectVehicleDialogue(string[] parkingSpaces)
 
     var input = Console.ReadLine();
 
-    if (ValidLicensePlate(input!))
+    if (ValidVehicleRegistration(input!))
     {
         var vehicleRegistration = TidyLicensePlate(input!);
 
@@ -182,7 +208,7 @@ static void ShowFindVehicleDialogue(string[] parkingSpaces)
 
     var input = Console.ReadLine();
 
-    if (ValidLicensePlate(input!))
+    if (ValidVehicleRegistration(input!))
     {
         var licensePlate = TidyLicensePlate(input!);
 
@@ -199,46 +225,28 @@ static void ShowFindVehicleDialogue(string[] parkingSpaces)
 
 }
 
-static void ShowParkCarDialogue(string[] parkingSpaces)
+static void ShowMoveVehicleDialogue(string[] parkingSpaces)
+{
+    throw new NotImplementedException();
+}
+
+static void ShowInspectParkingSpaceDialogue(string[] parkingSpaces)
 {
     Console.Clear();
 
-
     PlaceCursor(TITLE_X, TITLE_Y);
-    WriteTitle("Park car");
+    WriteTitle("Inspect parking space");
     PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
-    Console.WriteLine("Please enter car license plate:");
+    Console.WriteLine("Please enter parking space ID:");
     Console.WriteLine();
     MoveCursor(TITLE_X, 0);
     Console.Write("> ");
 
     var input = Console.ReadLine();
 
-    if (ValidLicensePlate(input!))
-    {
-        var licensePlate = EncodeCarLicensePlate(input!);
-
-        if (FindFirstEmptyParkingSpace(parkingSpaces, out int emptySpaceId) && emptySpaceId > 0)
-        {
-            if (ParkCar(emptySpaceId, licensePlate, parkingSpaces))
-            {
-                SplashMessage($"Park car [{DecodeLicensePlate(licensePlate, out _)}] in space #{emptySpaceId}", "instruction");
-            }
-            else
-            {
-                SplashMessage("Could not park car.", "warning");
-            }
-        }
-        else
-        {
-            SplashMessage("No parking space available.", "warning");
-        }
-    }
-    else
-    {
-        SplashMessage("Invalid license plate. Please try again.", "warning");
-    }
 }
+
+/*****************************************************************************/
 
 static void SplashMessage(string message, string type = "info")
 {
@@ -313,6 +321,8 @@ static void DrawHorizontalBar(int width)
     Console.WriteLine(new string('─', width));
 }
 
+/*****************************************************************************/
+
 static void RunTests()
 {
     Console.Clear();
@@ -346,11 +356,11 @@ static void RunTests()
         );
 
     Test("A license plate can not be empty",
-        () => ValidLicensePlate("") == false
+        () => ValidVehicleRegistration("") == false
         );
 
     Test("A license plate can not be longer than 10 characters",
-        () => ValidLicensePlate("xxx xxx xxx") == false
+        () => ValidVehicleRegistration("xxx xxx xxx") == false
         );
 
 
@@ -758,10 +768,10 @@ static void RunTests()
             && newSpaceId == destinationSpaceId;
     });
 
-
-
     WaitKey();
 }
+
+/*****************************************************************************/
 
 static bool MoveVehicle(string[] parkingSpaces, int destinationSpaceId, string vehicleRegistration)
 {
@@ -971,7 +981,7 @@ static bool FindFirstEmptyParkingSpace(string[] parkingSpaces, out int emptySpac
     return false;
 }
 
-static bool ValidLicensePlate(string licensePlate)
+static bool ValidVehicleRegistration(string licensePlate)
 {
     if (string.IsNullOrWhiteSpace(licensePlate))
         return false;
