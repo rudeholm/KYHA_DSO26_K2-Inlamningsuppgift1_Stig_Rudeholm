@@ -463,16 +463,16 @@ static void RunTests()
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = 1;
-        var licensePlate = EncodeMotorcycleLicensePlate("foo m-666");
-        return ParkMotorcycle(testSpaceId, licensePlate, testGarage) == true;
+        var vehicleRegistration = "foo m-666";
+        return ParkMotorcycle(testSpaceId, vehicleRegistration, testGarage) == true;
     });
 
     Test("After a motorcycle has been parked in an empty parking space, the space is not empty", () =>
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = 1;
-        var licensePlate = EncodeMotorcycleLicensePlate("foo m-666");
-        ParkMotorcycle(testSpaceId, licensePlate, testGarage);
+        var vehicleRegistration = "foo m-666";
+        ParkMotorcycle(testSpaceId, vehicleRegistration, testGarage);
         return ParkingSpaceIsNotEmpty(testSpaceId, testGarage) == true;
     });
 
@@ -480,9 +480,9 @@ static void RunTests()
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = 1;
-        var licensePlate = EncodeMotorcycleLicensePlate("foo m-666");
-        ParkMotorcycle(testSpaceId, licensePlate, testGarage);
-        return testGarage[testSpaceId].Equals(licensePlate);
+        var vehicleRegistration = "foo m-666";
+        ParkMotorcycle(testSpaceId, vehicleRegistration, testGarage);
+        return testGarage[testSpaceId].Equals(EncodeMotorcycleLicensePlate(vehicleRegistration));
     });
 
     Test("An empty parking space does not contain a car", () =>
@@ -527,7 +527,7 @@ static void RunTests()
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = 1;
-        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo"), testGarage);
+        ParkMotorcycle(testSpaceId, "foo", testGarage);
         return ParkingSpaceHasRoomForMotorcycle(testSpaceId, testGarage) == true;
     });
 
@@ -535,28 +535,28 @@ static void RunTests()
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = 1;
-        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo"), testGarage);
-        return ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("bar"), testGarage) == true;
+        ParkMotorcycle(testSpaceId, "foo", testGarage);
+        return ParkMotorcycle(testSpaceId, "bar", testGarage) == true;
     });
 
     Test("Parking a second motorcycle in a parking space stores both encoded license plates in that space", () =>
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = 1;
-        var licensePlateFoo = EncodeMotorcycleLicensePlate("foo");
-        var licensePlateBar = EncodeMotorcycleLicensePlate("bar");
-        ParkMotorcycle(testSpaceId, licensePlateFoo, testGarage);
-        ParkMotorcycle(testSpaceId, licensePlateBar, testGarage);
-        return testGarage[testSpaceId].Contains(licensePlateFoo)
-            && testGarage[testSpaceId].Contains(licensePlateBar);
+        var vehicleRegistration1 = "foo";
+        var vehicleRegistration2 = "bar";
+        ParkMotorcycle(testSpaceId, vehicleRegistration1, testGarage);
+        ParkMotorcycle(testSpaceId, vehicleRegistration2, testGarage);
+        return testGarage[testSpaceId].Contains(EncodeMotorcycleLicensePlate(vehicleRegistration1))
+            && testGarage[testSpaceId].Contains(EncodeMotorcycleLicensePlate(vehicleRegistration2));
     });
 
     Test("A parking space with two motorcycles does not have room for another motorcycle", () =>
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = 1;
-        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo"), testGarage);
-        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("bar"), testGarage);
+        ParkMotorcycle(testSpaceId, "foo", testGarage);
+        ParkMotorcycle(testSpaceId, "bar", testGarage);
         return ParkingSpaceHasRoomForMotorcycle(testSpaceId, testGarage) == false;
     });
 
@@ -564,9 +564,9 @@ static void RunTests()
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = 1;
-        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo"), testGarage);
-        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("bar"), testGarage);
-        return ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("baz"), testGarage) == false;
+        ParkMotorcycle(testSpaceId, "foo", testGarage);
+        ParkMotorcycle(testSpaceId, "bar", testGarage);
+        return ParkMotorcycle(testSpaceId, "baz", testGarage) == false;
     });
 
     Test("It is possible to find the first available parking space with room for a motorcycle", () =>
@@ -574,7 +574,7 @@ static void RunTests()
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = 2;
         ParkCar(testSpaceId - 1, "car", testGarage);
-        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("mc"), testGarage);
+        ParkMotorcycle(testSpaceId, "mc", testGarage);
         return FindFirstParkingSpaceWithRoomForMotorcycle(testGarage, out int foundSpaceId) == true
             && foundSpaceId == testSpaceId;
     });
@@ -590,7 +590,7 @@ static void RunTests()
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = 1;
-        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo"), testGarage);
+        ParkMotorcycle(testSpaceId, "foo", testGarage);
         return ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out _) == true;
     });
 
@@ -614,7 +614,7 @@ static void RunTests()
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = 1;
-        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo"), testGarage);
+        ParkMotorcycle(testSpaceId, "foo", testGarage);
         return ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out int qty) == true
             && qty == 1;
     });
@@ -623,8 +623,8 @@ static void RunTests()
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = 1;
-        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo"), testGarage);
-        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("bar"), testGarage);
+        ParkMotorcycle(testSpaceId, "foo", testGarage);
+        ParkMotorcycle(testSpaceId, "bar", testGarage);
         return ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out int qty) == true
             && qty == 2;
     });
@@ -633,7 +633,7 @@ static void RunTests()
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = 1;
-        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo"), testGarage);
+        ParkMotorcycle(testSpaceId, "foo", testGarage);
         return ParkingSpaceContainsCar(testSpaceId, testGarage) == false;
     });
 
@@ -655,8 +655,9 @@ static void RunTests()
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = testGarage.Length - 1;
-        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo m 666"), testGarage);
-        var search = "foo m 666";
+        var vehicleRegistration = "foo m 666";
+        ParkMotorcycle(testSpaceId, vehicleRegistration, testGarage);
+        var search = vehicleRegistration;
         return FindVehicle(search, testGarage, out int foundSpaceId) == true
             && foundSpaceId == testSpaceId;
     });
@@ -665,9 +666,11 @@ static void RunTests()
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = testGarage.Length - 1;
-        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo m 666"), testGarage);
-        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("bar m 999"), testGarage);
-        var search = "bar m 999";
+        var vehicleRegistration1 = "foo m-666";
+        var vehicleRegistration2 = "bar m-999";
+        ParkMotorcycle(testSpaceId, vehicleRegistration1, testGarage);
+        ParkMotorcycle(testSpaceId, vehicleRegistration2, testGarage);
+        var search = vehicleRegistration2;
         return FindVehicle(search, testGarage, out int foundSpaceId) == true
             && foundSpaceId == testSpaceId;
     });
@@ -686,8 +689,9 @@ static void RunTests()
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = testGarage.Length - 1;
-        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo 666"), testGarage);
-        return CollectVehicle(testGarage, testSpaceId, "foo 666") == true
+        var vehicleRegistration = "foo-m 23";
+        ParkMotorcycle(testSpaceId, vehicleRegistration, testGarage);
+        return CollectVehicle(testGarage, testSpaceId, vehicleRegistration) == true
             && ParkingSpaceIsEmpty(testSpaceId, testGarage) == true;
     });
 
@@ -695,14 +699,14 @@ static void RunTests()
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = testGarage.Length - 1;
-        var motorcycle1 = EncodeMotorcycleLicensePlate("foo 666");
-        var motorcycle2 = EncodeMotorcycleLicensePlate("bar 999");
-        ParkMotorcycle(testSpaceId, motorcycle1, testGarage);
-        ParkMotorcycle(testSpaceId, motorcycle2, testGarage);
-        return CollectVehicle(testGarage, testSpaceId, "foo 666") == true
+        var vehicleRegistration1 = "foo 666";
+        var vehicleRegistration2 = "bar 999";
+        ParkMotorcycle(testSpaceId, vehicleRegistration1, testGarage);
+        ParkMotorcycle(testSpaceId, vehicleRegistration2, testGarage);
+        return CollectVehicle(testGarage, testSpaceId, vehicleRegistration1) == true
             && ParkingSpaceContainsMotorcycles(testSpaceId, testGarage, out var qty) == true
             && qty == 1
-            && FindVehicle("bar 999", testGarage, out var foundSpaceId) == true
+            && FindVehicle(vehicleRegistration2, testGarage, out var foundSpaceId) == true
             && foundSpaceId == testSpaceId;
     });
 
@@ -729,6 +733,17 @@ static void RunTests()
             && newSpaceId == destinationSpaceId;
     });
 
+    Test("Moving a motorcycle removes it from its parking space", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        var destinationSpaceId = testSpaceId + 1;
+        var vehicleRegistration = "foo-m 666";
+        ParkMotorcycle(testSpaceId, vehicleRegistration, testGarage);
+        return MoveVehicle(testGarage, destinationSpaceId, vehicleRegistration) == true
+            && ParkingSpaceIsEmpty(testSpaceId, testGarage) == true;
+    });
+
 
 
     WaitKey();
@@ -738,9 +753,20 @@ static bool MoveVehicle(string[] parkingSpaces, int destinationSpaceId, string v
 {
     if (FindVehicle(vehicleRegistration, parkingSpaces, out var originSpaceId))
     {
-        if (CollectVehicle(parkingSpaces, originSpaceId, vehicleRegistration))
+        if (ParkingSpaceContainsCar(originSpaceId, parkingSpaces))
         {
-            return ParkCar(destinationSpaceId, vehicleRegistration, parkingSpaces);
+            if (CollectVehicle(parkingSpaces, originSpaceId, vehicleRegistration))
+            {
+                return ParkCar(destinationSpaceId, vehicleRegistration, parkingSpaces);
+            }
+        }
+
+        if (ParkingSpaceContainsMotorcycles(originSpaceId, parkingSpaces, out _))
+        {
+            if (CollectVehicle(parkingSpaces, originSpaceId, vehicleRegistration))
+            {
+                return true;
+            }
         }
     }
 
@@ -880,8 +906,10 @@ static bool ParkingSpaceContainsCar(int spaceId, string[] parkingSpaces)
     return false;
 }
 
-static bool ParkMotorcycle(int spaceId, string licensePlate, string[] parkingSpaces)
+static bool ParkMotorcycle(int spaceId, string vehicleRegistration, string[] parkingSpaces)
 {
+    var licensePlate = EncodeMotorcycleLicensePlate(vehicleRegistration);
+
     if (ParkingSpaceHasRoomForMotorcycle(spaceId, parkingSpaces))
     {
         if (InspectParkingSpace(spaceId, parkingSpaces).StartsWith("MC#"))
