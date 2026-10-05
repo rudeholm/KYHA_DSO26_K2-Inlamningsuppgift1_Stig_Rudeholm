@@ -247,3 +247,11 @@ Börjar tröttna på allt det gröna. Det är dags att lägga till lite färg i 
 
 ---
 
+Har städat litegrann, men det är många upprepningar som fortfarande måste tas hand om.
+
+---
+
+Har eliminerat en hel del upprepningar genom att skriva dedikerade metoder för input.
+
+---
+

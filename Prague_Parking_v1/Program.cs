@@ -1,11 +1,11 @@
 ﻿const int TITLE_X = 5;
 const int TITLE_Y = 2;
-
+const int garageCapacity = 10;
 
 Console.Title = "Prague Parking v1.0";
 Console.ForegroundColor = ConsoleColor.Green;
-//string[] parkingGarage = new string[1 + 100];
-string[] parkingGarage = new string[1 + 10];
+
+string[] parkingGarage = new string[1 + garageCapacity];
 
 while (true)
 {
@@ -66,161 +66,94 @@ static void ShowMainMenu(string[] parkingSpaces)
 
 static void ShowParkCarDialogue(string[] parkingSpaces)
 {
-    Console.Clear();
-
     var title = "Park car";
 
-    WriteTitle(title);
-    MoveCursor(TITLE_X + 2, 1);
+    var vehicleRegistration = ReadVehicleRegistrationInput(title);
 
-    Console.WriteLine("Please enter car license plate:");
-    Console.WriteLine();
-    MoveCursor(TITLE_X, 0);
-    Console.Write("> ");
-
-    var input = Console.ReadLine();
-    var vehicleRegistration = input ?? "";
-
-    if (ValidVehicleRegistration(vehicleRegistration))
+    if (FindFirstEmptyParkingSpace(parkingSpaces, out int emptySpaceId) && emptySpaceId > 0)
     {
-        if (FindFirstEmptyParkingSpace(parkingSpaces, out int emptySpaceId) && emptySpaceId > 0)
+        if (ParkCar(emptySpaceId, vehicleRegistration, parkingSpaces))
         {
-            if (ParkCar(emptySpaceId, vehicleRegistration, parkingSpaces))
-            {
-                SplashMessage($"Park car [{TidyLicensePlate(vehicleRegistration)}] in space #{emptySpaceId}", "instruction");
-            }
-            else
-            {
-                SplashMessage("Could not park car.", "warning");
-            }
+            SplashMessage($"Park car [{FormatVehicleRegistration(vehicleRegistration)}] in space #{emptySpaceId}", "instruction");
         }
         else
         {
-            SplashMessage("No parking space available.", "warning");
+            SplashMessage("Could not park car.", "warning");
         }
     }
     else
     {
-        SplashMessage("Invalid license plate. Please try again.", "warning");
+        SplashMessage("No parking space available.", "warning");
     }
+
 }
 
 static void ShowParkMotorcycleDialogue(string[] parkingSpaces)
 {
-    Console.Clear();
-
     var title = "Park motorcycle";
 
-    WriteTitle(title);
-    MoveCursor(TITLE_X + 2, 1);
+    var vehicleRegistration = ReadVehicleRegistrationInput(title);
 
-    Console.WriteLine("Please enter motorcycle license plate:");
-    Console.WriteLine();
-    MoveCursor(TITLE_X, 0);
-    Console.Write("> ");
-
-    var input = Console.ReadLine();
-    var vehicleRegistration = input ?? "";
-
-    if (ValidVehicleRegistration(vehicleRegistration))
+    if (FindFirstParkingSpaceWithRoomForMotorcycle(parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
     {
-        if (FindFirstParkingSpaceWithRoomForMotorcycle(parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
+        if (ParkMotorcycle(foundSpaceId, vehicleRegistration, parkingSpaces))
         {
-            if (ParkMotorcycle(foundSpaceId, vehicleRegistration, parkingSpaces))
-            {
-                SplashMessage($"Park motorcycle [{TidyLicensePlate(vehicleRegistration)}] in space #{foundSpaceId}", "instruction");
-            }
-            else
-            {
-                SplashMessage("Could not park motorcycle.", "warning");
-            }
+            SplashMessage($"Park motorcycle [{FormatVehicleRegistration(vehicleRegistration)}] in space #{foundSpaceId}", "instruction");
         }
         else
         {
-            SplashMessage("No parking space available.", "warning");
+            SplashMessage("Could not park motorcycle.", "warning");
         }
     }
     else
     {
-        SplashMessage("Invalid license plate. Please try again.", "warning");
+        SplashMessage("No parking space available.", "warning");
     }
 }
 
 static void ShowCollectVehicleDialogue(string[] parkingSpaces)
 {
-    Console.Clear();
-
     var title = "Collect vehicle";
 
-    WriteTitle(title);
-    MoveCursor(TITLE_X + 2, 1);
+    var vehicleRegistration = ReadVehicleRegistrationInput(title);
 
-    Console.WriteLine("Please enter vehicle license plate:");
-    Console.WriteLine();
-    MoveCursor(TITLE_X, 0);
-    Console.Write("> ");
-
-    var input = Console.ReadLine();
-    var vehicleRegistration = input ?? "";
-
-    if (ValidVehicleRegistration(vehicleRegistration))
+    if (FindVehicle(vehicleRegistration, parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
     {
-        if (FindVehicle(vehicleRegistration, parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
+        string message = "";
+
+        if (ParkingSpaceContainsCar(foundSpaceId, parkingSpaces))
         {
-            string message = "";
+            message = $"Collect car [{FormatVehicleRegistration(vehicleRegistration)}] from space #{foundSpaceId}";
+        }
+        else if (ParkingSpaceContainsMotorcycles(foundSpaceId, parkingSpaces, out _))
+        {
+            message = $"Collect motorcycle [{FormatVehicleRegistration(vehicleRegistration)}] from space #{foundSpaceId}";
+        }
 
-            if (ParkingSpaceContainsCar(foundSpaceId, parkingSpaces))
-            {
-                message = $"Collect car [{TidyLicensePlate(vehicleRegistration)}] from space #{foundSpaceId}";
-            }
-            else if (ParkingSpaceContainsMotorcycles(foundSpaceId, parkingSpaces, out _))
-            {
-                message = $"Collect motorcycle [{TidyLicensePlate(vehicleRegistration)}] from space #{foundSpaceId}";
-            }
-
-            if (CollectVehicle(parkingSpaces, foundSpaceId, vehicleRegistration))
-            {
-                SplashMessage(message, "instruction");
-            }
-            else
-            {
-                SplashMessage("Error while collecting vehicle. Please try again.", "warning");
-            }
+        if (CollectVehicle(parkingSpaces, foundSpaceId, vehicleRegistration))
+        {
+            SplashMessage(message, "instruction");
         }
         else
         {
-            SplashMessage("Could not locate vehicle. Please double check license plate.");
+            SplashMessage("Error while collecting vehicle. Please try again.", "warning");
         }
     }
 }
 
 static void ShowFindVehicleDialogue(string[] parkingSpaces)
 {
-    Console.Clear();
-
     var title = "Find vehicle";
 
-    WriteTitle(title);
-    MoveCursor(TITLE_X + 2, 1);
+    var vehicleRegistration = ReadVehicleRegistrationInput(title);
 
-    Console.WriteLine("Please enter vehicle license plate:");
-    Console.WriteLine();
-    MoveCursor(TITLE_X, 0);
-    Console.Write("> ");
-
-    var input = Console.ReadLine();
-    var vehicleRegistration = input ?? "";
-
-    if (ValidVehicleRegistration(input!))
+    if (FindVehicle(vehicleRegistration, parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
     {
-        if (FindVehicle(vehicleRegistration, parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
-        {
-            SplashMessage($"Vehicle [{TidyLicensePlate(vehicleRegistration)}] is parked in space #{foundSpaceId}");
-        }
-        else
-        {
-            SplashMessage("Could not locate vehicle. Please double check license plate.");
-        }
+        SplashMessage($"Vehicle [{FormatVehicleRegistration(vehicleRegistration)}] is parked in space #{foundSpaceId}");
+    }
+    else
+    {
+        SplashMessage("Could not locate vehicle. Please double check license plate.");
     }
 }
 
@@ -231,23 +164,106 @@ static void ShowMoveVehicleDialogue(string[] parkingSpaces)
 
 static void ShowInspectParkingSpaceDialogue(string[] parkingSpaces)
 {
-    Console.Clear();
-
     var title = "Inspect parking space";
 
-    WriteTitle(title);
-    MoveCursor(TITLE_X + 2, 1);
+    var spaceId = ReadSpaceIdInput(title, garageCapacity);
 
-    Console.WriteLine("Please enter parking space ID:");
-    Console.WriteLine();
-    MoveCursor(TITLE_X, 0);
-    Console.Write("> ");
-
-    var input = Console.ReadLine();
-
+    if (ParkingSpaceIsEmpty(spaceId,parkingSpaces))
+        SplashMessage($"Parking space #{spaceId} is currently empty.");
+    else
+        SplashMessage($"Parking space #{spaceId} is currently occupied by {InspectParkingSpace(spaceId,parkingSpaces)}.");
 }
 
 /*****************************************************************************/
+
+static int ReadSpaceIdInput(string headline, int max)
+{
+    string? input;
+    int result;
+
+    do
+    {
+        Console.Clear();
+
+        input = SplashInput(headline, "Please enter parking space ID:") ?? "";
+
+        if (int.TryParse(input, out result))
+        {
+            if (ValidSpaceId(result, max))
+                break;
+            else
+            {
+                var fgColor = Console.ForegroundColor;
+                Console.ForegroundColor = ConsoleColor.Red;
+                SplashMessage($"Invalid input. Please enter a number within the range 1-{max}", "warning");
+                Console.ForegroundColor = fgColor;
+            }
+        }
+        else
+        {
+            var fgColor = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
+            SplashMessage("Invalid input. Please enter a whole number.", "warning");
+            Console.ForegroundColor = fgColor;
+            continue;
+        }
+
+    }
+    while (true);
+
+    return result;
+}
+
+static string ReadVehicleRegistrationInput(string headline)
+{
+    string? input;
+
+    do
+    {
+        Console.Clear();
+
+        input = SplashInput(headline, "Please enter vehicle registration:") ?? "";
+
+        if (ValidVehicleRegistration(input))
+            break;
+        else
+        {
+            var fgColor = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
+            SplashMessage("Invalid vehicle registration. Please try again.", "warning");
+            Console.ForegroundColor = fgColor;
+        }
+    }
+    while (true);
+
+    return FormatVehicleRegistration(input);
+}
+
+static string? SplashInput(string headline, string prompt)
+{
+    var barLength = prompt.Length + 4;
+    var centerX = Console.WindowWidth / 2;
+    var centerY = Console.WindowHeight / 2;
+
+    Console.Clear();
+
+    PlaceCursor(centerX - barLength / 2, centerY - 6);
+    DrawHorizontalBar(barLength);
+
+    MoveCursor(centerX - headline.Length / 2, 1);
+    Console.WriteLine(headline.ToUpper());
+
+    MoveCursor(centerX - prompt.Length / 2, 1);
+    Console.WriteLine(prompt);
+
+    MoveCursor(centerX - barLength / 2, 4);
+    DrawHorizontalBar(barLength);
+
+    MoveCursor(centerX - prompt.Length / 2, -3);
+    Console.Write("> ");
+
+    return Console.ReadLine();
+}
 
 static void SplashMessage(string message, string type = "info")
 {
@@ -256,9 +272,11 @@ static void SplashMessage(string message, string type = "info")
 
     message = $"{type.ToUpper()} - {message}";
     var barLength = message.Length + 4;
-    var continueInstruction = "[Press any key to continue]";
+    var continueInstruction = "[ Press any key to continue ]";
     var centerX = Console.WindowWidth / 2;
     var centerY = Console.WindowHeight / 2;
+
+    Console.Clear();
 
     PlaceCursor(centerX - barLength / 2, centerY - 4);
     DrawHorizontalBar(barLength);
@@ -272,7 +290,7 @@ static void SplashMessage(string message, string type = "info")
     MoveCursor(centerX - continueInstruction.Length / 2, 2);
 
     Console.ForegroundColor = ConsoleColor.Black;
-    Console.BackgroundColor = ConsoleColor.Green;
+    Console.BackgroundColor = ConsoleColor.DarkGreen;
     Console.WriteLine(continueInstruction);
     Console.ForegroundColor = currentForegroundColor;
     Console.BackgroundColor = currentBackgroundColor;
@@ -313,6 +331,7 @@ static void MoveCursor(int x, int y)
 
 static void WriteTitle(string title)
 {
+    Console.Clear();
     PlaceCursor(TITLE_X, TITLE_Y);
     Console.WriteLine(title.ToUpper());
 }
@@ -331,7 +350,7 @@ static void RunTests()
     Console.WriteLine();
 
     Test("A vehicle license plate can be cleaned up",
-        () => TidyLicensePlate("  foo 666 ").Equals("FOO 666")
+        () => FormatVehicleRegistration("  foo 666 ").Equals("FOO 666")
         );
 
     Test("A car license plate can be encoded for storage in the database",
@@ -453,11 +472,12 @@ static void RunTests()
 
     Test("A valid parking space ID is greater than zero", () =>
     {
-        var testGarage = GetEmptyParkingGarage(5);
+        var capacity = 5;
+        var testGarage = GetEmptyParkingGarage(capacity);
         var validSpaceId = 1;
         var invalidSpaceId = 0;
-        return ValidSpaceId(validSpaceId, testGarage) == true
-            && ValidSpaceId(invalidSpaceId, testGarage) == false;
+        return ValidSpaceId(validSpaceId, capacity) == true
+            && ValidSpaceId(invalidSpaceId, capacity) == false;
     });
 
     Test("A valid parking space ID is smaller than or equal to the parking garage capacity", () =>
@@ -466,8 +486,8 @@ static void RunTests()
         var testGarage = GetEmptyParkingGarage(capacity);
         var validSpaceId = capacity;
         var invalidSpaceId = capacity + 1;
-        return ValidSpaceId(validSpaceId, testGarage) == true
-            && ValidSpaceId(invalidSpaceId, testGarage) == false;
+        return ValidSpaceId(validSpaceId, capacity) == true
+            && ValidSpaceId(invalidSpaceId, capacity) == false;
     });
 
     Test("A motorcycle can be parked in an empty parking space", () =>
@@ -729,7 +749,7 @@ static void RunTests()
         var vehicleRegistration = "foo 666";
         ParkCar(testSpaceId, vehicleRegistration, testGarage);
         return MoveVehicle(testGarage, destinationSpaceId, vehicleRegistration) == true
-            && ParkingSpaceIsEmpty(testSpaceId,testGarage) == true;
+            && ParkingSpaceIsEmpty(testSpaceId, testGarage) == true;
     });
 
     Test("Moving a car stores it in its new parking space", () =>
@@ -952,10 +972,10 @@ static bool ParkMotorcycle(int spaceId, string vehicleRegistration, string[] par
     return false;
 }
 
-static bool ValidSpaceId(int spaceId, string[] parkingSpaces)
+static bool ValidSpaceId(int spaceId, int max)
 {
     var isGreaterThanZero = spaceId > 0;
-    var isWithinCapacity = spaceId < parkingSpaces.Length;
+    var isWithinCapacity = spaceId <= max;
     return isGreaterThanZero && isWithinCapacity;
 }
 
@@ -1024,12 +1044,12 @@ static string DecodeLicensePlate(string licensePlate, out string vehicleType)
 }
 
 static string EncodeMotorcycleLicensePlate(string licensePlate)
-    => $"MC#{TidyLicensePlate(licensePlate).Replace(' ', '_')}";
+    => $"MC#{FormatVehicleRegistration(licensePlate).Replace(' ', '_')}";
 
 static string EncodeCarLicensePlate(string licensePlate)
-    => $"CAR#{TidyLicensePlate(licensePlate).Replace(' ', '_')}";
+    => $"CAR#{FormatVehicleRegistration(licensePlate).Replace(' ', '_')}";
 
-static string TidyLicensePlate(string input)
+static string FormatVehicleRegistration(string input)
     => input.Trim().ToUpper();
 
 /*****************************************************************************/
