@@ -721,7 +721,7 @@ static void RunTests()
             && ParkingSpaceIsEmpty(testSpaceId,testGarage) == true;
     });
 
-    Test("Moving a car saves it in its new parking space", () =>
+    Test("Moving a car stores it in its new parking space", () =>
     {
         var testGarage = GetEmptyParkingGarage(5);
         var testSpaceId = 1;
@@ -729,6 +729,7 @@ static void RunTests()
         var vehicleRegistration = "foo 666";
         ParkCar(testSpaceId, vehicleRegistration, testGarage);
         return MoveVehicle(testGarage, destinationSpaceId, vehicleRegistration) == true
+            && ParkingSpaceContainsCar(destinationSpaceId, testGarage) == true
             && FindVehicle(vehicleRegistration, testGarage, out var newSpaceId) == true
             && newSpaceId == destinationSpaceId;
     });
@@ -742,6 +743,19 @@ static void RunTests()
         ParkMotorcycle(testSpaceId, vehicleRegistration, testGarage);
         return MoveVehicle(testGarage, destinationSpaceId, vehicleRegistration) == true
             && ParkingSpaceIsEmpty(testSpaceId, testGarage) == true;
+    });
+
+    Test("Moving a motorcycle stores it in its new parking space", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        var destinationSpaceId = testSpaceId + 1;
+        var vehicleRegistration = "foo-m 666";
+        ParkMotorcycle(testSpaceId, vehicleRegistration, testGarage);
+        return MoveVehicle(testGarage, destinationSpaceId, vehicleRegistration) == true
+            && ParkingSpaceContainsMotorcycles(destinationSpaceId, testGarage, out _) == true
+            && FindVehicle(vehicleRegistration, testGarage, out var newSpaceId) == true
+            && newSpaceId == destinationSpaceId;
     });
 
 
@@ -765,7 +779,7 @@ static bool MoveVehicle(string[] parkingSpaces, int destinationSpaceId, string v
         {
             if (CollectVehicle(parkingSpaces, originSpaceId, vehicleRegistration))
             {
-                return true;
+                return ParkMotorcycle(destinationSpaceId, vehicleRegistration, parkingSpaces);
             }
         }
     }
