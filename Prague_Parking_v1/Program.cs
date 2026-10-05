@@ -704,10 +704,30 @@ static void RunTests()
             && foundSpaceId == testSpaceId;
     });
 
+    Test("Moving a car removes it from its parking space", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        var destinationSpaceId = testSpaceId + 1;
+        var car = EncodeCarLicensePlate("foo 666");
+        ParkCar(testSpaceId, car, testGarage);
+        return MoveVehicle(testGarage, destinationSpaceId, "foo 666") == true
+            && FindVehicle("foo 666", testGarage, out _) == false;
+    });
 
 
 
     WaitKey();
+}
+
+static bool MoveVehicle(string[] parkingSpaces, int destinationSpaceId, string vehicleRegistration)
+{
+    if (FindVehicle(vehicleRegistration, parkingSpaces, out var originSpaceId))
+    {
+        return CollectVehicle(parkingSpaces,originSpaceId, vehicleRegistration);
+    }
+
+    return false;
 }
 
 static bool CollectVehicle(string[] parkingSpaces, int spaceId, string vehicleRegistration)
