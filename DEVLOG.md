@@ -238,3 +238,5 @@ Två saker som behöver brytas ut till egna metoder:
 ```
     var parkedVehicles = InspectParkingSpace(i, parkingSpaces).Split('|');
 ```
+
+Nu kan man hämta ut fordon, både bilar och motorcyklar.

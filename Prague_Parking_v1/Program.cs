@@ -30,7 +30,7 @@ static void ShowMainMenu(string[] parkingSpaces)
 
     string? choice = Console.ReadLine();
 
-    switch (choice.ToLower())
+    switch (choice!.ToLower())
     {
         case "1":
             ShowParkCarDialogue(parkingSpaces);
@@ -76,9 +76,9 @@ static void ShowParkMotorcycleDialogue(string[] parkingSpaces)
 
     var input = Console.ReadLine();
 
-    if (ValidLicensePlate(input))
+    if (ValidLicensePlate(input!))
     {
-        var licensePlate = EncodeMotorcycleLicensePlate(input);
+        var licensePlate = EncodeMotorcycleLicensePlate(input!);
 
         if (FindFirstParkingSpaceWithRoomForMotorcycle(parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
         {
@@ -133,13 +133,31 @@ static void ShowCollectVehicleDialogue(string[] parkingSpaces)
 
     var input = Console.ReadLine();
 
-    if (ValidLicensePlate(input))
+    if (ValidLicensePlate(input!))
     {
-        var licensePlate = TidyLicensePlate(input);
+        var vehicleRegistration = TidyLicensePlate(input!);
 
-        if (FindVehicle(licensePlate, parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
+        if (FindVehicle(vehicleRegistration, parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
         {
-            SplashMessage($"Vehicle [{licensePlate}] is parked in space #{foundSpaceId}");
+            string message = "";
+
+            if (ParkingSpaceContainsCar(foundSpaceId, parkingSpaces))
+            {
+                message = $"Collect car [{vehicleRegistration}] from space #{foundSpaceId}";
+            }
+            else if (ParkingSpaceContainsMotorcycles(foundSpaceId, parkingSpaces, out _))
+            {
+                message = $"Collect motorcycle [{vehicleRegistration}] from space #{foundSpaceId}";
+            }
+
+            if (CollectVehicle(parkingSpaces, foundSpaceId, vehicleRegistration))
+            {
+                SplashMessage(message, "instruction");
+            }
+            else
+            {
+                SplashMessage("Error while collecting vehicle. Please try again.", "warning");
+            }
         }
         else
         {
@@ -164,9 +182,9 @@ static void ShowFindVehicleDialogue(string[] parkingSpaces)
 
     var input = Console.ReadLine();
 
-    if (ValidLicensePlate(input))
+    if (ValidLicensePlate(input!))
     {
-        var licensePlate = TidyLicensePlate(input);
+        var licensePlate = TidyLicensePlate(input!);
 
         if (FindVehicle(licensePlate, parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
         {
@@ -196,9 +214,9 @@ static void ShowParkCarDialogue(string[] parkingSpaces)
 
     var input = Console.ReadLine();
 
-    if (ValidLicensePlate(input))
+    if (ValidLicensePlate(input!))
     {
-        var licensePlate = EncodeCarLicensePlate(input);
+        var licensePlate = EncodeCarLicensePlate(input!);
 
         if (FindFirstEmptyParkingSpace(parkingSpaces, out int emptySpaceId) && emptySpaceId > 0)
         {
