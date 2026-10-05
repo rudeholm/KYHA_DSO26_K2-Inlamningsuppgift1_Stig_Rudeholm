@@ -201,22 +201,19 @@ static void ShowFindVehicleDialogue(string[] parkingSpaces)
     Console.Write("> ");
 
     var input = Console.ReadLine();
+    var vehicleRegistration = input ?? "";
 
     if (ValidVehicleRegistration(input!))
     {
-        var licensePlate = TidyLicensePlate(input!);
-
-        if (FindVehicle(licensePlate, parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
+        if (FindVehicle(vehicleRegistration, parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
         {
-            SplashMessage($"Vehicle [{licensePlate}] is parked in space #{foundSpaceId}");
+            SplashMessage($"Vehicle [{TidyLicensePlate(vehicleRegistration)}] is parked in space #{foundSpaceId}");
         }
         else
         {
             SplashMessage("Could not locate vehicle. Please double check license plate.");
         }
-
     }
-
 }
 
 static void ShowMoveVehicleDialogue(string[] parkingSpaces)
