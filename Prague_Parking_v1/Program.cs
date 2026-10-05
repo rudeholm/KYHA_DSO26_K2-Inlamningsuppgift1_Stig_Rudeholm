@@ -662,6 +662,15 @@ static void RunTests()
             && ParkingSpaceIsEmpty(testSpaceId, testGarage) == true;
     });
 
+    Test("Collecting a lonely motorcycle removes it from the database", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = testGarage.Length - 1;
+        ParkMotorcycle(testSpaceId, EncodeMotorcycleLicensePlate("foo 666"), testGarage);
+        return CollectVehicle(testGarage, testSpaceId, "foo 666") == true
+            && ParkingSpaceIsEmpty(testSpaceId, testGarage) == true;
+    });
+
 
 
 
@@ -674,6 +683,12 @@ static bool CollectVehicle(string[] parkingSpaces, int spaceId, string vehicleRe
         return false;
 
     if (ParkingSpaceContainsCar(spaceId, parkingSpaces))
+    {
+        parkingSpaces[spaceId] = "";
+        return true;
+    }
+
+    if (ParkingSpaceContainsMotorcycles(spaceId, parkingSpaces, out var qty) && qty == 1)
     {
         parkingSpaces[spaceId] = "";
         return true;
