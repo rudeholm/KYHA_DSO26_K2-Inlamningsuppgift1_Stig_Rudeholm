@@ -107,7 +107,6 @@ static void ShowParkMotorcycleDialogue(string[] parkingSpaces)
 {
     Console.Clear();
 
-
     PlaceCursor(TITLE_X, TITLE_Y);
     WriteTitle("Park motorcycle");
     PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
@@ -117,16 +116,15 @@ static void ShowParkMotorcycleDialogue(string[] parkingSpaces)
     Console.Write("> ");
 
     var input = Console.ReadLine();
+    var vehicleRegistration = input ?? "";
 
-    if (ValidVehicleRegistration(input!))
+    if (ValidVehicleRegistration(vehicleRegistration))
     {
-        var licensePlate = EncodeMotorcycleLicensePlate(input!);
-
         if (FindFirstParkingSpaceWithRoomForMotorcycle(parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
         {
-            if (ParkMotorcycle(foundSpaceId, licensePlate, parkingSpaces))
+            if (ParkMotorcycle(foundSpaceId, vehicleRegistration, parkingSpaces))
             {
-                SplashMessage($"Park motorcycle [{DecodeLicensePlate(licensePlate, out _)}] in space #{foundSpaceId}", "instruction");
+                SplashMessage($"Park motorcycle [{TidyLicensePlate(vehicleRegistration)}] in space #{foundSpaceId}", "instruction");
             }
             else
             {
@@ -142,7 +140,6 @@ static void ShowParkMotorcycleDialogue(string[] parkingSpaces)
     {
         SplashMessage("Invalid license plate. Please try again.", "warning");
     }
-
 }
 
 static void ShowCollectVehicleDialogue(string[] parkingSpaces)
