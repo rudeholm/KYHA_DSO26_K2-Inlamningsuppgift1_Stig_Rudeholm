@@ -240,3 +240,10 @@ Två saker som behöver brytas ut till egna metoder:
 ```
 
 Nu kan man hämta ut fordon, både bilar och motorcyklar.
+
+---
+
+Börjar tröttna på allt det gröna. Det är dags att lägga till lite färg i alla fall.
+
+---
+
