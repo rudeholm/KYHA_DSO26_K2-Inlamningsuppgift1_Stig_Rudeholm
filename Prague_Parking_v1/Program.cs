@@ -38,6 +38,9 @@ static void ShowMainMenu(string[] parkingSpaces)
         case "2":
             ShowParkMotorcycleDialogue(parkingSpaces);
             break;
+        case "3":
+            ShowCollectVehicleDialogue(parkingSpaces);
+            break;
         case "4":
             ShowFindVehicleDialogue(parkingSpaces);
             break;
@@ -113,6 +116,37 @@ static void ShowInspectParkingSpaceDialogue(string[] parkingSpaces)
     Console.Write("> ");
 
     var input = Console.ReadLine();
+
+}
+
+static void ShowCollectVehicleDialogue(string[] parkingSpaces)
+{
+    Console.Clear();
+
+    PlaceCursor(TITLE_X, TITLE_Y);
+    WriteTitle("Collect vehicle");
+    PlaceCursor(TITLE_X + 2, TITLE_Y + 3);
+    Console.WriteLine("Please enter vehicle license plate:");
+    Console.WriteLine();
+    MoveCursor(TITLE_X, 0);
+    Console.Write("> ");
+
+    var input = Console.ReadLine();
+
+    if (ValidLicensePlate(input))
+    {
+        var licensePlate = TidyLicensePlate(input);
+
+        if (FindVehicle(licensePlate, parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
+        {
+            SplashMessage($"Vehicle [{licensePlate}] is parked in space #{foundSpaceId}");
+        }
+        else
+        {
+            SplashMessage("Could not locate vehicle. Please double check license plate.");
+        }
+
+    }
 
 }
 
@@ -619,8 +653,34 @@ static void RunTests()
             && foundSpaceId == testSpaceId;
     });
 
+    Test("Collecting a car removes it from the database", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = testGarage.Length - 1;
+        ParkCar(testSpaceId, EncodeCarLicensePlate("foo 666"), testGarage);
+        return CollectVehicle(testGarage, testSpaceId, "foo 666") == true
+            && ParkingSpaceIsEmpty(testSpaceId, testGarage) == true;
+    });
+
+
+
 
     WaitKey();
+}
+
+static bool CollectVehicle(string[] parkingSpaces, int spaceId, string vehicleRegistration)
+{
+    if (ParkingSpaceIsEmpty(spaceId, parkingSpaces))
+        return false;
+
+    if (ParkingSpaceContainsCar(spaceId, parkingSpaces))
+    {
+        parkingSpaces[spaceId] = "";
+        return true;
+    }
+
+
+    return false;
 }
 
 static bool ParkingSpaceContainsMotorcycles(int spaceId, string[] parkingSpaces, out int qty)
