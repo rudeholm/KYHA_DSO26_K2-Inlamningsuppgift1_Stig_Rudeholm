@@ -25,7 +25,12 @@ static void ShowMainMenu(string[] parkingSpaces)
         "7: Show All Parking Spaces",
     ];
 
-    DisplayMenu(title, menuOptions);
+    string[] extraOptions = [
+        "test: Run Tests",
+        "exit: Exit Program",
+    ];
+
+    DisplayMenu(title, menuOptions, extraOptions);
 
     string? choice = Console.ReadLine();
 
@@ -377,10 +382,18 @@ static void SplashMessage(string message, string type = "info")
     Console.ReadKey();
 }
 
-static void DisplayMenu(string title, string[] options)
+static void DisplayMenu(string title, string[] options, string[] extraOptions)
 {
     Console.Clear();
 
+    var extraOptionsString = ($"[ {string.Join(" | ", extraOptions)} ]");
+
+    int left = (Console.BufferWidth / 2) - (extraOptionsString.Length / 2);
+    int bottom = Console.BufferHeight - 1;
+    PlaceCursor(left, bottom);
+    Console.Write(extraOptionsString);
+ 
+    PlaceCursor(0, 0);
     WriteTitle(title);
     MoveCursor(0, 1);
 
@@ -410,7 +423,6 @@ static void MoveCursor(int x, int y)
 
 static void WriteTitle(string title)
 {
-    Console.Clear();
     PlaceCursor(TITLE_X, TITLE_Y);
     Console.WriteLine(title.ToUpper());
 }
@@ -428,7 +440,7 @@ static void RunTests()
     WriteTitle("Testing...");
     Console.WriteLine();
 
-    Test("A vehicle license plate can be cleaned up",
+    Test("A vehicle registration can be cleaned up",
         () => FormatVehicleRegistration("  foo 666 ").Equals("FOO 666")
         );
 
@@ -454,11 +466,11 @@ static void RunTests()
             && vehicleType.Equals("MC")
         );
 
-    Test("A license plate can not be empty",
+    Test("A vehicle registration can not be empty",
         () => ValidVehicleRegistration("") == false
         );
 
-    Test("A license plate can not be longer than 10 characters",
+    Test("A vehicle registration can not be longer than 10 characters",
         () => ValidVehicleRegistration("xxx xxx xxx") == false
         );
 
@@ -920,7 +932,7 @@ static bool CollectVehicle(string[] parkingSpaces, int spaceId, string vehicleRe
 
     if (ParkingSpaceContainsCar(spaceId, parkingSpaces))
     {
-        parkingSpaces[spaceId] = "";
+        ClearParkingSpace(spaceId, parkingSpaces);
         return true;
     }
 
@@ -928,7 +940,7 @@ static bool CollectVehicle(string[] parkingSpaces, int spaceId, string vehicleRe
     {
         if (qty == 1)
         {
-            parkingSpaces[spaceId] = "";
+            ClearParkingSpace(spaceId, parkingSpaces);
             return true;
         }
 
@@ -1179,8 +1191,8 @@ static void Test(string description, Func<bool> test)
     Console.BackgroundColor = currentBackgroundColor;
 }
 
-static string[] GetEmptyParkingGarage(int size)
-    => new string[size + 1];
+static string[] GetEmptyParkingGarage(int capacity)
+    => new string[capacity + 1];
 
 static void WaitKey(string message = "[ Press any key to continue ]")
 {
@@ -1190,16 +1202,3 @@ static void WaitKey(string message = "[ Press any key to continue ]")
     Console.Write("[ Press any key to continue ]");
     Console.ReadKey();
 }
-
-static void DumpParkingGarage(string[] parkingSpaces)
-{
-    Console.Clear();
-
-    for (int i = 1; i < parkingSpaces.Length; i++)
-    {
-        Console.WriteLine($"{i:000}: {parkingSpaces[i]}");
-    }
-
-    WaitKey();
-}
-
