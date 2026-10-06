@@ -1,11 +1,11 @@
 ﻿const int TITLE_X = 5;
 const int TITLE_Y = 2;
-const int garageCapacity = 10;
+const int garageCapacity = 100;
 
 Console.Title = "Prague Parking v1.0";
 Console.ForegroundColor = ConsoleColor.Green;
 
-string[] parkingGarage = new string[1 + garageCapacity];
+string[] parkingGarage = GetEmptyParkingGarage(garageCapacity);
 
 while (true)
 {
@@ -23,7 +23,6 @@ static void ShowMainMenu(string[] parkingSpaces)
         "5: Move Vehicle",
         "6: Inspect Parking Space",
         "7: Show All Parking Spaces",
-        "8: Show Stats",
     ];
 
     DisplayMenu(title, menuOptions);
@@ -51,7 +50,7 @@ static void ShowMainMenu(string[] parkingSpaces)
             ShowInspectParkingSpaceDialogue(parkingSpaces);
             break;
         case "7":
-            DumpParkingGarage(parkingSpaces);
+            DisplayParkingGarage(parkingSpaces);
             break;
         case "test":
             RunTests();
@@ -167,8 +166,6 @@ static void ShowMoveVehicleDialogue(string[] parkingSpaces)
 
     if (FindVehicle(vehicleRegistration, parkingSpaces, out int originSpaceId) && originSpaceId > 0)
     {
-        string vehicleType;
-
         if (ParkingSpaceContainsCar(originSpaceId, parkingSpaces))
         {
             if (ParkingSpaceIsNotEmpty(destinationSpaceId, parkingSpaces))
@@ -225,6 +222,46 @@ static void ShowInspectParkingSpaceDialogue(string[] parkingSpaces)
         SplashMessage($"Parking space #{spaceId} is currently occupied by {InspectParkingSpace(spaceId, parkingSpaces)}.");
 }
 
+static void DisplayParkingGarage(string[] parkingSpaces)
+{
+    var columns = Console.WindowWidth switch
+    {
+        >= 150 => 5,
+        >= 122 => 4,
+        _ => 2,
+    };
+    var left = TITLE_X;
+    var top = TITLE_Y;
+    var padding = (Console.WindowWidth - left) / columns;
+
+    Console.Clear();
+    PlaceCursor(left, top);
+
+    for (int i = 1; i <= parkingSpaces.Length / columns; i++)
+    {
+        for (int column = 0; column < columns; column++)
+        {
+            var spaceId = i + (column * parkingSpaces.Length / columns);
+
+            Console.Write(($"{spaceId:000}").PadRight(padding));
+        }
+        Console.Write("\n");
+        MoveCursor(left, 0);
+
+        for (int column = 0; column < columns; column++)
+        {
+            var spaceId = i + (column * parkingSpaces.Length / columns);
+
+            Console.Write(($"└ {parkingSpaces[spaceId]}").PadRight(padding));
+        }
+        Console.Write("\n");
+        MoveCursor(left, 0);
+
+    }
+
+    WaitKey();
+}
+
 /*****************************************************************************/
 
 static int ReadSpaceIdInput(string headline, int max)
@@ -244,18 +281,12 @@ static int ReadSpaceIdInput(string headline, int max)
                 break;
             else
             {
-                var fgColor = Console.ForegroundColor;
-                Console.ForegroundColor = ConsoleColor.Red;
                 SplashMessage($"Invalid input. Please enter a number within the range 1-{max}", "warning");
-                Console.ForegroundColor = fgColor;
             }
         }
         else
         {
-            var fgColor = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Red;
             SplashMessage("Invalid input. Please enter a whole number.", "warning");
-            Console.ForegroundColor = fgColor;
             continue;
         }
 
@@ -279,10 +310,7 @@ static string ReadVehicleRegistrationInput(string headline)
             break;
         else
         {
-            var fgColor = Console.ForegroundColor;
-            Console.ForegroundColor = ConsoleColor.Red;
             SplashMessage("Invalid vehicle registration. Please try again.", "warning");
-            Console.ForegroundColor = fgColor;
         }
     }
     while (true);
@@ -1142,7 +1170,7 @@ static void Test(string description, Func<bool> test)
     else
     {
         Console.ForegroundColor = ConsoleColor.Black;
-        Console.BackgroundColor = ConsoleColor.DarkRed;
+        Console.BackgroundColor = ConsoleColor.DarkGreen;
         Console.Write("[-] FAIL!");
         Console.WriteLine();
     }
@@ -1165,12 +1193,12 @@ static void WaitKey(string message = "[ Press any key to continue ]")
 
 static void DumpParkingGarage(string[] parkingSpaces)
 {
+    Console.Clear();
+
     for (int i = 1; i < parkingSpaces.Length; i++)
     {
         Console.WriteLine($"{i:000}: {parkingSpaces[i]}");
     }
-
-    DrawHorizontalBar(20);
 
     WaitKey();
 }

@@ -261,4 +261,9 @@ Nu går det att flytta fordon manuellt från menyn.
 
 ---
 
+Bestämde mig för att ta bort färgerna igen och köra på mono-grönt i alla fall.
+
+---
+
+Version 1 känns klar? Tror att allt fungerar, även om det fortfarande kan snyggas upp ordentligt.
 
