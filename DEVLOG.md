@@ -267,3 +267,9 @@ Bestämde mig för att ta bort färgerna igen och köra på mono-grönt i alla f
 
 Version 1 känns klar? Tror att allt fungerar, även om det fortfarande kan snyggas upp ordentligt.
 
+---
+
+Har städat en del. Framförallt flyttat runt parametrar så att `parkingGarage` är först i alla metodanrop. Begriper inte varför jag inte gjorde så från början... Känns mycket bättre.
+
+---
+
