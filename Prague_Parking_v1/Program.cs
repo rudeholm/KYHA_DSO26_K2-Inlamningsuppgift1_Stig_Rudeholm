@@ -389,8 +389,8 @@ static void DisplayMenu(string title, string[] options, string[] extraOptions)
 
     var extraOptionsString = ($"[ {string.Join(" | ", extraOptions)} ]");
 
-    int left = (Console.BufferWidth / 2) - (extraOptionsString.Length / 2);
-    int bottom = Console.BufferHeight - 1;
+    int left = (Console.WindowWidth / 2) - (extraOptionsString.Length / 2);
+    int bottom = Console.WindowHeight - 1;
     PlaceCursor(left, bottom);
     Console.Write(extraOptionsString);
  
@@ -1197,8 +1197,8 @@ static string[] GetEmptyParkingGarage(int capacity)
 
 static void WaitKey(string message = "[ Press any key to continue ]")
 {
-    int left = (Console.BufferWidth / 2) - (message.Length / 2);
-    int bottom = Console.BufferHeight - 1;
+    int left = (Console.WindowWidth / 2) - (message.Length / 2);
+    int bottom = Console.WindowHeight - 1;
     PlaceCursor(left, bottom);
     Console.Write("[ Press any key to continue ]");
     Console.ReadKey();
