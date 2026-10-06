@@ -906,6 +906,12 @@ static void RunTests()
         return FetchParkingSpace(testGarage, testSpaceId).Equals(EncodeCarLicensePlate(vehicleRegistration));
     });
 
+    Test("An encoded motorcycle license plate is a motorcycle", () =>
+    {
+        var encodedLicensePlate = EncodeMotorcycleLicensePlate("foo-m 23");
+        return IsMotorcycle(encodedLicensePlate) == true;
+    });
+
 
     WaitKey();
 }
