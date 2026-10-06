@@ -1081,18 +1081,18 @@ static void Test(string description, Func<bool> test)
     var currentForegroundColor = Console.ForegroundColor;
     var currentBackgroundColor = Console.BackgroundColor;
 
-    Console.Write($"○ {description} →→→ ");
+    Console.Write($"* {description} >>> ");
     bool result = test();
     if (result == true)
     {
-        Console.Write("[√] PASS!");
+        Console.Write("[x] PASS!");
         Console.WriteLine();
     }
     else
     {
         Console.ForegroundColor = ConsoleColor.Black;
         Console.BackgroundColor = ConsoleColor.DarkRed;
-        Console.Write("[x] FAIL!");
+        Console.Write("[-] FAIL!");
         Console.WriteLine();
     }
 
