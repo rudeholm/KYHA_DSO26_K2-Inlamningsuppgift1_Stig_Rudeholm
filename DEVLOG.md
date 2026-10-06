@@ -255,3 +255,10 @@ Har eliminerat en hel del upprepningar genom att skriva dedikerade metoder för 
 
 ---
 
+#### 2026-10-06
+
+Nu går det att flytta fordon manuellt från menyn.
+
+---
+
+

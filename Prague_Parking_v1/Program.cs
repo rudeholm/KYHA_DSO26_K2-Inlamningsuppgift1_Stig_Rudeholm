@@ -159,7 +159,58 @@ static void ShowFindVehicleDialogue(string[] parkingSpaces)
 
 static void ShowMoveVehicleDialogue(string[] parkingSpaces)
 {
-    throw new NotImplementedException();
+    var title = "Move vehicle";
+
+    var vehicleRegistration = ReadVehicleRegistrationInput(title);
+
+    var destinationSpaceId = ReadSpaceIdInput(title, garageCapacity);
+
+    if (FindVehicle(vehicleRegistration, parkingSpaces, out int originSpaceId) && originSpaceId > 0)
+    {
+        string vehicleType;
+
+        if (ParkingSpaceContainsCar(originSpaceId, parkingSpaces))
+        {
+            if (ParkingSpaceIsNotEmpty(destinationSpaceId, parkingSpaces))
+            {
+                SplashMessage($"Can not move car. Destination space is occupied!", "warning");
+                return;
+            }
+
+            if (CollectVehicle(parkingSpaces, originSpaceId, vehicleRegistration))
+            {
+                if (ParkCar(destinationSpaceId, vehicleRegistration, parkingSpaces))
+                {
+                    SplashMessage($"Move car [{FormatVehicleRegistration(vehicleRegistration)}] from space #{originSpaceId} to space #{destinationSpaceId}.", "instruction");
+                }
+            }
+            return;
+        }
+
+        if (ParkingSpaceContainsMotorcycles(originSpaceId, parkingSpaces, out _))
+        {
+            if (ParkingSpaceHasRoomForMotorcycle(destinationSpaceId, parkingSpaces))
+            {
+                if (CollectVehicle(parkingSpaces, originSpaceId, vehicleRegistration))
+                {
+                    if (ParkMotorcycle(destinationSpaceId, vehicleRegistration, parkingSpaces))
+                    {
+                        SplashMessage($"Move motorcycle [{FormatVehicleRegistration(vehicleRegistration)}] from space #{originSpaceId} to space #{destinationSpaceId}.", "instruction");
+                    }
+                }
+            }
+            else
+            {
+                SplashMessage($"Can not move motorcycle. Destination space is full!", "warning");
+            }
+
+            return;
+        }
+    }
+    else
+    {
+        SplashMessage("Could not locate vehicle. Please double check license plate.");
+    }
 }
 
 static void ShowInspectParkingSpaceDialogue(string[] parkingSpaces)
@@ -1036,7 +1087,7 @@ static bool ParkCar(int spaceId, string vehicleRegistration, string[] parkingSpa
 {
     var licensePlate = EncodeCarLicensePlate(vehicleRegistration);
 
-    if (FindVehicle(vehicleRegistration,parkingSpaces,out _))
+    if (FindVehicle(vehicleRegistration, parkingSpaces, out _))
         return false;
 
     if (ParkingSpaceIsNotEmpty(spaceId, parkingSpaces))
