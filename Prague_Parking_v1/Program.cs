@@ -897,10 +897,36 @@ static void RunTests()
         return ParkMotorcycle(testGarage, 2, vehicleRegistration) == false;
     });
 
+    Test("The contents of a specific parking space can be fetched", () =>
+    {
+        var testGarage = GetEmptyParkingGarage(5);
+        var testSpaceId = 1;
+        var vehicleRegistration = "foo 666";
+        ParkCar(testGarage, testSpaceId, vehicleRegistration);
+        return FetchParkingSpace(testGarage, testSpaceId).Equals(EncodeCarLicensePlate(vehicleRegistration));
+    });
+
+
     WaitKey();
 }
 
+static string FetchParkingSpace(string[] parkingSpaces, int spaceId)
+{
+    if (ValidSpaceId(spaceId, parkingSpaces.Length))
+        return parkingSpaces[spaceId];
+
+    return "";
+}
+
 /*****************************************************************************/
+
+static bool IsMotorcycle(string encodedLicensePlate)
+{
+    if (encodedLicensePlate.StartsWith("MC#"))
+        return true;
+
+    return false;
+}
 
 static bool MoveVehicle(string[] parkingSpaces, int destinationSpaceId, string vehicleRegistration)
 {
