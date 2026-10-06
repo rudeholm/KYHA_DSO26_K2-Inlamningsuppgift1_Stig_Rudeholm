@@ -273,3 +273,4 @@ Har städat en del. Framförallt flyttat runt parametrar så att `parkingGarage`
 
 ---
 
+Det fungerar jättebra att använda index 0 i parkeringshuset som en sorts meddelande-buffer. Nu syns alltid den senaste instruktionen på menyskärmen.

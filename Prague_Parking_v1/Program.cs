@@ -30,7 +30,9 @@ static void ShowMainMenu(string[] parkingSpaces)
         "exit: Exit Program",
     ];
 
-    DisplayMenu(title, menuOptions, extraOptions);
+    var message = parkingSpaces[0];
+
+    DisplayMenu(title, menuOptions, extraOptions, message);
 
     string? choice = Console.ReadLine();
 
@@ -79,11 +81,13 @@ static void ShowParkCarDialogue(string[] parkingSpaces)
     {
         if (ParkCar(parkingSpaces, emptySpaceId, vehicleRegistration))
         {
-            SplashMessage($"Park car [{FormatVehicleRegistration(vehicleRegistration)}] in space #{emptySpaceId}", "instruction");
+            var message = $"Park car [{FormatVehicleRegistration(vehicleRegistration)}] in space #{emptySpaceId}";
+            SplashMessage(message, "instruction");
+            parkingSpaces[0] = message;
         }
         else
         {
-            SplashMessage("Could not park car.", "warning");
+            SplashMessage("Could not park car.", "error");
         }
     }
     else
@@ -103,7 +107,9 @@ static void ShowParkMotorcycleDialogue(string[] parkingSpaces)
     {
         if (ParkMotorcycle(parkingSpaces, foundSpaceId, vehicleRegistration))
         {
-            SplashMessage($"Park motorcycle [{FormatVehicleRegistration(vehicleRegistration)}] in space #{foundSpaceId}", "instruction");
+            var message = $"Park motorcycle [{FormatVehicleRegistration(vehicleRegistration)}] in space #{foundSpaceId}";
+            SplashMessage(message, "instruction");
+            parkingSpaces[0] = message;
         }
         else
         {
@@ -137,12 +143,17 @@ static void ShowCollectVehicleDialogue(string[] parkingSpaces)
 
         if (CollectVehicle(parkingSpaces, foundSpaceId, vehicleRegistration))
         {
+            parkingSpaces[0] = message;
             SplashMessage(message, "instruction");
         }
         else
         {
             SplashMessage("Error while collecting vehicle. Please try again.", "warning");
         }
+    }
+    else
+    {
+        SplashMessage("Could not locate vehicle. Please double check license plate.");
     }
 }
 
@@ -168,10 +179,10 @@ static void ShowMoveVehicleDialogue(string[] parkingSpaces)
 
     var vehicleRegistration = ReadVehicleRegistrationInput(title);
 
-    var destinationSpaceId = ReadSpaceIdInput(title, garageCapacity);
-
     if (FindVehicle(parkingSpaces, vehicleRegistration, out int originSpaceId) && originSpaceId > 0)
     {
+        var destinationSpaceId = ReadSpaceIdInput(title, garageCapacity);
+
         if (ParkingSpaceContainsCar(parkingSpaces, originSpaceId))
         {
             if (ParkingSpaceIsNotEmpty(parkingSpaces, destinationSpaceId))
@@ -184,7 +195,9 @@ static void ShowMoveVehicleDialogue(string[] parkingSpaces)
             {
                 if (ParkCar(parkingSpaces, destinationSpaceId, vehicleRegistration))
                 {
-                    SplashMessage($"Move car [{FormatVehicleRegistration(vehicleRegistration)}] from space #{originSpaceId} to space #{destinationSpaceId}.", "instruction");
+                    var message = $"Move car [{FormatVehicleRegistration(vehicleRegistration)}] from space #{originSpaceId} to space #{destinationSpaceId}.";
+                    parkingSpaces[0] = message;
+                    SplashMessage(message, "instruction");
                 }
             }
             return;
@@ -198,7 +211,9 @@ static void ShowMoveVehicleDialogue(string[] parkingSpaces)
                 {
                     if (ParkMotorcycle(parkingSpaces, destinationSpaceId, vehicleRegistration))
                     {
-                        SplashMessage($"Move motorcycle [{FormatVehicleRegistration(vehicleRegistration)}] from space #{originSpaceId} to space #{destinationSpaceId}.", "instruction");
+                        var message = $"Move motorcycle [{FormatVehicleRegistration(vehicleRegistration)}] from space #{originSpaceId} to space #{destinationSpaceId}.";
+                        parkingSpaces[0] = message;
+                        SplashMessage(message, "instruction");
                     }
                 }
             }
@@ -383,7 +398,7 @@ static void SplashMessage(string message, string type = "info")
     Console.ReadKey();
 }
 
-static void DisplayMenu(string title, string[] options, string[] extraOptions)
+static void DisplayMenu(string title, string[] options, string[] extraOptions, string? message)
 {
     Console.Clear();
 
@@ -393,8 +408,10 @@ static void DisplayMenu(string title, string[] options, string[] extraOptions)
     int bottom = Console.WindowHeight - 1;
     PlaceCursor(left, bottom);
     Console.Write(extraOptionsString);
- 
-    PlaceCursor(0, 0);
+
+    if (string.IsNullOrWhiteSpace(message) == false)
+        DisplayMessage("Last instruction:", message);
+
     WriteTitle(title);
     MoveCursor(0, 1);
 
@@ -407,6 +424,16 @@ static void DisplayMenu(string title, string[] options, string[] extraOptions)
     Console.WriteLine();
     MoveCursor(TITLE_X, 0);
     Console.Write("> ");
+}
+
+static void DisplayMessage(string headline, string message)
+{
+    var left = 50;
+    var top = TITLE_Y + 2;
+    PlaceCursor(left, top);
+    Console.WriteLine(headline.ToUpper());
+    MoveCursor(left, 0);
+    Console.WriteLine(message);
 }
 
 static void PlaceCursor(int x, int y)
