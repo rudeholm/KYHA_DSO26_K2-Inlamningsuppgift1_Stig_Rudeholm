@@ -908,13 +908,41 @@ static void RunTests()
 
     Test("An encoded motorcycle license plate is a motorcycle", () =>
     {
-        var encodedLicensePlate = EncodeMotorcycleLicensePlate("foo-m 23");
+        var encodedLicensePlate = EncodeMotorcycleLicensePlate("foo");
         return IsMotorcycle(encodedLicensePlate) == true;
     });
+
+    Test("An encoded car license plate is not a motorcycle", () =>
+    {
+        var encodedLicensePlate = EncodeCarLicensePlate("foo");
+        return IsMotorcycle(encodedLicensePlate) == false;
+    });
+
+    Test("An encoded car license plate is a car", () =>
+    {
+        var encodedLicensePlate = EncodeCarLicensePlate("foo");
+        return IsCar(encodedLicensePlate) == true;
+    });
+
+    Test("An encoded motorcycle license plate is not a car", () =>
+    {
+        var encodedLicensePlate = EncodeMotorcycleLicensePlate("foo");
+        return IsCar(encodedLicensePlate) == false;
+    });
+
+
 
 
     WaitKey();
 }
+
+
+
+/*****************************************************************************/
+static bool IsCar(string encodedLicensePlate)
+    => encodedLicensePlate.StartsWith("CAR#");
+static bool IsMotorcycle(string encodedLicensePlate)
+    => encodedLicensePlate.StartsWith("MC#");
 
 static string FetchParkingSpace(string[] parkingSpaces, int spaceId)
 {
@@ -922,16 +950,6 @@ static string FetchParkingSpace(string[] parkingSpaces, int spaceId)
         return parkingSpaces[spaceId];
 
     return "";
-}
-
-/*****************************************************************************/
-
-static bool IsMotorcycle(string encodedLicensePlate)
-{
-    if (encodedLicensePlate.StartsWith("MC#"))
-        return true;
-
-    return false;
 }
 
 static bool MoveVehicle(string[] parkingSpaces, int destinationSpaceId, string vehicleRegistration)
