@@ -298,3 +298,31 @@ NU tänker jag låtsas att version 1 är klar! Den är inte helt och hållet som
 #### 2026-10-07
 
 Nu gäller det att snygga upp appen rejält. Några nya funktioner och lite mer färg, är planen.
+
+---
+
+Och nu är den där for-loopen framme och retas igen. Behöver bryta ut den till en egen metod.
+
+---
+
+Nu kan jag skanna hela parkeringshuset med en egen metod och injicera olika metoder för olika behov:
+
+```
+static int ScanParkingGarage(Func<int, bool> f)
+{
+    int count = 0;
+    for (int i = 1; i <= garageCapacity; i++)
+    {
+        if (f(i))
+            count++;
+    }
+    return count;
+}
+```
+
+Exempel:
+
+```
+static int CountParkedCars()
+    => ScanParkingGarage((parkingSpaceId) => ParkingSpaceContainsCar(parkingSpaceId));
+```

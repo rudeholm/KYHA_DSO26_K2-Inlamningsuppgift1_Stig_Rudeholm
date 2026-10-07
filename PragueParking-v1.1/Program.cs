@@ -1005,29 +1005,22 @@ internal class Program
 
     /*****************************************************************************/
 
-    private static int CountParkedCars()
+    static int ScanParkingGarage(Func<int, bool> f)
     {
         int count = 0;
         for (int i = 1; i <= garageCapacity; i++)
         {
-            if (ParkingSpaceContainsCar(i))
+            if (f(i))
                 count++;
         }
-
         return count;
     }
 
-    private static int CountEmptyParkingSpaces()
-    {
-        int count = 0;
-        for (int i = 1; i <= garageCapacity; i++)
-        {
-            if (ParkingSpaceIsEmpty(i))
-                count++;
-        }
+    static int CountParkedCars()
+        => ScanParkingGarage((parkingSpaceId) => ParkingSpaceContainsCar(parkingSpaceId));
 
-        return count;
-    }
+    static int CountEmptyParkingSpaces()
+        => ScanParkingGarage((parkingSpaceId) => ParkingSpaceIsEmpty(parkingSpaceId));
 
     static bool IsCar(string encodedLicensePlate)
         => encodedLicensePlate.StartsWith("CAR#");
