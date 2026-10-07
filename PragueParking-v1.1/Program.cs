@@ -1,4 +1,6 @@
-﻿namespace PragueParking_v1._1;
+﻿using Spectre.Console;
+
+namespace PragueParking_v1._1;
 
 internal class Program
 {
@@ -40,7 +42,7 @@ internal class Program
 
         var message = parkingGarage[0];
 
-        DisplayMenu(title, menuOptions, extraOptions, message);
+        DisplayEnhancedMenu(title, menuOptions, extraOptions, message);
 
         string? choice = Console.ReadLine();
 
@@ -401,6 +403,17 @@ internal class Program
         Console.WriteLine(continueInstruction);
 
         Console.ReadKey();
+    }
+
+    static void DisplayEnhancedMenu(string title, string[] options, string[] extraOptions, string? message)
+    {
+        var grid = new Grid();
+        grid.AddColumn();
+        grid.AddRow("1. Foo");
+        grid.AddRow("2. Bar");
+        grid.AddRow("3. Baz");
+        var panel = new Panel(grid).Border(BoxBorder.DoubleHorizontal).BorderColor(Color.Green).Padding(2, 1);
+        AnsiConsole.Write(panel);
     }
 
     static void DisplayMenu(string title, string[] options, string[] extraOptions, string? message)
@@ -974,9 +987,34 @@ internal class Program
             return CountEmptyParkingSpaces() == garageCapacity - 1;
         });
 
+        Test("It is possible to count the number of parked cars", () =>
+        {
+            InitializeParkingGarage();
+            ParkCar(1, "foo");
+            ParkMotorcycle(2, "bar");
+            ParkCar(3, "baz");
+            return CountParkedCars() == 2;
+        });
+
 
 
         WaitKey();
+    }
+
+
+
+    /*****************************************************************************/
+
+    private static int CountParkedCars()
+    {
+        int count = 0;
+        for (int i = 1; i <= garageCapacity; i++)
+        {
+            if (ParkingSpaceContainsCar(i))
+                count++;
+        }
+
+        return count;
     }
 
     private static int CountEmptyParkingSpaces()
@@ -991,9 +1029,6 @@ internal class Program
         return count;
     }
 
-
-
-    /*****************************************************************************/
     static bool IsCar(string encodedLicensePlate)
         => encodedLicensePlate.StartsWith("CAR#");
     static bool IsMotorcycle(string encodedLicensePlate)
@@ -1267,18 +1302,17 @@ internal class Program
 
     static void Test(string description, Func<bool> test)
     {
-        Console.Write($"* {description} >>> ");
         bool result = test();
         if (result == true)
         {
-            Console.Write("[x] PASS!");
-            Console.WriteLine();
+            AnsiConsole.Markup("[green][[✓]][/] ");
         }
         else
         {
-            Console.Write("[-] FAIL!");
-            Console.WriteLine();
+            AnsiConsole.Markup("[bold red][[✗]][/] ");
         }
+        Console.Write($"{description}");
+        Console.WriteLine();
 
     }
 
