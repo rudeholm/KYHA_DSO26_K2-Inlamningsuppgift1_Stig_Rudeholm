@@ -77,22 +77,22 @@ static void ShowParkCarDialogue(string[] parkingSpaces)
 
     var vehicleRegistration = ReadVehicleRegistrationInput(title);
 
-    if (FindFirstEmptyParkingSpace(parkingSpaces, out int emptySpaceId) && emptySpaceId > 0)
+    if (FindFirstEmptyParkingSpace(parkingSpaces, out int emptySpaceId) == false)
     {
-        if (ParkCar(parkingSpaces, emptySpaceId, vehicleRegistration))
-        {
-            var message = $"Park car [{FormatVehicleRegistration(vehicleRegistration)}] in space #{emptySpaceId}";
-            SplashMessage(message, "instruction");
-            parkingSpaces[0] = message;
-        }
-        else
-        {
-            SplashMessage("Could not park car.", "error");
-        }
+        SplashMessage("No parking space available.", "warning");
+        return;
+    }
+
+    if (ParkCar(parkingSpaces, emptySpaceId, vehicleRegistration))
+    {
+        var licensePlate = FormatVehicleRegistration(vehicleRegistration);
+        var message = $"Park car [{licensePlate}] in space #{emptySpaceId}";
+        SplashMessage(message, "instruction");
+        parkingSpaces[0] = message;
     }
     else
     {
-        SplashMessage("No parking space available.", "warning");
+        SplashMessage("Could not park car.", "error");
     }
 
 }
@@ -103,22 +103,22 @@ static void ShowParkMotorcycleDialogue(string[] parkingSpaces)
 
     var vehicleRegistration = ReadVehicleRegistrationInput(title);
 
-    if (FindFirstParkingSpaceWithRoomForMotorcycle(parkingSpaces, out int foundSpaceId) && foundSpaceId > 0)
+    if (FindFirstParkingSpaceWithRoomForMotorcycle(parkingSpaces, out int foundSpaceId) == false)
     {
-        if (ParkMotorcycle(parkingSpaces, foundSpaceId, vehicleRegistration))
-        {
-            var message = $"Park motorcycle [{FormatVehicleRegistration(vehicleRegistration)}] in space #{foundSpaceId}";
-            SplashMessage(message, "instruction");
-            parkingSpaces[0] = message;
-        }
-        else
-        {
-            SplashMessage("Could not park motorcycle.", "warning");
-        }
+        SplashMessage("No parking space available.", "warning");
+        return;
+    }
+
+    if (ParkMotorcycle(parkingSpaces, foundSpaceId, vehicleRegistration))
+    {
+        var licensePlate = FormatVehicleRegistration(vehicleRegistration);
+        var message = $"Park motorcycle [{licensePlate}] in space #{foundSpaceId}";
+        parkingSpaces[0] = message;
+        SplashMessage(message, "instruction");
     }
     else
     {
-        SplashMessage("No parking space available.", "warning");
+        SplashMessage("Could not park motorcycle.", "warning");
     }
 }
 
@@ -128,32 +128,33 @@ static void ShowCollectVehicleDialogue(string[] parkingSpaces)
 
     var vehicleRegistration = ReadVehicleRegistrationInput(title);
 
-    if (FindVehicle(parkingSpaces, vehicleRegistration, out int foundSpaceId) && foundSpaceId > 0)
+    if (FindVehicle(parkingSpaces, vehicleRegistration, out int foundSpaceId) == false)
     {
-        string message = "";
+        SplashMessage("Could not locate vehicle. Please double check vehicle registration.");
+        return;
+    }
 
-        if (ParkingSpaceContainsCar(parkingSpaces, foundSpaceId))
-        {
-            message = $"Collect car [{FormatVehicleRegistration(vehicleRegistration)}] from space #{foundSpaceId}";
-        }
-        else if (ParkingSpaceContainsMotorcycles(parkingSpaces, foundSpaceId, out _))
-        {
-            message = $"Collect motorcycle [{FormatVehicleRegistration(vehicleRegistration)}] from space #{foundSpaceId}";
-        }
 
-        if (CollectVehicle(parkingSpaces, foundSpaceId, vehicleRegistration))
-        {
-            parkingSpaces[0] = message;
-            SplashMessage(message, "instruction");
-        }
-        else
-        {
-            SplashMessage("Error while collecting vehicle. Please try again.", "warning");
-        }
+    string message = "";
+    var licensePlate = FormatVehicleRegistration(vehicleRegistration);
+
+    if (ParkingSpaceContainsCar(parkingSpaces, foundSpaceId))
+    {
+        message = $"Collect car [{licensePlate}] from space #{foundSpaceId}";
+    }
+    else if (ParkingSpaceContainsMotorcycles(parkingSpaces, foundSpaceId, out _))
+    {
+        message = $"Collect motorcycle [{licensePlate}] from space #{foundSpaceId}";
+    }
+
+    if (CollectVehicle(parkingSpaces, foundSpaceId, vehicleRegistration))
+    {
+        parkingSpaces[0] = message;
+        SplashMessage(message, "instruction");
     }
     else
     {
-        SplashMessage("Could not locate vehicle. Please double check license plate.");
+        SplashMessage("Error while collecting vehicle. Please try again.", "warning");
     }
 }
 
@@ -165,11 +166,12 @@ static void ShowFindVehicleDialogue(string[] parkingSpaces)
 
     if (FindVehicle(parkingSpaces, vehicleRegistration, out int foundSpaceId) && foundSpaceId > 0)
     {
-        SplashMessage($"Vehicle [{FormatVehicleRegistration(vehicleRegistration)}] is parked in space #{foundSpaceId}");
+        var licensePlate = FormatVehicleRegistration(vehicleRegistration);
+        SplashMessage($"Vehicle [{licensePlate}] is parked in space #{foundSpaceId}");
     }
     else
     {
-        SplashMessage("Could not locate vehicle. Please double check license plate.");
+        SplashMessage("Could not locate vehicle. Please double check vehicle registration.");
     }
 }
 
@@ -181,53 +183,53 @@ static void ShowMoveVehicleDialogue(string[] parkingSpaces)
 
     if (FindVehicle(parkingSpaces, vehicleRegistration, out int originSpaceId) && originSpaceId > 0)
     {
-        var destinationSpaceId = ReadSpaceIdInput(title, garageCapacity);
+        SplashMessage("Could not locate vehicle. Please double check vehicle registration.");
+        return;
+    }
 
-        if (ParkingSpaceContainsCar(parkingSpaces, originSpaceId))
+    var destinationSpaceId = ReadSpaceIdInput(title, garageCapacity);
+    var licensePlate = FormatVehicleRegistration(vehicleRegistration);
+
+    if (ParkingSpaceContainsCar(parkingSpaces, originSpaceId))
+    {
+        if (ParkingSpaceIsNotEmpty(parkingSpaces, destinationSpaceId))
         {
-            if (ParkingSpaceIsNotEmpty(parkingSpaces, destinationSpaceId))
-            {
-                SplashMessage($"Can not move car. Destination space is occupied!", "warning");
-                return;
-            }
+            SplashMessage($"Can not move car. Destination space is occupied!", "warning");
+            return;
+        }
 
+        if (CollectVehicle(parkingSpaces, originSpaceId, vehicleRegistration))
+        {
+            if (ParkCar(parkingSpaces, destinationSpaceId, vehicleRegistration))
+            {
+                var message = $"Move car [{licensePlate}] from space #{originSpaceId} to space #{destinationSpaceId}.";
+                parkingSpaces[0] = message;
+                SplashMessage(message, "instruction");
+            }
+        }
+        return;
+    }
+
+    if (ParkingSpaceContainsMotorcycles(parkingSpaces, originSpaceId, out _))
+    {
+        if (ParkingSpaceHasRoomForMotorcycle(parkingSpaces, destinationSpaceId))
+        {
             if (CollectVehicle(parkingSpaces, originSpaceId, vehicleRegistration))
             {
-                if (ParkCar(parkingSpaces, destinationSpaceId, vehicleRegistration))
+                if (ParkMotorcycle(parkingSpaces, destinationSpaceId, vehicleRegistration))
                 {
-                    var message = $"Move car [{FormatVehicleRegistration(vehicleRegistration)}] from space #{originSpaceId} to space #{destinationSpaceId}.";
+                    var message = $"Move motorcycle [{licensePlate}] from space #{originSpaceId} to space #{destinationSpaceId}.";
                     parkingSpaces[0] = message;
                     SplashMessage(message, "instruction");
                 }
             }
-            return;
         }
-
-        if (ParkingSpaceContainsMotorcycles(parkingSpaces, originSpaceId, out _))
+        else
         {
-            if (ParkingSpaceHasRoomForMotorcycle(parkingSpaces, destinationSpaceId))
-            {
-                if (CollectVehicle(parkingSpaces, originSpaceId, vehicleRegistration))
-                {
-                    if (ParkMotorcycle(parkingSpaces, destinationSpaceId, vehicleRegistration))
-                    {
-                        var message = $"Move motorcycle [{FormatVehicleRegistration(vehicleRegistration)}] from space #{originSpaceId} to space #{destinationSpaceId}.";
-                        parkingSpaces[0] = message;
-                        SplashMessage(message, "instruction");
-                    }
-                }
-            }
-            else
-            {
-                SplashMessage($"Can not move motorcycle. Destination space is full!", "warning");
-            }
-
-            return;
+            SplashMessage($"Can not move motorcycle. Destination space is full!", "warning");
         }
-    }
-    else
-    {
-        SplashMessage("Could not locate vehicle. Please double check license plate.");
+
+        return;
     }
 }
 
