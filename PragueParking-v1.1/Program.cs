@@ -42,7 +42,8 @@ internal class Program
 
         var message = parkingGarage[0];
 
-        DisplayEnhancedMenu(title, menuOptions, extraOptions, message);
+//        DisplayEnhancedMenu(title, menuOptions, extraOptions, message);
+        DisplayMenu(title, menuOptions, extraOptions, message);
 
         string? choice = Console.ReadLine();
 
@@ -454,6 +455,8 @@ internal class Program
         Console.WriteLine("Statistics".ToUpper());
         MoveCursor(left, 1);
         Console.WriteLine($"Empty parking spaces: {CountEmptyParkingSpaces()}");
+        MoveCursor(left, 1);
+        Console.WriteLine($"Parked cars: {CountParkedCars()}");
 
     }
 
@@ -498,6 +501,9 @@ internal class Program
         Console.Clear();
         WriteTitle("Testing...");
         Console.WriteLine();
+
+        string[] stashedParkingGarage = GetEmptyParkingGarage();
+        Array.Copy(parkingGarage, stashedParkingGarage, parkingGarage.Length);
 
         garageCapacity = 5;
         InitializeParkingGarage();
@@ -996,12 +1002,11 @@ internal class Program
             return CountParkedCars() == 2;
         });
 
-
+        garageCapacity = stashedParkingGarage.Length - 1;
+        parkingGarage = stashedParkingGarage;
 
         WaitKey();
     }
-
-
 
     /*****************************************************************************/
 
