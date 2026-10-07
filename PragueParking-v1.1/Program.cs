@@ -42,7 +42,7 @@ internal class Program
 
         var message = parkingGarage[0];
 
-//        DisplayEnhancedMenu(title, menuOptions, extraOptions, message);
+        //        DisplayEnhancedMenu(title, menuOptions, extraOptions, message);
         DisplayMenu(title, menuOptions, extraOptions, message);
 
         string? choice = Console.ReadLine();
@@ -1002,13 +1002,36 @@ internal class Program
             return CountParkedCars() == 2;
         });
 
+        Test("It is possible to count the number of parking spaces with a single motorcycle", () =>
+        {
+            InitializeParkingGarage();
+            ParkMotorcycle(1, "foo 1");
+            ParkMotorcycle(2, "bar 1");
+            ParkMotorcycle(2, "bar 2");
+            ParkCar(3, "baz");
+            ParkMotorcycle(4, "foo 2");
+            return CountParkingSpacesWithSingleMotorcycles() == 2;
+        });
+
+
+
+
+        //
         garageCapacity = stashedParkingGarage.Length - 1;
         parkingGarage = stashedParkingGarage;
 
         WaitKey();
     }
 
+
+
     /*****************************************************************************/
+
+    private static int CountParkingSpacesWithSingleMotorcycles() =>
+        ScanParkingGarage((parkingSpaceId) =>
+            ParkingSpaceContainsMotorcycles(parkingSpaceId, out int qty)
+            && qty == 1
+        );
 
     static int ScanParkingGarage(Func<int, bool> f)
     {
