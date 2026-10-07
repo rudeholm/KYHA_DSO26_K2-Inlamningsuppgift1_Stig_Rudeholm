@@ -1,6 +1,14 @@
 ﻿using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace PragueParking_v1._1;
+
+enum Option
+{
+    Park,
+    Collect,
+    Move,
+}
 
 internal class Program
 {
@@ -10,77 +18,135 @@ internal class Program
     static int garageCapacity = 100;
     static string[] parkingGarage = GetEmptyParkingGarage();
 
+    static int selected = 0;
+
     static void Main(string[] args)
     {
         Console.Title = "Prague Parking v1.1";
 
         InitializeParkingGarage();
 
-        while (true)
-        {
-            ShowMainMenu();
-        }
+        ShowMainMenu();
     }
 
     static void ShowMainMenu()
     {
-        string title = "Park-o-matix 9001";
-        string[] menuOptions = [
-            "1: Park Car",
-            "2: Park Motorcycle",
-            "3: Collect Vehicle",
-            "4: Find Vehicle",
-            "5: Move Vehicle",
-            "6: Inspect Parking Space",
-            "7: Show All Parking Spaces",
-        ];
-
-        string[] extraOptions = [
-            "test: Run Tests",
-            "exit: Exit Program",
-        ];
-
-        var message = parkingGarage[0];
-
-        //        DisplayEnhancedMenu(title, menuOptions, extraOptions, message);
-        DisplayMenu(title, menuOptions, extraOptions, message);
-
-        string? choice = Console.ReadLine();
-
-        switch (choice!.ToLower())
+        Dictionary<Option, string> menuOptions = new()
         {
-            case "1":
-                ShowParkCarDialogue();
-                break;
-            case "2":
-                ShowParkMotorcycleDialogue();
-                break;
-            case "3":
-                ShowCollectVehicleDialogue();
-                break;
-            case "4":
-                ShowFindVehicleDialogue();
-                break;
-            case "5":
-                ShowMoveVehicleDialogue();
-                break;
-            case "6":
-                ShowInspectParkingSpaceDialogue();
-                break;
-            case "7":
-                DisplayParkingGarage();
-                break;
-            case "test":
-                RunTests();
-                break;
-            case "exit":
-                Console.ResetColor();
-                Console.Clear();
-                Environment.Exit(0);
-                break;
-            default:
-                break;
+            { Option.Park, "Park Vehicle" },
+            { Option.Collect, "Collect Vehicle" },
+            { Option.Move, "Move Vehicle" }
+        };
+
+        var layout = new Layout("Root")
+            .SplitRows(
+                new Layout("Top").SplitColumns(
+                    new Layout("Menu"),
+                    new Layout("Map"),
+                    new Layout("Stats")
+                ),
+                new Layout("Orders"),
+                new Layout("Log")
+            );
+
+        AnsiConsole.Write(layout);
+
+        AnsiConsole.Live(layout)
+            .Start(ctx =>
+            {
+                ConsoleKeyInfo keypress;
+
+                do
+                {
+                    var menuPanel = new Panel(MenuBuilder(menuOptions))
+                        .Header("[[ ACTIONS ]]").Expand().DoubleHorizontalBorder();
+
+                    var mapPanel = new Panel(MenuBuilder(menuOptions))
+                        .Header("[[ PARKING GARAGE ]]").Expand().DoubleHorizontalBorder();
+
+                    var statsPanel = new Panel(MenuBuilder(menuOptions))
+                        .Header("[[ STATISTICS ]]").Expand().DoubleHorizontalBorder();
+
+                    layout["Menu"].Update(menuPanel);
+                    layout["Map"].Update(mapPanel);
+                    layout["Stats"].Update(statsPanel);
+
+                    ctx.Refresh();
+                    keypress = Console.ReadKey(true);
+
+                    switch (keypress.Key)
+                    {
+                        case ConsoleKey.Enter:
+                            break;
+                        case ConsoleKey.UpArrow:
+                            if (selected > 0)
+                                selected--;
+                            break;
+                        case ConsoleKey.DownArrow:
+                            if (selected < menuOptions.Count - 1)
+                                selected++;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                while (keypress.Key != ConsoleKey.Enter);
+
+
+
+            });
+
+
+
+
+
+    }
+
+    static void ReadMenu(Dictionary<Option, string> menuOptions)
+    {
+
+        ConsoleKeyInfo keypress;
+        do
+        {
+            keypress = Console.ReadKey(true);
+
+            switch (keypress.Key)
+            {
+                case ConsoleKey.Enter:
+                    break;
+                case ConsoleKey.UpArrow:
+                    if (selected > 0)
+                        selected--;
+                    break;
+                case ConsoleKey.DownArrow:
+                    if (selected < menuOptions.Count - 1)
+                        selected++;
+                    break;
+                default:
+                    break;
+            }
+
         }
+        while (keypress.Key != ConsoleKey.Enter);
+
+        return;
+    }
+
+    static IRenderable MenuBuilder(Dictionary<Option, string> menuOptions)
+    {
+        IRenderable[] allOptions = new IRenderable[menuOptions.Count];
+
+        for (int i = 0; i < menuOptions.Count; i++)
+        {
+            if (i == selected)
+                allOptions[i] = new Markup($"[yellow]> {menuOptions.Values.ElementAt(i)}[/]");
+            else
+                allOptions[i] = new Markup($"  {menuOptions.Values.ElementAt(i)}");
+        }
+
+        var menu = new Padder(new Rows(allOptions), new Padding(1));
+
+        return menu;
     }
 
     static void ShowParkCarDialogue()
@@ -406,16 +472,40 @@ internal class Program
         Console.ReadKey();
     }
 
-    static void DisplayEnhancedMenu(string title, string[] options, string[] extraOptions, string? message)
-    {
-        var grid = new Grid();
-        grid.AddColumn();
-        grid.AddRow("1. Foo");
-        grid.AddRow("2. Bar");
-        grid.AddRow("3. Baz");
-        var panel = new Panel(grid).Border(BoxBorder.DoubleHorizontal).BorderColor(Color.Green).Padding(2, 1);
-        AnsiConsole.Write(panel);
-    }
+
+    //static Option GetMenuChoice(Dictionary<Option, string> options, int currentIndex = 0)
+    //{
+    //    ConsoleKeyInfo keypress;
+
+    //    do
+    //    {
+    //        DrawMenu(MenuBuilder(options, currentIndex));
+
+    //        keypress = Console.ReadKey(true);
+
+    //        switch (keypress.Key)
+    //        {
+    //            case ConsoleKey.Enter:
+    //                break;
+    //            case ConsoleKey.UpArrow:
+    //                if (currentIndex > 0)
+    //                    currentIndex--;
+    //                break;
+    //            case ConsoleKey.DownArrow:
+    //                if (currentIndex < options.Count - 1)
+    //                    currentIndex++;
+    //                break;
+    //            default:
+    //                break;
+    //        }
+
+    //    }
+    //    while (keypress.Key != ConsoleKey.Enter);
+
+    //    return options.Keys.ElementAt(currentIndex);
+    //}
+
+
 
     static void DisplayMenu(string title, string[] options, string[] extraOptions, string? message)
     {
@@ -455,8 +545,12 @@ internal class Program
         Console.WriteLine("Statistics".ToUpper());
         MoveCursor(left, 1);
         Console.WriteLine($"Empty parking spaces: {CountEmptyParkingSpaces()}");
-        MoveCursor(left, 1);
+        MoveCursor(left, 0);
         Console.WriteLine($"Parked cars: {CountParkedCars()}");
+        MoveCursor(left, 0);
+        Console.WriteLine($"Parked motorcycles: {CountParkedMotorcycles()}");
+        MoveCursor(left, 0);
+        Console.WriteLine($"(Singles: {CountParkingSpacesWithSingleMotorcycles()})");
 
     }
 
@@ -1024,6 +1118,17 @@ internal class Program
             return CountParkingSpacesWithDoubleMotorcycles() == 1;
         });
 
+        Test("It is possible to count the number of parked motorcycles", () =>
+        {
+            InitializeParkingGarage();
+            ParkMotorcycle(1, "foo 1");
+            ParkMotorcycle(2, "bar 1");
+            ParkMotorcycle(2, "bar 2");
+            ParkCar(3, "baz");
+            ParkMotorcycle(4, "foo 2");
+            return CountParkedMotorcycles() == 4;
+        });
+
 
 
 
@@ -1037,6 +1142,10 @@ internal class Program
 
 
     /*****************************************************************************/
+
+    private static int CountParkedMotorcycles()
+        => CountParkingSpacesWithDoubleMotorcycles() * 2
+            + CountParkingSpacesWithSingleMotorcycles();
 
     private static int CountParkingSpacesWithDoubleMotorcycles() =>
         ScanParkingGarage((parkingSpaceId) =>
