@@ -11,7 +11,6 @@ internal class Program
     static void Main(string[] args)
     {
         Console.Title = "Prague Parking v1.1";
-        Console.ForegroundColor = ConsoleColor.Green;
 
         InitializeParkingGarage();
 
@@ -72,6 +71,7 @@ internal class Program
                 RunTests();
                 break;
             case "exit":
+                Console.ResetColor();
                 Console.Clear();
                 Environment.Exit(0);
                 break;
@@ -378,8 +378,6 @@ internal class Program
 
     static void SplashMessage(string message, string type = "info")
     {
-        var currentForegroundColor = Console.ForegroundColor;
-        var currentBackgroundColor = Console.BackgroundColor;
 
         message = $"{type.ToUpper()} - {message}";
         var barLength = message.Length + 4;
@@ -400,11 +398,7 @@ internal class Program
 
         MoveCursor(centerX - continueInstruction.Length / 2, 2);
 
-        Console.ForegroundColor = ConsoleColor.Black;
-        Console.BackgroundColor = ConsoleColor.DarkGreen;
         Console.WriteLine(continueInstruction);
-        Console.ForegroundColor = currentForegroundColor;
-        Console.BackgroundColor = currentBackgroundColor;
 
         Console.ReadKey();
     }
@@ -1273,9 +1267,6 @@ internal class Program
 
     static void Test(string description, Func<bool> test)
     {
-        var currentForegroundColor = Console.ForegroundColor;
-        var currentBackgroundColor = Console.BackgroundColor;
-
         Console.Write($"* {description} >>> ");
         bool result = test();
         if (result == true)
@@ -1285,14 +1276,10 @@ internal class Program
         }
         else
         {
-            Console.ForegroundColor = ConsoleColor.Black;
-            Console.BackgroundColor = ConsoleColor.DarkGreen;
             Console.Write("[-] FAIL!");
             Console.WriteLine();
         }
 
-        Console.ForegroundColor = currentForegroundColor;
-        Console.BackgroundColor = currentBackgroundColor;
     }
 
     static void InitializeParkingGarage()
