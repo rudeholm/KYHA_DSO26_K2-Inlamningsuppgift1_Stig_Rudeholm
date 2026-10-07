@@ -190,7 +190,7 @@
 
             var vehicleRegistration = ReadVehicleRegistrationInput(title);
 
-            if (FindVehicle(vehicleRegistration, out int originSpaceId) && originSpaceId > 0)
+            if (FindVehicle(vehicleRegistration, out int originSpaceId) == false)
             {
                 SplashMessage("Could not locate vehicle. Please double check vehicle registration.");
                 return;
@@ -936,15 +936,6 @@
                 return ParkMotorcycle(2, vehicleRegistration) == false;
             });
 
-            Test("The contents of a specific parking space can be fetched", () =>
-            {
-                InitializeParkingGarage();
-                var testSpaceId = 1;
-                var vehicleRegistration = "foo 666";
-                ParkCar(testSpaceId, vehicleRegistration);
-                return FetchParkingSpace(testSpaceId).Equals(EncodeCarLicensePlate(vehicleRegistration));
-            });
-
             Test("An encoded motorcycle license plate is a motorcycle", () =>
             {
                 var encodedLicensePlate = EncodeMotorcycleLicensePlate("foo");
@@ -982,14 +973,6 @@
             => encodedLicensePlate.StartsWith("CAR#");
         static bool IsMotorcycle(string encodedLicensePlate)
             => encodedLicensePlate.StartsWith("MC#");
-
-        static string FetchParkingSpace(int spaceId)
-        {
-            if (ValidSpaceId(spaceId))
-                return parkingGarage[spaceId];
-
-            return "";
-        }
 
         static bool MoveVehicle(int destinationSpaceId, string vehicleRegistration)
         {
@@ -1075,7 +1058,7 @@
             return false;
         }
 
-        static bool FindVehicle(string licensePlate, out int foundSpaceId)
+        static bool FindVehicle(string vehicleRegistration, out int foundSpaceId)
         {
             for (int i = 1; i < parkingGarage.Length; i++)
             {
@@ -1087,7 +1070,7 @@
                     var parkedVehicles = InspectParkingSpace(i).Split('|');
                     foreach (var parkedLicensePlate in parkedVehicles)
                     {
-                        if (DecodeLicensePlate(parkedLicensePlate, out _).Equals(licensePlate, StringComparison.OrdinalIgnoreCase))
+                        if (DecodeLicensePlate(parkedLicensePlate, out _).Equals(vehicleRegistration, StringComparison.OrdinalIgnoreCase))
                         {
                             foundSpaceId = i;
                             return true;
@@ -1097,7 +1080,7 @@
                 }
 
                 var storedLicensePlate = InspectParkingSpace(i);
-                if (DecodeLicensePlate(storedLicensePlate, out _).Equals(licensePlate, StringComparison.OrdinalIgnoreCase))
+                if (DecodeLicensePlate(storedLicensePlate, out _).Equals(vehicleRegistration, StringComparison.OrdinalIgnoreCase))
                 {
                     foundSpaceId = i;
                     return true;
@@ -1142,7 +1125,7 @@
             if (ParkingSpaceIsEmpty(spaceId))
                 return false;
 
-            if (InspectParkingSpace(spaceId).Contains("CAR#"))
+            if (IsCar(InspectParkingSpace(spaceId)))
                 return true;
 
             return false;
@@ -1246,14 +1229,14 @@
 
         }
 
-        static string EncodeMotorcycleLicensePlate(string licensePlate)
-            => $"MC#{FormatVehicleRegistration(licensePlate).Replace(' ', '_')}";
+        static string EncodeMotorcycleLicensePlate(string vehicleRegistration)
+            => $"MC#{FormatVehicleRegistration(vehicleRegistration).Replace(' ', '_')}";
 
-        static string EncodeCarLicensePlate(string licensePlate)
-            => $"CAR#{FormatVehicleRegistration(licensePlate).Replace(' ', '_')}";
+        static string EncodeCarLicensePlate(string vehicleRegistration)
+            => $"CAR#{FormatVehicleRegistration(vehicleRegistration).Replace(' ', '_')}";
 
-        static string FormatVehicleRegistration(string input)
-            => input.Trim().ToUpper();
+        static string FormatVehicleRegistration(string vehicleRegistration)
+            => vehicleRegistration.Trim().ToUpper();
 
         /*****************************************************************************/
 
