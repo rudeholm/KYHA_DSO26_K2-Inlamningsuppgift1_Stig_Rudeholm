@@ -470,7 +470,7 @@ static void RunTests()
     WriteTitle("Testing...");
     Console.WriteLine();
 
-    Test("A vehicle registration can be cleaned up",
+    Test("A vehicle registration can be cleaned up and formatted",
         () => FormatVehicleRegistration("  foo 666 ").Equals("FOO 666")
         );
 
