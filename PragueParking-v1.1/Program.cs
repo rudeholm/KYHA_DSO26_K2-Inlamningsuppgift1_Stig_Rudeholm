@@ -960,10 +960,28 @@ internal class Program
             return IsCar(encodedLicensePlate) == false;
         });
 
+        Test("It is possible to count the number of empty parking spaces", () =>
+        {
+            InitializeParkingGarage();
+            ParkCar(2, "foo");
+            return CountEmptyParkingSpaces() == garageCapacity - 1;
+        });
 
 
 
         WaitKey();
+    }
+
+    private static int CountEmptyParkingSpaces()
+    {
+        int count = 0;
+        for (int i = 1; i <= garageCapacity; i++)
+        {
+            if (ParkingSpaceIsEmpty(i))
+                count++;
+        }
+
+        return count;
     }
 
 
