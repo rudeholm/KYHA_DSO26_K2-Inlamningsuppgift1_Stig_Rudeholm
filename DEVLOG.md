@@ -274,3 +274,16 @@ Har städat en del. Framförallt flyttat runt parametrar så att `parkingGarage`
 ---
 
 Det fungerar jättebra att använda index 0 i parkeringshuset som en sorts meddelande-buffer. Nu syns alltid den senaste instruktionen på menyskärmen.
+
+---
+
+#### 2026-10-07
+
+Insåg att jag har tänkt helt fel kring `parkingGarage`. >_<
+
+Jag har tänkt på den som en global variabel, när den i själva verket är ett fält i klassen `Program`.
+
+Nu har jag helt tagit bort den som parameter, eftersom det är helt onödigt att göra så. Hela projektet blev avsevärt mindre rörigt!
+
+---
+
