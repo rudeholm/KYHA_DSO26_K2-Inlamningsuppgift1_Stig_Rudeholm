@@ -1,7 +1,6 @@
 # KYHA_DSO26_K2-Inlamningsuppgift1_Stig_Rudeholm
 
 ## Prague Parking v1
----
 ### Utvecklingslogg
 ---
 
@@ -291,3 +290,11 @@ NU tänker jag låtsas att version 1 är klar! Den är inte helt och hållet som
 
 ---
 
+## Prague Parking v1.1
+### Utvecklingslogg
+
+---
+
+#### 2026-10-07
+
+Nu gäller det att snygga upp appen rejält. Några nya funktioner och lite mer färg, är planen.
