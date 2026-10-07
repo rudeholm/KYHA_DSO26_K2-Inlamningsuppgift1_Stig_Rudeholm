@@ -287,3 +287,7 @@ Nu har jag helt tagit bort den som parameter, eftersom det är helt onödigt att
 
 ---
 
+NU tänker jag låtsas att version 1 är klar! Den är inte helt och hållet som jag ville ha den, men färdigt är bättre än perfekt. Nu rackarns är det dags för version 1.1!
+
+---
+
