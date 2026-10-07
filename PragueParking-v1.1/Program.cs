@@ -10,7 +10,7 @@ internal class Program
 
     static void Main(string[] args)
     {
-        Console.Title = "Prague Parking v1.01";
+        Console.Title = "Prague Parking v1.1";
         Console.ForegroundColor = ConsoleColor.Green;
 
         InitializeParkingGarage();
@@ -23,21 +23,21 @@ internal class Program
 
     static void ShowMainMenu()
     {
-        string title = "Park-o-matix 9000";
+        string title = "Park-o-matix 9001";
         string[] menuOptions = [
             "1: Park Car",
-                "2: Park Motorcycle",
-                "3: Collect Vehicle",
-                "4: Find Vehicle",
-                "5: Move Vehicle",
-                "6: Inspect Parking Space",
-                "7: Show All Parking Spaces",
-            ];
+            "2: Park Motorcycle",
+            "3: Collect Vehicle",
+            "4: Find Vehicle",
+            "5: Move Vehicle",
+            "6: Inspect Parking Space",
+            "7: Show All Parking Spaces",
+        ];
 
         string[] extraOptions = [
             "test: Run Tests",
-                "exit: Exit Program",
-            ];
+            "exit: Exit Program",
+        ];
 
         var message = parkingGarage[0];
 
@@ -423,6 +423,8 @@ internal class Program
         if (string.IsNullOrWhiteSpace(message) == false)
             DisplayMessage("Last instruction:", message);
 
+        DisplayStats();
+
         WriteTitle(title);
         MoveCursor(0, 1);
 
@@ -437,10 +439,21 @@ internal class Program
         Console.Write("> ");
     }
 
+    static void DisplayStats()
+    {
+        var left = 50;
+        var top = TITLE_Y;
+        PlaceCursor(left, top);
+        Console.WriteLine("Statistics".ToUpper());
+        MoveCursor(left, 1);
+        Console.WriteLine($"Empty parking spaces: {CountEmptyParkingSpaces()}");
+
+    }
+
     static void DisplayMessage(string headline, string message)
     {
         var left = 50;
-        var top = TITLE_Y + 2;
+        var top = TITLE_Y + 20;
         PlaceCursor(left, top);
         Console.WriteLine(headline.ToUpper());
         MoveCursor(left, 0);
