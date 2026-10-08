@@ -9,6 +9,8 @@ enum Option
     Collect,
     Move,
     Search,
+    Car,
+    Motorcycle
 }
 
 internal class Program
@@ -19,9 +21,19 @@ internal class Program
     static int garageCapacity = 100;
     static string[] parkingGarage = GetEmptyParkingGarage();
 
-    static int selected = 0;
+    static Dictionary<Option, string> mainMenuOptions = new()
+        {
+            { Option.Park, "Park Vehicle" },
+            { Option.Collect, "Collect Vehicle" },
+            { Option.Move, "Move Vehicle" },
+            { Option.Search, "Search Vehicle" }
+        };
 
-    static bool dirty = true;
+    static Dictionary<Option, string> parkMenuOptions = new()
+        {
+            { Option.Car, "Park Car" },
+            { Option.Motorcycle, "Park Motorcycle" }
+        };
 
 
     static void Main(string[] args)
@@ -30,56 +42,41 @@ internal class Program
 
         InitializeParkingGarage();
 
-        ShowMainMenu();
+        ShowMainLayout();
         //RunTests();
     }
 
-    static void ShowMainMenu()
+
+    static void ShowMainLayout()
     {
-        Dictionary<Option, string> menuOptions = new()
-        {
-            { Option.Park, "Park Vehicle" },
-            { Option.Collect, "Collect Vehicle" },
-            { Option.Move, "Move Vehicle" },
-            { Option.Search, "Search Vehicle" }
-        };
+        Console.Clear();
+
+        ConsoleKeyInfo keypress;
+        var menuOptions = mainMenuOptions;
+        int selected = 0;
 
         var layout = new Layout("Root")
             .SplitRows(
-                new Layout("Top").SplitColumns(
+                new Layout("Top")
+                .SplitColumns(
                     new Layout("Menu"),
                     new Layout("Map"),
                     new Layout("Stats")
                 ).Size(20),
-                new Layout("Orders"),
-                new Layout("Log")
-            );
-
-        AnsiConsole.Write(layout);
+            new Layout("Orders").Size(6),
+            new Layout("Log").Size(10)
+        );
 
         AnsiConsole.Live(layout)
             .Start(ctx =>
             {
-                ConsoleKeyInfo keypress;
-
                 do
                 {
-                    var menuPanel = new Panel(new Padder(MenuBuilder(menuOptions), new Padding(1)))
-                        .Header("[[ ACTIONS ]]").Expand().DoubleHorizontalBorder();
+                    var menuPanel = MenuBuilder(menuOptions, selected);
                     layout["Menu"].Update(menuPanel);
-
-                    if (dirty)
-                    {
-                        var mapPanel = BuildGarageMap();
-                        layout["Map"].Update(mapPanel);
-                        dirty = false;
-                        var statsPanel = BuildStatsPanel();
-                        layout["Stats"].Update(statsPanel);
-                    }
-
-
-
                     ctx.Refresh();
+
+                    //
                     keypress = Console.ReadKey(true);
 
                     switch (keypress.Key)
@@ -97,89 +94,47 @@ internal class Program
                         default:
                             break;
                     }
+
+                    //
                 }
-                while (keypress.Key != ConsoleKey.Enter);
-
-
-
+                while (true);
             });
 
 
+        //do
+        //{
+        //    var menuPanel = MenuBuilder(mainMenuOptions, selected);
+        //    layout["Menu"].Update(menuPanel);
+
+        //    WaitKey();
 
 
+        //} while (true);
 
     }
 
-    private static Panel BuildGarageMap()
+
+
+
+    static void ShowMainMenu()
     {
-        var width = 20;
-        var height = 5;
-        var canvas = new Canvas(width * 2, height * 4);
+        Console.Clear();
 
-        for (var y = 0; y < height; y++)
-        {
-            for (var x = 0; x < width; x++)
-            {
-                var spaceId = 1 + x + y * width;
-                Console.WriteLine(spaceId);
-                if (ParkingSpaceIsEmpty(spaceId))
-                {
-                    canvas.SetPixel(x * 2, y * 4, Color.Gray);
-                }
-                else if (ParkingSpaceContainsCar(spaceId))
-                {
-                    canvas.SetPixel(x * 2, y * 4, Color.Blue);
-                }
-            }
-        }
+        int selected = 0;
 
-        return new Panel(new Padder(canvas, new Padding(1)))
-            .Header("[[ PARKING GARAGE ]]").Expand().DoubleHorizontalBorder();
-    }
-
-    static Panel BuildStatsPanel()
-    {
-        var stats = new Rows(
-            new Markup($"Empty Parking Spaces: {CountEmptyParkingSpaces()}"),
-            new Markup($"Parked Cars: {CountParkedCars()}"),
-            new Markup($"Parked Motorcycles: {CountParkedMotorcycles()}\n└ (Singles: {CountParkingSpacesWithSingleMotorcycles()})")
-        );
-
-        return new Panel(new Padder(stats, new Padding(1)))
-            .Header("[[ STATISTICS ]]").Expand().DoubleHorizontalBorder();
-    }
-
-    static void ReadMenu(Dictionary<Option, string> menuOptions)
-    {
-
-        ConsoleKeyInfo keypress;
         do
         {
-            keypress = Console.ReadKey(true);
+            var menuPanel = MenuBuilder(mainMenuOptions, selected);
 
-            switch (keypress.Key)
-            {
-                case ConsoleKey.Enter:
-                    break;
-                case ConsoleKey.UpArrow:
-                    if (selected > 0)
-                        selected--;
-                    break;
-                case ConsoleKey.DownArrow:
-                    if (selected < menuOptions.Count - 1)
-                        selected++;
-                    break;
-                default:
-                    break;
-            }
+            AnsiConsole.Write(menuPanel);
 
-        }
-        while (keypress.Key != ConsoleKey.Enter);
+            WaitKey();
 
-        return;
+        } while (true);
+
     }
 
-    static IRenderable MenuBuilder(Dictionary<Option, string> menuOptions)
+    static Panel MenuBuilder(Dictionary<Option, string> menuOptions, int selected)
     {
         IRenderable[] allOptions = new IRenderable[menuOptions.Count];
 
@@ -193,7 +148,8 @@ internal class Program
 
         var menu = new Rows(allOptions);
 
-        return menu;
+        return new Panel(new Padder(menu, new Padding(1)))
+            .Header("[[ ACTIONS ]]").DoubleHorizontalBorder().Expand();
     }
 
     static void ShowParkCarDialogue()
