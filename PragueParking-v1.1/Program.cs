@@ -33,15 +33,29 @@ internal class Program
     static int garageCapacity = 100;
     static string[] parkingGarage = GetEmptyParkingGarage();
 
-    static Dictionary<Option, string> mainMenuOptions = new()
+    static List<string> log = [];
+
+    static Layout mainLayout = new Layout("Root")
+            .SplitRows(
+                new Layout("Top")
+                .SplitColumns(
+                    new Layout("Action").Size(40),
+                    new Layout("Map")
+                ).Size(20),
+                new Layout("Instructions").Size(6),
+                new Layout("Log").Size(9)
+            );
+
+
+    static readonly Dictionary<Option, string> mainMenuOptions = new()
         {
             { Option.Park, "Park Vehicle" },
             { Option.Collect, "Collect Vehicle" },
             { Option.Move, "Move Vehicle" },
-            { Option.Search, "Search Vehicle" }
+            { Option.Search, "Locate Vehicle" }
         };
 
-    static Dictionary<Option, string> parkMenuOptions = new()
+    static readonly Dictionary<Option, string> parkMenuOptions = new()
         {
             { Option.Car, "Park Car" },
             { Option.Motorcycle, "Park Motorcycle" }
@@ -54,13 +68,30 @@ internal class Program
 
         InitializeParkingGarage();
 
+        log.Add("[green]Welcome to Park-o-matix 9001![/]");
+
         do
         {
-            if (appState is AppState.MainMenu)
-                ShowMainLayout();
+            switch (appState)
+            {
+                case AppState.MainMenu:
+                case AppState.ParkMenu:
+                    ShowMainLayout();
+                    break;
+                case AppState.ParkCar:
+                    ShowParkCarDialogue();
+                    break;
+                case AppState.ParkMotorcycle:
+                    ShowParkMotorcycleDialogue();
+                    break;
+                case AppState.CollectVehicle:
+                    break;
+                case AppState.MoveVehicle:
+                    break;
+                default:
+                    break;
+            }
 
-            if (appState is AppState.ParkCar)
-                ShowParkCarDialogue();
 
         } while (true);
 
@@ -75,17 +106,10 @@ internal class Program
         var menuOptions = mainMenuOptions;
         int selected = 0;
 
-        var layout = new Layout("Root")
-            .SplitRows(
-                new Layout("Top")
-                .SplitColumns(
-                    new Layout("Action"),
-                    new Layout("Map"),
-                    new Layout("Stats")
-                ).Size(20),
-            new Layout("Orders").Size(6),
-            new Layout("Log").Size(10)
-        );
+        var layout = mainLayout;
+
+        var logPanel = LogPanel();
+        layout["Log"].Update(logPanel);
 
         AnsiConsole.Live(layout)
             .Start(ctx =>
@@ -146,42 +170,52 @@ internal class Program
                         }
                     }
 
-
                     if (keypress.Key == ConsoleKey.Enter)
                     {
-
-                        if (appState is AppState.MainMenu && choice is Option.Park)
+                        if (appState is AppState.MainMenu)
                         {
-                            appState = AppState.ParkMenu;
-                            selected = 0;
+                            if (choice is Option.Park)
+                            {
+                                appState = AppState.ParkMenu;
+                                selected = 0;
+                            }
                         }
-                        else if (appState is AppState.ParkMenu && choice is Option.Car)
+                        else if (appState is AppState.ParkMenu)
                         {
-                            appState = AppState.ParkCar;
+                            if (choice is Option.Car)
+                                appState = AppState.ParkCar;
+                            else if (choice is Option.Motorcycle)
+                                appState = AppState.ParkMotorcycle;
                             return;
-
-                        }
-                        else if (appState is AppState.ParkMenu && choice is Option.Motorcycle)
-                        {
-                            appState = AppState.ParkMotorcycle;
-
                         }
                     }
-
-
-
-
                 }
                 while (true);
             });
+    }
 
+    static Panel LogPanel()
+    {
+        int lines = Math.Min(log.Count, 5);
+        IRenderable[] latestLogItems = new IRenderable[lines];
 
+        for (int i = 0; i < lines ; i++)
+        {
+            latestLogItems[i] = new Markup(log[log.Count - i-1]);
 
+        }
+
+        return PanelBuilder(new Rows(latestLogItems), "Log");
     }
 
     static Panel ParkCarPanel()
     {
         return PanelBuilder(new Markup("Please enter vehicle registration:"), "Park Car");
+    }
+
+    static Panel ParkMotorcyclePanel()
+    {
+        return PanelBuilder(new Markup("Please enter vehicle registration:"), "Park Motorcycle");
     }
 
     static Panel MenuPanel(Dictionary<Option, string> menuOptions, int selected)
@@ -214,17 +248,7 @@ internal class Program
 
     static void ShowParkCarDialogue()
     {
-        var layout = new Layout("Root")
-            .SplitRows(
-                new Layout("Top")
-                .SplitColumns(
-                    new Layout("Action"),
-                    new Layout("Map"),
-                    new Layout("Stats")
-                ).Size(20),
-            new Layout("Orders").Size(6),
-            new Layout("Log").Size(10)
-        );
+        var layout = mainLayout;
 
         var actionPanel = ParkCarPanel();
         layout["Action"].Update(actionPanel);
@@ -245,43 +269,26 @@ internal class Program
             var message = $"Park car [{licensePlate}] in space #{emptySpaceId}";
             SplashMessage(message, "instruction");
             parkingGarage[0] = message;
+            log.Add($"Car [black on white] {licensePlate} [/] - parked in space #{emptySpaceId}");
         }
         else
         {
             SplashMessage("Could not park car.", "error");
         }
 
-
         appState = AppState.MainMenu;
-        //var title = "Park car";
-
-        //var vehicleRegistration = ReadVehicleRegistrationInput(title);
-
-        //if (FindFirstEmptyParkingSpace(out int emptySpaceId) == false)
-        //{
-        //    SplashMessage("No parking space available.", "warning");
-        //    return;
-        //}
-
-        //if (ParkCar(emptySpaceId, vehicleRegistration))
-        //{
-        //    var licensePlate = FormatVehicleRegistration(vehicleRegistration);
-        //    var message = $"Park car [{licensePlate}] in space #{emptySpaceId}";
-        //    SplashMessage(message, "instruction");
-        //    parkingGarage[0] = message;
-        //}
-        //else
-        //{
-        //    SplashMessage("Could not park car.", "error");
-        //}
-
     }
 
     static void ShowParkMotorcycleDialogue()
     {
-        var title = "Park motorcycle";
+        var layout = mainLayout;
 
-        var vehicleRegistration = ReadVehicleRegistrationInput(title);
+        var actionPanel = ParkMotorcyclePanel();
+        layout["Action"].Update(actionPanel);
+
+        AnsiConsole.Write(layout);
+
+        var vehicleRegistration = ReadVehicleRegistrationInput();
 
         if (FindFirstParkingSpaceWithRoomForMotorcycle(out int foundSpaceId) == false)
         {
@@ -300,6 +307,8 @@ internal class Program
         {
             SplashMessage("Could not park motorcycle.", "warning");
         }
+
+        appState = AppState.MainMenu;
     }
 
     static void ShowCollectVehicleDialogue()
@@ -506,22 +515,25 @@ internal class Program
 
     static string ReadVehicleRegistrationInput()
     {
+        var left = 3;
+        var top = 5;
+
         string input;
 
-        var prompt = new TextPrompt<string>(">");
+        var prompt = new TextPrompt<string>("[green]>[/]");
 
         do
         {
-            PlaceCursor(3, 5);
-            AnsiConsole.Write(new string(' ', 40));
-            PlaceCursor(3, 5);
+            PlaceCursor(left, top);
+            AnsiConsole.Write(new string(' ', 25));
+            PlaceCursor(left, top);
             input = AnsiConsole.Prompt(prompt);
 
             if (ValidVehicleRegistration(input))
                 break;
             else
             {
-                PlaceCursor(3, 7);
+                PlaceCursor(left, top + 2);
                 AnsiConsole.Markup("[red]Invalid vehicle registration.[/] [white]Please try again.[/]");
             }
         }
