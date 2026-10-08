@@ -335,4 +335,4 @@ Sökfunktionerna är för långsamma för att uppdatera skärmen löpande utan f
 
 ---
 
-
+Det flimrar en del mellan skärmuppdateringarna, men jag tror det är ok ändå. Det är mycket möjligt att det går att lösa när jag lär mig mer om Spectre.Console.

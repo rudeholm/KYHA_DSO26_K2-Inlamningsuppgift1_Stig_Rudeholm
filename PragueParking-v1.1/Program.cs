@@ -10,7 +10,8 @@ enum AppState
     ParkCar,
     ParkMotorcycle,
     CollectVehicle,
-    MoveVehicle
+    MoveVehicle,
+    FindVehicle
 }
 
 enum Option
@@ -30,7 +31,7 @@ internal class Program
     const int TITLE_X = 5;
     const int TITLE_Y = 2;
 
-    static int garageCapacity = 100;
+    static int garageCapacity = 3;
     static string[] parkingGarage = GetEmptyParkingGarage();
 
     static List<string> log = [];
@@ -42,7 +43,7 @@ internal class Program
                     new Layout("Action").Size(40),
                     new Layout("Map")
                 ).Size(20),
-                new Layout("Instructions").Size(6),
+                new Layout("Instructions").Size(5),
                 new Layout("Log").Size(9)
             );
 
@@ -68,7 +69,7 @@ internal class Program
 
         InitializeParkingGarage();
 
-        log.Add("[green]Welcome to Park-o-matix 9001![/]");
+        log.Add("[Green]Welcome to Park-o-matix 9001![/]");
 
         do
         {
@@ -85,8 +86,13 @@ internal class Program
                     ShowParkMotorcycleDialogue();
                     break;
                 case AppState.CollectVehicle:
+                    ShowCollectVehicleDialogue();
                     break;
                 case AppState.MoveVehicle:
+                    ShowMoveVehicleDialogue();
+                    break;
+                case AppState.FindVehicle:
+                    ShowFindVehicleDialogue();
                     break;
                 default:
                     break;
@@ -110,6 +116,9 @@ internal class Program
 
         var logPanel = LogPanel();
         layout["Log"].Update(logPanel);
+
+        var instructionPanel = InstructionPanel(parkingGarage[0] ?? "");
+        layout["Instructions"].Update(instructionPanel);
 
         AnsiConsole.Live(layout)
             .Start(ctx =>
@@ -179,6 +188,13 @@ internal class Program
                                 appState = AppState.ParkMenu;
                                 selected = 0;
                             }
+                            else if (choice is Option.Collect)
+                                appState = AppState.CollectVehicle;
+                            else if (choice is Option.Move)
+                                appState = AppState.MoveVehicle;
+                            else if (choice is Option.Search)
+                                appState = AppState.FindVehicle;
+                            return;
                         }
                         else if (appState is AppState.ParkMenu)
                         {
@@ -194,18 +210,51 @@ internal class Program
             });
     }
 
+    static void LogError(string message)
+    {
+        var logEntry = $"[Red]ERROR[/] {message}";
+        LogEvent(logEntry);
+    }
+
+    static void LogVehicleCollected(string licensePlate, int spaceId)
+    {
+        var vehicleRegistration = DecodeLicensePlate(licensePlate, out var vehicleType);
+        var logEntry = $"[DarkMagenta]VEHICLE COLLECTED[/] [Black on Gray82] {vehicleRegistration} [/] ({vehicleType}) removed from space [Green]#{spaceId:000}[/]";
+        LogEvent(logEntry);
+    }
+
+    static void LogVehicleReceived(string licensePlate, int spaceId)
+    {
+        var vehicleRegistration = DecodeLicensePlate(licensePlate, out var vehicleType);
+        var logEntry = $"[DarkOrange]VEHICLE RECEIVED[/] [Black on Gray82] {vehicleRegistration} [/] ({vehicleType}) assigned to space [Green]#{spaceId:000}[/]";
+        LogEvent(logEntry);
+    }
+
+    static void LogEvent(string logEntry)
+        => log.Add(logEntry);
+
+    static Panel InstructionPanel(string instruction)
+    {
+        return PanelBuilder(new Markup(instruction), "Latest instruction");
+    }
+
     static Panel LogPanel()
     {
         int lines = Math.Min(log.Count, 5);
         IRenderable[] latestLogItems = new IRenderable[lines];
 
-        for (int i = 0; i < lines ; i++)
+        for (int i = 0; i < lines; i++)
         {
-            latestLogItems[i] = new Markup(log[log.Count - i-1]);
+            latestLogItems[i] = new Markup(log[log.Count - i - 1]);
 
         }
 
         return PanelBuilder(new Rows(latestLogItems), "Log");
+    }
+
+    static Panel CollectVehiclePanel()
+    {
+        return PanelBuilder(new Markup("Please enter vehicle registration:"), "Collect Vehicle");
     }
 
     static Panel ParkCarPanel()
@@ -259,21 +308,18 @@ internal class Program
 
         if (FindFirstEmptyParkingSpace(out int emptySpaceId) == false)
         {
-            SplashMessage("No parking space available.", "warning");
-            return;
+            LogError("No parking space available.");
         }
-
-        if (ParkCar(emptySpaceId, vehicleRegistration))
+        else if (ParkCar(emptySpaceId, vehicleRegistration))
         {
             var licensePlate = FormatVehicleRegistration(vehicleRegistration);
-            var message = $"Park car [{licensePlate}] in space #{emptySpaceId}";
-            SplashMessage(message, "instruction");
+            var message = $"Park car [Black on Gray82] {licensePlate} [/] in space [Green]#{emptySpaceId:000}[/]";
             parkingGarage[0] = message;
-            log.Add($"Car [black on white] {licensePlate} [/] - parked in space #{emptySpaceId}");
+            LogVehicleReceived(EncodeCarLicensePlate(licensePlate), emptySpaceId);
         }
         else
         {
-            SplashMessage("Could not park car.", "error");
+            LogError("Could not park car.");
         }
 
         appState = AppState.MainMenu;
@@ -292,20 +338,18 @@ internal class Program
 
         if (FindFirstParkingSpaceWithRoomForMotorcycle(out int foundSpaceId) == false)
         {
-            SplashMessage("No parking space available.", "warning");
-            return;
+            LogError("No parking space available.");
         }
-
-        if (ParkMotorcycle(foundSpaceId, vehicleRegistration))
+        else if (ParkMotorcycle(foundSpaceId, vehicleRegistration))
         {
             var licensePlate = FormatVehicleRegistration(vehicleRegistration);
-            var message = $"Park motorcycle [{licensePlate}] in space #{foundSpaceId}";
+            var message = $"Park motorcycle [Black on Gray82] {licensePlate} [/] in space [Green]#{foundSpaceId:000}[/]";
             parkingGarage[0] = message;
-            SplashMessage(message, "instruction");
+            LogVehicleReceived(EncodeMotorcycleLicensePlate(licensePlate), foundSpaceId);
         }
         else
         {
-            SplashMessage("Could not park motorcycle.", "warning");
+            LogError("Could not park motorcycle.");
         }
 
         appState = AppState.MainMenu;
@@ -313,38 +357,47 @@ internal class Program
 
     static void ShowCollectVehicleDialogue()
     {
-        var title = "Collect vehicle";
+        var layout = mainLayout;
 
-        var vehicleRegistration = ReadVehicleRegistrationInput(title);
+        var actionPanel = CollectVehiclePanel();
+        layout["Action"].Update(actionPanel);
+
+        AnsiConsole.Write(layout);
+
+        var vehicleRegistration = ReadVehicleRegistrationInput();
+        var licensePlate = FormatVehicleRegistration(vehicleRegistration);
+        string message = "";
 
         if (FindVehicle(vehicleRegistration, out int foundSpaceId) == false)
         {
-            SplashMessage("Could not locate vehicle. Please double check vehicle registration.");
-            return;
-        }
-
-
-        string message = "";
-        var licensePlate = FormatVehicleRegistration(vehicleRegistration);
-
-        if (ParkingSpaceContainsCar(foundSpaceId))
-        {
-            message = $"Collect car [{licensePlate}] from space #{foundSpaceId}";
-        }
-        else if (ParkingSpaceContainsMotorcycles(foundSpaceId, out _))
-        {
-            message = $"Collect motorcycle [{licensePlate}] from space #{foundSpaceId}";
-        }
-
-        if (CollectVehicle(foundSpaceId, vehicleRegistration))
-        {
-            parkingGarage[0] = message;
-            SplashMessage(message, "instruction");
+            LogError($"Could not locate vehicle [Black on Gray82] {licensePlate} [/] Please double check vehicle registration.");
         }
         else
         {
-            SplashMessage("Error while collecting vehicle. Please try again.", "warning");
+            if (ParkingSpaceContainsCar(foundSpaceId))
+            {
+                message = $"Collect car [Black on Gray82] {licensePlate} [/] from space [Green]#{foundSpaceId:000}[/]";
+                licensePlate = EncodeCarLicensePlate(licensePlate);
+            }
+            else if (ParkingSpaceContainsMotorcycles(foundSpaceId, out _))
+            {
+                message = $"Collect motorcycle [Black on Gray82] {licensePlate} [/] from space [Green]#{foundSpaceId:000}[/]";
+                licensePlate = EncodeMotorcycleLicensePlate(licensePlate);
+            }
+
+            if (CollectVehicle(foundSpaceId, vehicleRegistration))
+            {
+                parkingGarage[0] = message;
+                LogVehicleCollected(licensePlate, foundSpaceId);
+            }
+            else
+            {
+                LogError($"Error while collecting vehicle [Black on Gray82] {FormatVehicleRegistration(vehicleRegistration)} [/] Please try again.");
+            }
         }
+
+        appState = AppState.MainMenu;
+
     }
 
     static void ShowFindVehicleDialogue()
