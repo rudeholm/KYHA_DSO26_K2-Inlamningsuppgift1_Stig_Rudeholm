@@ -326,3 +326,13 @@ Exempel:
 static int CountParkedCars()
     => ScanParkingGarage((parkingSpaceId) => ParkingSpaceContainsCar(parkingSpaceId));
 ```
+
+---
+
+#### 2026-10-08
+
+Sökfunktionerna är för långsamma för att uppdatera skärmen löpande utan flimmer. Det är möjligt att jag kan lösa det med en sorts cache. Frågan är om det är värt det...
+
+---
+
+

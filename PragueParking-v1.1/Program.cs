@@ -8,6 +8,7 @@ enum Option
     Park,
     Collect,
     Move,
+    Search,
 }
 
 internal class Program
@@ -20,6 +21,9 @@ internal class Program
 
     static int selected = 0;
 
+    static bool dirty = true;
+
+
     static void Main(string[] args)
     {
         Console.Title = "Prague Parking v1.1";
@@ -27,6 +31,7 @@ internal class Program
         InitializeParkingGarage();
 
         ShowMainMenu();
+        //RunTests();
     }
 
     static void ShowMainMenu()
@@ -35,7 +40,8 @@ internal class Program
         {
             { Option.Park, "Park Vehicle" },
             { Option.Collect, "Collect Vehicle" },
-            { Option.Move, "Move Vehicle" }
+            { Option.Move, "Move Vehicle" },
+            { Option.Search, "Search Vehicle" }
         };
 
         var layout = new Layout("Root")
@@ -44,7 +50,7 @@ internal class Program
                     new Layout("Menu"),
                     new Layout("Map"),
                     new Layout("Stats")
-                ),
+                ).Size(20),
                 new Layout("Orders"),
                 new Layout("Log")
             );
@@ -58,18 +64,20 @@ internal class Program
 
                 do
                 {
-                    var menuPanel = new Panel(MenuBuilder(menuOptions))
+                    var menuPanel = new Panel(new Padder(MenuBuilder(menuOptions), new Padding(1)))
                         .Header("[[ ACTIONS ]]").Expand().DoubleHorizontalBorder();
-
-                    var mapPanel = new Panel(MenuBuilder(menuOptions))
-                        .Header("[[ PARKING GARAGE ]]").Expand().DoubleHorizontalBorder();
-
-                    var statsPanel = new Panel(MenuBuilder(menuOptions))
-                        .Header("[[ STATISTICS ]]").Expand().DoubleHorizontalBorder();
-
                     layout["Menu"].Update(menuPanel);
-                    layout["Map"].Update(mapPanel);
-                    layout["Stats"].Update(statsPanel);
+
+                    if (dirty)
+                    {
+                        var mapPanel = BuildGarageMap();
+                        layout["Map"].Update(mapPanel);
+                        dirty = false;
+                        var statsPanel = BuildStatsPanel();
+                        layout["Stats"].Update(statsPanel);
+                    }
+
+
 
                     ctx.Refresh();
                     keypress = Console.ReadKey(true);
@@ -100,6 +108,45 @@ internal class Program
 
 
 
+    }
+
+    private static Panel BuildGarageMap()
+    {
+        var width = 20;
+        var height = 5;
+        var canvas = new Canvas(width * 2, height * 4);
+
+        for (var y = 0; y < height; y++)
+        {
+            for (var x = 0; x < width; x++)
+            {
+                var spaceId = 1 + x + y * width;
+                Console.WriteLine(spaceId);
+                if (ParkingSpaceIsEmpty(spaceId))
+                {
+                    canvas.SetPixel(x * 2, y * 4, Color.Gray);
+                }
+                else if (ParkingSpaceContainsCar(spaceId))
+                {
+                    canvas.SetPixel(x * 2, y * 4, Color.Blue);
+                }
+            }
+        }
+
+        return new Panel(new Padder(canvas, new Padding(1)))
+            .Header("[[ PARKING GARAGE ]]").Expand().DoubleHorizontalBorder();
+    }
+
+    static Panel BuildStatsPanel()
+    {
+        var stats = new Rows(
+            new Markup($"Empty Parking Spaces: {CountEmptyParkingSpaces()}"),
+            new Markup($"Parked Cars: {CountParkedCars()}"),
+            new Markup($"Parked Motorcycles: {CountParkedMotorcycles()}\n└ (Singles: {CountParkingSpacesWithSingleMotorcycles()})")
+        );
+
+        return new Panel(new Padder(stats, new Padding(1)))
+            .Header("[[ STATISTICS ]]").Expand().DoubleHorizontalBorder();
     }
 
     static void ReadMenu(Dictionary<Option, string> menuOptions)
@@ -144,7 +191,7 @@ internal class Program
                 allOptions[i] = new Markup($"  {menuOptions.Values.ElementAt(i)}");
         }
 
-        var menu = new Padder(new Rows(allOptions), new Padding(1));
+        var menu = new Rows(allOptions);
 
         return menu;
     }
@@ -1128,7 +1175,6 @@ internal class Program
             ParkMotorcycle(4, "foo 2");
             return CountParkedMotorcycles() == 4;
         });
-
 
 
 
