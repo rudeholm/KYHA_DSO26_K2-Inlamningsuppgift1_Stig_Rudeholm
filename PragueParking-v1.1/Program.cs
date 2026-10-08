@@ -3,6 +3,16 @@ using Spectre.Console.Rendering;
 
 namespace PragueParking_v1._1;
 
+enum AppState
+{
+    MainMenu,
+    ParkMenu,
+    ParkCar,
+    ParkMotorcycle,
+    CollectVehicle,
+    MoveVehicle
+}
+
 enum Option
 {
     Park,
@@ -15,6 +25,8 @@ enum Option
 
 internal class Program
 {
+    static AppState appState = AppState.MainMenu;
+
     const int TITLE_X = 5;
     const int TITLE_Y = 2;
 
@@ -42,7 +54,16 @@ internal class Program
 
         InitializeParkingGarage();
 
-        ShowMainLayout();
+        do
+        {
+            if (appState is AppState.MainMenu)
+                ShowMainLayout();
+
+            if (appState is AppState.ParkCar)
+                ShowParkCarDialogue();
+
+        } while (true);
+
         //RunTests();
     }
 
@@ -51,7 +72,6 @@ internal class Program
     {
         Console.Clear();
 
-        ConsoleKeyInfo keypress;
         var menuOptions = mainMenuOptions;
         int selected = 0;
 
@@ -59,7 +79,7 @@ internal class Program
             .SplitRows(
                 new Layout("Top")
                 .SplitColumns(
-                    new Layout("Menu"),
+                    new Layout("Action"),
                     new Layout("Map"),
                     new Layout("Stats")
                 ).Size(20),
@@ -72,17 +92,26 @@ internal class Program
             {
                 do
                 {
-                    var menuPanel = MenuBuilder(menuOptions, selected);
-                    layout["Menu"].Update(menuPanel);
+                    if (appState is AppState.MainMenu)
+                        menuOptions = mainMenuOptions;
+                    else if (appState is AppState.ParkMenu)
+                        menuOptions = parkMenuOptions;
+
+
+                    if (appState is AppState.MainMenu || appState is AppState.ParkMenu)
+                    {
+                        var actionPanel = MenuPanel(menuOptions, selected);
+                        layout["Action"].Update(actionPanel);
+                    }
+
                     ctx.Refresh();
 
                     //
+                    ConsoleKeyInfo keypress;
                     keypress = Console.ReadKey(true);
 
                     switch (keypress.Key)
                     {
-                        case ConsoleKey.Enter:
-                            break;
                         case ConsoleKey.UpArrow:
                             if (selected > 0)
                                 selected--;
@@ -94,47 +123,81 @@ internal class Program
                         default:
                             break;
                     }
-
                     //
+                    var choice = menuOptions.Keys.ElementAt(selected);
+
+                    if (keypress.Key == ConsoleKey.Escape)
+                    {
+                        switch (appState)
+                        {
+                            case AppState.MainMenu:
+                                break;
+                            case AppState.ParkMenu:
+                            case AppState.CollectVehicle:
+                            case AppState.MoveVehicle:
+                                appState = AppState.MainMenu;
+                                break;
+                            case AppState.ParkCar:
+                            case AppState.ParkMotorcycle:
+                                appState = AppState.ParkMenu;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+
+                    if (keypress.Key == ConsoleKey.Enter)
+                    {
+
+                        if (appState is AppState.MainMenu && choice is Option.Park)
+                        {
+                            appState = AppState.ParkMenu;
+                            selected = 0;
+                        }
+                        else if (appState is AppState.ParkMenu && choice is Option.Car)
+                        {
+                            appState = AppState.ParkCar;
+                            return;
+
+                        }
+                        else if (appState is AppState.ParkMenu && choice is Option.Motorcycle)
+                        {
+                            appState = AppState.ParkMotorcycle;
+
+                        }
+                    }
+
+
+
+
                 }
                 while (true);
             });
 
 
-        //do
-        //{
-        //    var menuPanel = MenuBuilder(mainMenuOptions, selected);
-        //    layout["Menu"].Update(menuPanel);
-
-        //    WaitKey();
-
-
-        //} while (true);
 
     }
 
-
-
-
-    static void ShowMainMenu()
+    static Panel ParkCarPanel()
     {
-        Console.Clear();
-
-        int selected = 0;
-
-        do
-        {
-            var menuPanel = MenuBuilder(mainMenuOptions, selected);
-
-            AnsiConsole.Write(menuPanel);
-
-            WaitKey();
-
-        } while (true);
-
+        return PanelBuilder(new Markup("Please enter vehicle registration:"), "Park Car");
     }
 
-    static Panel MenuBuilder(Dictionary<Option, string> menuOptions, int selected)
+    static Panel MenuPanel(Dictionary<Option, string> menuOptions, int selected)
+    {
+        var menu = MenuBuilder(menuOptions, selected);
+
+        return PanelBuilder(menu, "actions");
+    }
+
+    static Panel PanelBuilder(IRenderable widget, string header)
+    {
+        return new Panel(new Padder(widget, new Padding(1)))
+            .Header($"[[ {header.ToUpper()} ]]").DoubleHorizontalBorder().Expand();
+    }
+
+    static Rows MenuBuilder(Dictionary<Option, string> menuOptions, int selected)
     {
         IRenderable[] allOptions = new IRenderable[menuOptions.Count];
 
@@ -146,17 +209,29 @@ internal class Program
                 allOptions[i] = new Markup($"  {menuOptions.Values.ElementAt(i)}");
         }
 
-        var menu = new Rows(allOptions);
-
-        return new Panel(new Padder(menu, new Padding(1)))
-            .Header("[[ ACTIONS ]]").DoubleHorizontalBorder().Expand();
+        return new Rows(allOptions);
     }
 
     static void ShowParkCarDialogue()
     {
-        var title = "Park car";
+        var layout = new Layout("Root")
+            .SplitRows(
+                new Layout("Top")
+                .SplitColumns(
+                    new Layout("Action"),
+                    new Layout("Map"),
+                    new Layout("Stats")
+                ).Size(20),
+            new Layout("Orders").Size(6),
+            new Layout("Log").Size(10)
+        );
 
-        var vehicleRegistration = ReadVehicleRegistrationInput(title);
+        var actionPanel = ParkCarPanel();
+        layout["Action"].Update(actionPanel);
+
+        AnsiConsole.Write(layout);
+
+        var vehicleRegistration = ReadVehicleRegistrationInput();
 
         if (FindFirstEmptyParkingSpace(out int emptySpaceId) == false)
         {
@@ -175,6 +250,30 @@ internal class Program
         {
             SplashMessage("Could not park car.", "error");
         }
+
+
+        appState = AppState.MainMenu;
+        //var title = "Park car";
+
+        //var vehicleRegistration = ReadVehicleRegistrationInput(title);
+
+        //if (FindFirstEmptyParkingSpace(out int emptySpaceId) == false)
+        //{
+        //    SplashMessage("No parking space available.", "warning");
+        //    return;
+        //}
+
+        //if (ParkCar(emptySpaceId, vehicleRegistration))
+        //{
+        //    var licensePlate = FormatVehicleRegistration(vehicleRegistration);
+        //    var message = $"Park car [{licensePlate}] in space #{emptySpaceId}";
+        //    SplashMessage(message, "instruction");
+        //    parkingGarage[0] = message;
+        //}
+        //else
+        //{
+        //    SplashMessage("Could not park car.", "error");
+        //}
 
     }
 
@@ -400,7 +499,38 @@ internal class Program
         return result;
     }
 
-    static string ReadVehicleRegistrationInput(string headline)
+    static string ReadVehicleRegistrationInput(string title)
+    {
+        return "";
+    }
+
+    static string ReadVehicleRegistrationInput()
+    {
+        string input;
+
+        var prompt = new TextPrompt<string>(">");
+
+        do
+        {
+            PlaceCursor(3, 5);
+            AnsiConsole.Write(new string(' ', 40));
+            PlaceCursor(3, 5);
+            input = AnsiConsole.Prompt(prompt);
+
+            if (ValidVehicleRegistration(input))
+                break;
+            else
+            {
+                PlaceCursor(3, 7);
+                AnsiConsole.Markup("[red]Invalid vehicle registration.[/] [white]Please try again.[/]");
+            }
+        }
+        while (true);
+
+        return FormatVehicleRegistration(input);
+    }
+
+    static string ReadVehicleRegistrationInputOLD(string headline)
     {
         string? input;
 
