@@ -13,7 +13,9 @@ enum AppState
     MoveVehicle,
     FindVehicle,
     Inspect,
-    List
+    List,
+    SpecialMenu,
+    Testing
 }
 
 enum Option
@@ -25,15 +27,14 @@ enum Option
     Inspect,
     List,
     Car,
-    Motorcycle
+    Motorcycle,
+    Test,
+    Exit
 }
 
 internal class Program
 {
     static AppState appState = AppState.MainMenu;
-
-    const int TITLE_X = 5;
-    const int TITLE_Y = 2;
 
     static int garageCapacity = 100;
     static string[] parkingGarage = GetEmptyParkingGarage();
@@ -57,6 +58,12 @@ internal class Program
         dirty = true;
     }
 
+    const string iconEmpty = "[Gray]░[/]";
+    const string iconCar = "[CornflowerBlue on Blue]■[/]";
+    const string iconMotorcycle = "[DarkOrange]![/]";
+    const string iconMotorcycles = "[DarkOrange]‼[/]";
+
+
     static readonly Dictionary<Option, string> mainMenuOptions = new()
         {
             { Option.Park, "Park Vehicle" },
@@ -71,6 +78,12 @@ internal class Program
         {
             { Option.Car, "Park Car" },
             { Option.Motorcycle, "Park Motorcycle" }
+        };
+
+    static readonly Dictionary<Option, string> specialMenuOptions = new()
+        {
+            { Option.Test, "Run Tests" },
+            { Option.Exit, "Exit Program" }
         };
 
 
@@ -88,6 +101,7 @@ internal class Program
             {
                 case AppState.MainMenu:
                 case AppState.ParkMenu:
+                case AppState.SpecialMenu:
                     ShowMainLayout();
                     break;
                 case AppState.ParkCar:
@@ -111,6 +125,9 @@ internal class Program
                 case AppState.List:
                     DisplayParkingGarage();
                     break;
+                case AppState.Testing:
+                    RunTests();
+                    break;
                 default:
                     break;
             }
@@ -118,7 +135,6 @@ internal class Program
 
         } while (true);
 
-        //RunTests();
     }
 
 
@@ -146,6 +162,8 @@ internal class Program
                         menuOptions = mainMenuOptions;
                     else if (appState is AppState.ParkMenu)
                         menuOptions = parkMenuOptions;
+                    else if (appState is AppState.SpecialMenu)
+                        menuOptions = specialMenuOptions;
 
                     if (dirty)
                     {
@@ -154,7 +172,7 @@ internal class Program
                         dirty = false;
                     }
 
-                    if (appState is AppState.MainMenu || appState is AppState.ParkMenu)
+                    if (appState is AppState.MainMenu || appState is AppState.ParkMenu || appState is AppState.SpecialMenu)
                     {
                         var actionPanel = MenuPanel(menuOptions, selected);
                         layout["Action"].Update(actionPanel);
@@ -187,15 +205,20 @@ internal class Program
                         switch (appState)
                         {
                             case AppState.MainMenu:
+                                appState = AppState.SpecialMenu;
+                                selected = 0;
                                 break;
                             case AppState.ParkMenu:
                             case AppState.CollectVehicle:
                             case AppState.MoveVehicle:
+                            case AppState.SpecialMenu:
                                 appState = AppState.MainMenu;
+                                selected = 0;
                                 break;
                             case AppState.ParkCar:
                             case AppState.ParkMotorcycle:
                                 appState = AppState.ParkMenu;
+                                selected = 0;
                                 break;
                             default:
                                 break;
@@ -231,12 +254,22 @@ internal class Program
                                 appState = AppState.ParkMotorcycle;
                             return;
                         }
+                        else if (appState is AppState.SpecialMenu)
+                        {
+                            if (choice is Option.Test)
+                                appState = AppState.Testing;
+                            else if (choice is Option.Exit)
+                            {
+                                Console.Clear();
+                                Environment.Exit(0);
+                            }
+                            return;
+                        }
                     }
                 }
                 while (true);
             });
     }
-
 
 
     static void LogInformation(string message)
@@ -276,10 +309,6 @@ internal class Program
 
     static Panel GaragePanel()
     {
-        string iconEmpty = "[Gray]░[/]";
-        string iconCar = "[CornflowerBlue on Blue]■[/]";
-        string iconMotorcycle = "[DarkOrange on Gray15]![/]";
-        string iconMotorcycles = "[DarkOrange on Gray15]‼[/]";
         int width = 20;
         int height = 15;
         var rows = new Markup[height];
@@ -639,40 +668,65 @@ internal class Program
 
     static void DisplayParkingGarage()
     {
-        var columns = Console.WindowWidth switch
+        var tableWidth = Console.WindowWidth switch
         {
             >= 150 => 5,
             >= 122 => 4,
             _ => 2,
         };
-        var left = TITLE_X;
-        var top = TITLE_Y;
-        var padding = (Console.WindowWidth - left) / columns;
+
+        var tableHeight = parkingGarage.Length / tableWidth;
 
         Console.Clear();
-        PlaceCursor(left, top);
 
-        for (int i = 1; i <= parkingGarage.Length / columns; i++)
+        var table = new Table().HideHeaders();
+
+        for (int i = 0; i < tableWidth; i++)
         {
-            for (int column = 0; column < columns; column++)
-            {
-                var spaceId = i + (column * parkingGarage.Length / columns);
-
-                Console.Write(($"{spaceId:000}").PadRight(padding));
-            }
-            Console.Write("\n");
-            MoveCursor(left, 0);
-
-            for (int column = 0; column < columns; column++)
-            {
-                var spaceId = i + (column * parkingGarage.Length / columns);
-
-                Console.Write(($"└ {parkingGarage[spaceId]}").PadRight(padding));
-            }
-            Console.Write("\n");
-            MoveCursor(left, 0);
-
+            table.AddColumn("", col => col.Width(23));
         }
+
+        for (int row = 0; row < tableHeight; row++)
+        {
+            string[] cells = new string[tableWidth];
+            int spaceId;
+            for (int column = 0; column < tableWidth; column++)
+            {
+                spaceId = row * tableWidth + column + 1;
+                string cell = $"{spaceId:000} ";
+                if (ParkingSpaceIsEmpty(spaceId))
+                    cell += $"{iconEmpty}\n";
+                else
+                {
+                    if (ParkingSpaceContainsCar(spaceId))
+                    {
+                        string licensePlate = DecodeLicensePlate(InspectParkingSpace(spaceId), out _);
+                        cell += $"{iconCar} {PrintLicensePlate(licensePlate)}\n";                        
+                    }
+                    else if (ParkingSpaceContainsMotorcycles(spaceId, out int qty))
+                    {
+                        if (qty == 1)
+                        {
+                            string licensePlate = DecodeLicensePlate(InspectParkingSpace(spaceId), out _);
+                            cell += $"{iconMotorcycle} {PrintLicensePlate(licensePlate)}\n";
+                        }
+                        else if (qty == 2)
+                        {
+                            var encodedLicensePlates = InspectParkingSpace(spaceId).Split('|');
+                            string licensePlate = DecodeLicensePlate(encodedLicensePlates[0], out _);
+                            cell += $"{iconMotorcycle} {PrintLicensePlate(licensePlate)}\n";
+                            licensePlate = DecodeLicensePlate(encodedLicensePlates[1], out _);
+                            cell += $"    {iconMotorcycle} {PrintLicensePlate(licensePlate)}";
+                        }
+                    }
+                }
+                cells[column] = cell;
+            }
+            table.AddRow(cells);
+        }
+
+
+        AnsiConsole.Write(table);
 
         appState = AppState.MainMenu;
         WaitKey();
@@ -750,63 +804,6 @@ internal class Program
         return $"[Black on Gray82] {licensePlate} [/]";
     }
 
-    static void DisplayMenu(string title, string[] options, string[] extraOptions, string? message)
-    {
-        Console.Clear();
-
-        var extraOptionsString = ($"[ {string.Join(" | ", extraOptions)} ]");
-
-        int left = (Console.WindowWidth / 2) - (extraOptionsString.Length / 2);
-        int bottom = Console.WindowHeight - 1;
-        PlaceCursor(left, bottom);
-        Console.Write(extraOptionsString);
-
-        if (string.IsNullOrWhiteSpace(message) == false)
-            DisplayMessage("Last instruction:", message);
-
-        DisplayStats();
-
-        WriteTitle(title);
-        MoveCursor(0, 1);
-
-        foreach (var option in options)
-        {
-            MoveCursor(TITLE_X + 2, 0);
-            Console.WriteLine(option);
-        }
-
-        Console.WriteLine();
-        MoveCursor(TITLE_X, 0);
-        Console.Write("> ");
-    }
-
-    static void DisplayStats()
-    {
-        var left = 50;
-        var top = TITLE_Y;
-        PlaceCursor(left, top);
-        Console.WriteLine("Statistics".ToUpper());
-        MoveCursor(left, 1);
-        Console.WriteLine($"Empty parking spaces: {CountEmptyParkingSpaces()}");
-        MoveCursor(left, 0);
-        Console.WriteLine($"Parked cars: {CountParkedCars()}");
-        MoveCursor(left, 0);
-        Console.WriteLine($"Parked motorcycles: {CountParkedMotorcycles()}");
-        MoveCursor(left, 0);
-        Console.WriteLine($"(Singles: {CountParkingSpacesWithSingleMotorcycles()})");
-
-    }
-
-    static void DisplayMessage(string headline, string message)
-    {
-        var left = 50;
-        var top = TITLE_Y + 20;
-        PlaceCursor(left, top);
-        Console.WriteLine(headline.ToUpper());
-        MoveCursor(left, 0);
-        Console.WriteLine(message);
-    }
-
     static void PlaceCursor(int x, int y)
     {
         Console.SetCursorPosition(x, y);
@@ -820,12 +817,6 @@ internal class Program
         Console.SetCursorPosition(x, y);
     }
 
-    static void WriteTitle(string title)
-    {
-        PlaceCursor(TITLE_X, TITLE_Y);
-        Console.WriteLine(title.ToUpper());
-    }
-
     static void DrawHorizontalBar(int width)
     {
         Console.WriteLine(new string('─', width));
@@ -836,8 +827,7 @@ internal class Program
     static void RunTests()
     {
         Console.Clear();
-        WriteTitle("Testing...");
-        Console.WriteLine();
+        Console.WriteLine("Testing...");
 
         string[] stashedParkingGarage = GetEmptyParkingGarage();
         Array.Copy(parkingGarage, stashedParkingGarage, parkingGarage.Length);
@@ -1378,6 +1368,7 @@ internal class Program
         garageCapacity = stashedParkingGarage.Length - 1;
         parkingGarage = stashedParkingGarage;
 
+        appState = AppState.MainMenu;
         WaitKey();
     }
 
