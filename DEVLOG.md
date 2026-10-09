@@ -346,3 +346,10 @@ Har äntligen bestämt mig gällande UI.
 ---
 
 Kartan / visualiseringen av parkeringshuset ser ganska bra ut nu. Tror det duger.
+
+---
+
+**Förslag:** Det skulle vara roligt att ha ett demo-läge med simulation av fordon som går in och ut i systemet.
+
+---
+

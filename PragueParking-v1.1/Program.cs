@@ -276,10 +276,10 @@ internal class Program
 
     static Panel GaragePanel()
     {
-        string empty = "[Gray]░[/]";
-        string car = "[CornflowerBlue on Blue]■[/]";
-        string motorcycle = "[Yellow on Gray19]![/]";
-        string motorcycles = "[Orange3 on Gray19]‼[/]";
+        string iconEmpty = "[Gray]░[/]";
+        string iconCar = "[CornflowerBlue on Blue]■[/]";
+        string iconMotorcycle = "[DarkOrange on Gray15]![/]";
+        string iconMotorcycles = "[DarkOrange on Gray15]‼[/]";
         int width = 20;
         int height = 15;
         var rows = new Markup[height];
@@ -300,13 +300,13 @@ internal class Program
                 else if (y % 3 == 1)
                 {
                     if (ParkingSpaceIsEmpty(spaceId))
-                        row += $"  {empty}  ";
+                        row += $"  {iconEmpty}  ";
                     else if (ParkingSpaceContainsCar(spaceId))
-                        row += $"  {car}  ";
+                        row += $"  {iconCar}  ";
                     else if (ParkingSpaceContainsMotorcycles(spaceId, out int qty) && qty == 1)
-                        row += $"  {motorcycle}  ";
+                        row += $"  {iconMotorcycle}  ";
                     else if (ParkingSpaceContainsMotorcycles(spaceId, out qty) && qty == 2)
-                        row += $"  {motorcycles}  ";
+                        row += $"  {iconMotorcycles}  ";
                 }
                 else
                 {
@@ -318,7 +318,18 @@ internal class Program
 
         var map = new Rows(rows);
 
-        return PanelBuilder(map, "Parking Garage");
+        var empty = CountEmptyParkingSpaces();
+        var cars = CountParkedCars();
+        var motorcycles = CountParkedMotorcycles();
+
+        var panel = new Rows(
+            map,
+            new Markup(
+                $"[Gray]Empty spaces: {empty}[/] | [Blue]Cars: {cars}[/] | [DarkOrange]Motorcycles: {motorcycles} [/]"
+                )
+            );
+
+        return PanelBuilder(panel, "Parking Garage");
     }
 
     static Panel ReplyPanel(string text)
