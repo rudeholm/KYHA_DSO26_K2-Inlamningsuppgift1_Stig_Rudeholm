@@ -41,7 +41,7 @@ internal class Program
 
     static List<string> log = [];
 
-    static Layout mainLayout = new Layout("Root")
+    static readonly Layout mainLayout = new Layout("Root")
             .SplitRows(
                 new Layout("Top")
                 .SplitColumns(
@@ -1684,6 +1684,38 @@ internal class Program
             return CountParkedMotorcycles() == 4;
         });
 
+        Test("A parking garage with single motorcycles can be optimized to free up parking spaces", () =>
+        {
+            InitializeParkingGarage();
+            ParkMotorcycle(1, "foo 1");
+            ParkMotorcycle(2, "bar 1");
+            ParkMotorcycle(2, "bar 2");
+            ParkMotorcycle(3, "foo 2");
+            return OptimizeMotorcycleParking() == true;
+        });
+    
+        Test("A parking garage with zero or one single motorcycle can not be optimized to free up parking spaces", () =>
+        {
+            InitializeParkingGarage();
+            return CountParkingSpacesWithSingleMotorcycles() <= 1
+                && OptimizeMotorcycleParking() == false;
+        });
+
+        Test("A parking garage with single motorcycles can be optimized to free up parking spaces", () =>
+        {
+            InitializeParkingGarage();
+            ParkMotorcycle(1, "foo 1");
+            ParkMotorcycle(2, "bar 1");
+            ParkMotorcycle(2, "bar 2");
+            ParkMotorcycle(3, "foo 2");
+            ParkMotorcycle(4, "foo 3");
+            return OptimizeMotorcycleParking() == true
+                && CountParkingSpacesWithSingleMotorcycles() == 1;
+        });
+
+
+
+        // Tear down
         garageCapacity = stashedParkingGarage.Length - 1;
         parkingGarage = stashedParkingGarage;
 
@@ -1691,4 +1723,41 @@ internal class Program
         WaitKey();
     }
 
+    private static bool OptimizeMotorcycleParking()
+    {
+        if (CountParkingSpacesWithSingleMotorcycles() <= 1)
+            return false;
+
+        // Scan the parking garage back to front
+        for (int spaceId = garageCapacity - 1; spaceId >= 0; spaceId--)
+        {
+            string vehicleToBeMoved;
+            int originSpaceId;
+            // Find the single motorcycle furthest away
+            if (ParkingSpaceContainsMotorcycles(spaceId, out int qty) && qty == 1)
+            {
+                originSpaceId = spaceId;
+                if (FindFirstParkingSpaceWithRoomForMotorcycle(out int destinationSpaceId))
+                {
+                    if (originSpaceId == destinationSpaceId)
+                    {
+                        // All that can be done has been done
+                        return true;
+                    }
+
+                    vehicleToBeMoved = DecodeLicensePlate(InspectParkingSpace(originSpaceId), out _);
+                    if (CollectVehicle(originSpaceId, vehicleToBeMoved))
+                    {
+                        if (ParkMotorcycle(destinationSpaceId, vehicleToBeMoved))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+        }
+
+        return false;
+    }
 }
