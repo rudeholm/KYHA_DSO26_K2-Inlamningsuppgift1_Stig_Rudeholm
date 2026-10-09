@@ -48,7 +48,7 @@ internal class Program
                     new Layout("Action").Size(40),
                     new Layout("Map")
                 ).Size(20),
-                new Layout("Instructions").Size(5),
+                new Layout("Message").Size(5),
                 new Layout("Log").Size(9)
             );
 
@@ -146,8 +146,8 @@ internal class Program
         var logPanel = LogPanel();
         layout["Log"].Update(logPanel);
 
-        var instructionPanel = ReplyPanel(parkingGarage[0] ?? "");
-        layout["Instructions"].Update(instructionPanel);
+        var messagePanel = MessagePanel(parkingGarage[0] ?? "");
+        layout["Message"].Update(messagePanel);
 
         AnsiConsole.Live(layout)
             .Start(ctx =>
@@ -370,9 +370,9 @@ internal class Program
         return PanelBuilder(panel, "Parking Garage");
     }
 
-    static Panel ReplyPanel(string text)
+    static Panel MessagePanel(string text)
     {
-        return PanelBuilder(new Markup(text), "Latest reply");
+        return PanelBuilder(new Markup(text), "Latest message");
     }
 
     static Panel LogPanel()
