@@ -87,7 +87,7 @@ internal class Program
         };
 
 
-    static void Main(string[] args)
+    static void Main()
     {
         Console.Title = "Prague Parking v1.1";
 
@@ -131,12 +131,8 @@ internal class Program
                 default:
                     break;
             }
-
-
         } while (true);
-
     }
-
 
     static void ShowMainLayout()
     {
@@ -272,15 +268,15 @@ internal class Program
     }
 
 
+    /*
+    ** Log
+    */
+    static void LogEvent(string logEntry)
+        => log.Add(logEntry);
+
     static void LogInformation(string message)
     {
         var logEntry = $"{PrintInfo("INFO")} {message}";
-        LogEvent(logEntry);
-    }
-
-    static void LogWarning(string message)
-    {
-        var logEntry = $"[Yellow]WARNING[/] {message}";
         LogEvent(logEntry);
     }
 
@@ -304,8 +300,21 @@ internal class Program
         LogEvent(logEntry);
     }
 
-    static void LogEvent(string logEntry)
-        => log.Add(logEntry);
+    /*
+    ** UI Panels
+    */
+    static Panel PanelBuilder(IRenderable widget, string header)
+    {
+        return new Panel(new Padder(widget, new Padding(1)))
+            .Header($"[[ {header.ToUpper()} ]]").DoubleHorizontalBorder().Expand();
+    }
+
+    static Panel MenuPanel(Dictionary<Option, string> menuOptions, int selected)
+    {
+        var menu = MenuBuilder(menuOptions, selected);
+
+        return PanelBuilder(menu, "Actions");
+    }
 
     static Panel GaragePanel()
     {
@@ -410,19 +419,9 @@ internal class Program
         return PanelBuilder(new Markup("Enter the registration number of the motorcycle to be received, at the bottom of the screen. Instructions on where to park the vehicle will be shown below."), "Park Motorcycle");
     }
 
-    static Panel MenuPanel(Dictionary<Option, string> menuOptions, int selected)
-    {
-        var menu = MenuBuilder(menuOptions, selected);
-
-        return PanelBuilder(menu, "Actions");
-    }
-
-    static Panel PanelBuilder(IRenderable widget, string header)
-    {
-        return new Panel(new Padder(widget, new Padding(1)))
-            .Header($"[[ {header.ToUpper()} ]]").DoubleHorizontalBorder().Expand();
-    }
-
+    /*
+    ** Builders
+    */
     static Rows MenuBuilder(Dictionary<Option, string> menuOptions, int selected)
     {
         IRenderable[] allOptions = new IRenderable[menuOptions.Count];
@@ -438,6 +437,9 @@ internal class Program
         return new Rows(allOptions);
     }
 
+    /*
+    ** Dialogues
+    */
     static void ShowParkCarDialogue()
     {
         var layout = mainLayout;
@@ -614,7 +616,6 @@ internal class Program
             return;
         }
 
-
         if (ParkingSpaceContainsMotorcycles(originSpaceId, out _))
         {
             if (ParkingSpaceHasRoomForMotorcycle(destinationSpaceId))
@@ -656,6 +657,9 @@ internal class Program
         appState = AppState.MainMenu;
     }
 
+    /*
+    ** Replies
+    */
     static void Reply(string text)
     {
         parkingGarage[0] = text;
@@ -666,6 +670,9 @@ internal class Program
         Reply($"{PrintError(text)}");
     }
 
+    /*
+    ** Lists
+    */
     static void DisplayParkingGarage()
     {
         var tableWidth = Console.WindowWidth switch
@@ -725,22 +732,22 @@ internal class Program
             table.AddRow(cells);
         }
 
-
         AnsiConsole.Write(table);
 
         appState = AppState.MainMenu;
         WaitKey();
     }
 
-    /*****************************************************************************/
-
+    /*
+    ** Readers
+    */
     static int ReadSpaceIdInput()
     {
         int input;
 
-        var prompt = new TextPrompt<int>("[green]Enter parking space ID[/]: ")
-            .PromptStyle("green")
-            .ValidationErrorMessage($"[red]Valid numbers are 1-{garageCapacity}[/]");
+        var prompt = new TextPrompt<int>("[Green]Enter parking space ID[/]: ")
+            .PromptStyle("Green")
+            .ValidationErrorMessage($"[Red]Valid numbers are 1-{garageCapacity}[/]");
 
         do
         {
@@ -783,46 +790,361 @@ internal class Program
     }
 
 
-
+    /*
+    ** Text formatting helpers
+    */
     static string PrintSpaceId(int spaceId)
-    {
-        return $"[Green]#{spaceId:000}[/]";
-    }
+        => $"[Green]#{spaceId:000}[/]";
 
     static string PrintError(string text)
-    {
-        return $"[Red]{text}[/]";
-    }
+        => $"[Red]{text}[/]";
 
     static string PrintInfo(string text)
-    {
-        return $"[Blue]{text}[/]";
-    }
+        => $"[Blue]{text}[/]";
 
     static string PrintLicensePlate(string licensePlate)
+        => $"[Black on Gray82] {licensePlate} [/]";
+
+    /*
+    ** Main workhorses
+    */
+    static int ScanParkingGarage(Func<int, bool> f)
     {
-        return $"[Black on Gray82] {licensePlate} [/]";
+        int count = 0;
+        for (int i = 1; i <= garageCapacity; i++)
+        {
+            if (f(i))
+                count++;
+        }
+        return count;
     }
 
-    static void PlaceCursor(int x, int y)
+    private static int CountParkedMotorcycles()
+        => CountParkingSpacesWithDoubleMotorcycles() * 2
+            + CountParkingSpacesWithSingleMotorcycles();
+
+    private static int CountParkingSpacesWithDoubleMotorcycles() =>
+        ScanParkingGarage((parkingSpaceId) =>
+            ParkingSpaceContainsMotorcycles(parkingSpaceId, out int qty)
+            && qty == 2
+        );
+
+    private static int CountParkingSpacesWithSingleMotorcycles() =>
+        ScanParkingGarage((parkingSpaceId) =>
+            ParkingSpaceContainsMotorcycles(parkingSpaceId, out int qty)
+            && qty == 1
+        );
+
+    static int CountParkedCars()
+        => ScanParkingGarage((parkingSpaceId) => ParkingSpaceContainsCar(parkingSpaceId));
+
+    static int CountEmptyParkingSpaces()
+        => ScanParkingGarage((parkingSpaceId) => ParkingSpaceIsEmpty(parkingSpaceId));
+
+    static bool IsCar(string encodedLicensePlate)
+        => encodedLicensePlate.StartsWith("CAR#");
+
+    static bool IsMotorcycle(string encodedLicensePlate)
+        => encodedLicensePlate.StartsWith("MC#");
+
+    static bool MoveVehicle(int destinationSpaceId, string vehicleRegistration)
     {
-        Console.SetCursorPosition(x, y);
+        if (FindVehicle(vehicleRegistration, out var originSpaceId))
+        {
+            if (ParkingSpaceContainsCar(originSpaceId))
+            {
+                if (CollectVehicle(originSpaceId, vehicleRegistration))
+                {
+                    return ParkCar(destinationSpaceId, vehicleRegistration);
+                }
+            }
+
+            if (ParkingSpaceContainsMotorcycles(originSpaceId, out _))
+            {
+                if (CollectVehicle(originSpaceId, vehicleRegistration))
+                {
+                    return ParkMotorcycle(destinationSpaceId, vehicleRegistration);
+                }
+            }
+        }
+
+        return false;
     }
 
-    static void MoveCursor(int x, int y)
+    static bool CollectVehicle(int spaceId, string vehicleRegistration)
     {
-        x += Console.GetCursorPosition().Left;
-        y += Console.GetCursorPosition().Top;
+        if (ParkingSpaceIsEmpty(spaceId))
+            return false;
 
-        Console.SetCursorPosition(x, y);
+        if (ParkingSpaceContainsCar(spaceId))
+        {
+            ClearParkingSpace(spaceId);
+            return true;
+        }
+
+        if (ParkingSpaceContainsMotorcycles(spaceId, out var qty))
+        {
+            if (qty == 1)
+            {
+                ClearParkingSpace(spaceId);
+                return true;
+            }
+
+            if (qty == 2)
+            {
+                var parkedMotorcycles = InspectParkingSpace(spaceId).Split('|');
+                var licensePlate = EncodeMotorcycleLicensePlate(vehicleRegistration);
+
+                if (parkedMotorcycles[0].Equals(licensePlate))
+                {
+                    parkingGarage[spaceId] = parkedMotorcycles[1];
+                    return true;
+                }
+                else
+                {
+                    parkingGarage[spaceId] = parkedMotorcycles[0];
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
-    static void DrawHorizontalBar(int width)
+    static bool ParkingSpaceContainsMotorcycles(int spaceId, out int qty)
     {
-        Console.WriteLine(new string('─', width));
+        if (ParkingSpaceIsEmpty(spaceId) || ParkingSpaceContainsCar(spaceId))
+        {
+            qty = 0;
+            return false;
+        }
+
+        var spaceContents = InspectParkingSpace(spaceId);
+        if (spaceContents.StartsWith("MC#"))
+        {
+            qty = spaceContents.Split('|').Length;
+            return true;
+        }
+
+        qty = 0;
+        return false;
     }
 
-    /*****************************************************************************/
+    static bool FindVehicle(string vehicleRegistration, out int foundSpaceId)
+    {
+        for (int i = 1; i < parkingGarage.Length; i++)
+        {
+            if (ParkingSpaceIsEmpty(i))
+                continue;
+
+            if (ParkingSpaceContainsMotorcycles(i, out int qty))
+            {
+                var parkedVehicles = InspectParkingSpace(i).Split('|');
+                foreach (var parkedLicensePlate in parkedVehicles)
+                {
+                    if (DecodeLicensePlate(parkedLicensePlate, out _).Equals(vehicleRegistration, StringComparison.OrdinalIgnoreCase))
+                    {
+                        foundSpaceId = i;
+                        return true;
+                    }
+
+                }
+            }
+
+            var storedLicensePlate = InspectParkingSpace(i);
+            if (DecodeLicensePlate(storedLicensePlate, out _).Equals(vehicleRegistration, StringComparison.OrdinalIgnoreCase))
+            {
+                foundSpaceId = i;
+                return true;
+            }
+        }
+
+        foundSpaceId = -1;
+        return false;
+    }
+
+    static bool FindFirstParkingSpaceWithRoomForMotorcycle(out int foundSpaceId)
+    {
+        for (int i = 1; i < parkingGarage.Length; i++)
+        {
+            if (ParkingSpaceHasRoomForMotorcycle(i))
+            {
+                foundSpaceId = i;
+                return true;
+            }
+        }
+
+        foundSpaceId = -1;
+        return false;
+    }
+
+    static bool ParkingSpaceHasRoomForMotorcycle(int spaceId)
+    {
+        if (ParkingSpaceIsEmpty(spaceId))
+            return true;
+
+        if (ParkingSpaceContainsCar(spaceId))
+            return false;
+
+        if (ParkingSpaceContainsMotorcycles(spaceId, out int qty) && qty < 2)
+            return true;
+
+        return false;
+    }
+
+    static bool ParkingSpaceContainsCar(int spaceId)
+    {
+        if (ParkingSpaceIsEmpty(spaceId))
+            return false;
+
+        if (IsCar(InspectParkingSpace(spaceId)))
+            return true;
+
+        return false;
+    }
+
+    static bool ParkMotorcycle(int spaceId, string vehicleRegistration)
+    {
+        var licensePlate = EncodeMotorcycleLicensePlate(vehicleRegistration);
+
+        if (FindVehicle(vehicleRegistration, out _))
+            return false;
+
+        if (ParkingSpaceHasRoomForMotorcycle(spaceId))
+        {
+            if (InspectParkingSpace(spaceId).StartsWith("MC#"))
+            {
+                parkingGarage[spaceId] += "|" + licensePlate;
+
+            }
+            else
+            {
+                parkingGarage[spaceId] = licensePlate;
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    static string InspectParkingSpace(int spaceId)
+    {
+        if (ParkingSpaceIsEmpty(spaceId))
+            return string.Empty;
+
+        return parkingGarage[spaceId];
+    }
+
+    static bool FindFirstEmptyParkingSpace(out int emptySpaceId)
+    {
+        for (int i = 1; i < parkingGarage.Length; i++)
+        {
+            if (ParkingSpaceIsEmpty(i))
+            {
+                emptySpaceId = i;
+                return true;
+            }
+        }
+
+        emptySpaceId = -1;
+        return false;
+    }
+
+    static bool ParkCar(int spaceId, string vehicleRegistration)
+    {
+        var licensePlate = EncodeCarLicensePlate(vehicleRegistration);
+
+        if (FindVehicle(vehicleRegistration, out _))
+            return false;
+
+        if (ParkingSpaceIsNotEmpty(spaceId))
+            return false;
+
+        parkingGarage[spaceId] = licensePlate;
+        return true;
+    }
+
+    static void ClearParkingSpace(int spaceId)
+    {
+        parkingGarage[spaceId] = "";
+    }
+
+    static bool ParkingSpaceIsNotEmpty(int spaceId)
+        => string.IsNullOrWhiteSpace(parkingGarage[spaceId]) == false;
+
+    static bool ParkingSpaceIsEmpty(int spaceId)
+        => string.IsNullOrWhiteSpace(parkingGarage[spaceId]);
+
+    static string DecodeLicensePlate(string licensePlate, out string vehicleType)
+    {
+        var parts = licensePlate.Split('#');
+        vehicleType = parts[0];
+        return parts[1].Replace('_', ' ');
+
+    }
+
+    static string EncodeMotorcycleLicensePlate(string vehicleRegistration)
+        => $"MC#{FormatVehicleRegistration(vehicleRegistration).Replace(' ', '_')}";
+
+    static string EncodeCarLicensePlate(string vehicleRegistration)
+        => $"CAR#{FormatVehicleRegistration(vehicleRegistration).Replace(' ', '_')}";
+
+    static string FormatVehicleRegistration(string vehicleRegistration)
+        => vehicleRegistration.Trim().ToUpper();
+
+    /*
+    ** Validators
+    */
+    static bool ValidSpaceId(int spaceId)
+    {
+        var isGreaterThanZero = spaceId >= 1;
+        var isWithinCapacity = spaceId <= garageCapacity;
+        return isGreaterThanZero && isWithinCapacity;
+    }
+
+    static bool ValidVehicleRegistration(string vehicleRegistration)
+    {
+        if (string.IsNullOrWhiteSpace(vehicleRegistration))
+            return false;
+
+        if (vehicleRegistration.Length > 10)
+            return false;
+
+        return true;
+    }
+
+    static void InitializeParkingGarage()
+    {
+        parkingGarage = GetEmptyParkingGarage();
+    }
+
+    static string[] GetEmptyParkingGarage()
+        => new string[garageCapacity + 1];
+
+    static void WaitKey(string message = "[ Press any key to continue ]")
+    {
+        Console.Write("[ Press any key to continue ]");
+        Console.ReadKey(true);
+    }
+
+    /*
+    ** Tests
+    */
+    static void Test(string description, Func<bool> test)
+    {
+        bool result = test();
+        if (result == true)
+        {
+            AnsiConsole.Markup("[green][[✓]][/] ");
+        }
+        else
+        {
+            AnsiConsole.Markup("[bold red][[✗]][/] ");
+        }
+        Console.Write($"{description}");
+        Console.WriteLine();
+
+    }
 
     static void RunTests()
     {
@@ -1362,357 +1684,11 @@ internal class Program
             return CountParkedMotorcycles() == 4;
         });
 
-
-
-        //
         garageCapacity = stashedParkingGarage.Length - 1;
         parkingGarage = stashedParkingGarage;
 
         appState = AppState.MainMenu;
         WaitKey();
     }
-
-
-
-    /*****************************************************************************/
-
-    private static int CountParkedMotorcycles()
-        => CountParkingSpacesWithDoubleMotorcycles() * 2
-            + CountParkingSpacesWithSingleMotorcycles();
-
-    private static int CountParkingSpacesWithDoubleMotorcycles() =>
-        ScanParkingGarage((parkingSpaceId) =>
-            ParkingSpaceContainsMotorcycles(parkingSpaceId, out int qty)
-            && qty == 2
-        );
-
-    private static int CountParkingSpacesWithSingleMotorcycles() =>
-        ScanParkingGarage((parkingSpaceId) =>
-            ParkingSpaceContainsMotorcycles(parkingSpaceId, out int qty)
-            && qty == 1
-        );
-
-    static int ScanParkingGarage(Func<int, bool> f)
-    {
-        int count = 0;
-        for (int i = 1; i <= garageCapacity; i++)
-        {
-            if (f(i))
-                count++;
-        }
-        return count;
-    }
-
-    static int CountParkedCars()
-        => ScanParkingGarage((parkingSpaceId) => ParkingSpaceContainsCar(parkingSpaceId));
-
-    static int CountEmptyParkingSpaces()
-        => ScanParkingGarage((parkingSpaceId) => ParkingSpaceIsEmpty(parkingSpaceId));
-
-    static bool IsCar(string encodedLicensePlate)
-        => encodedLicensePlate.StartsWith("CAR#");
-    static bool IsMotorcycle(string encodedLicensePlate)
-        => encodedLicensePlate.StartsWith("MC#");
-
-    static bool MoveVehicle(int destinationSpaceId, string vehicleRegistration)
-    {
-        if (FindVehicle(vehicleRegistration, out var originSpaceId))
-        {
-            if (ParkingSpaceContainsCar(originSpaceId))
-            {
-                if (CollectVehicle(originSpaceId, vehicleRegistration))
-                {
-                    return ParkCar(destinationSpaceId, vehicleRegistration);
-                }
-            }
-
-            if (ParkingSpaceContainsMotorcycles(originSpaceId, out _))
-            {
-                if (CollectVehicle(originSpaceId, vehicleRegistration))
-                {
-                    return ParkMotorcycle(destinationSpaceId, vehicleRegistration);
-                }
-            }
-        }
-
-        return false;
-    }
-
-    static bool CollectVehicle(int spaceId, string vehicleRegistration)
-    {
-        if (ParkingSpaceIsEmpty(spaceId))
-            return false;
-
-        if (ParkingSpaceContainsCar(spaceId))
-        {
-            ClearParkingSpace(spaceId);
-            return true;
-        }
-
-        if (ParkingSpaceContainsMotorcycles(spaceId, out var qty))
-        {
-            if (qty == 1)
-            {
-                ClearParkingSpace(spaceId);
-                return true;
-            }
-
-            if (qty == 2)
-            {
-                var parkedMotorcycles = InspectParkingSpace(spaceId).Split('|');
-                var licensePlate = EncodeMotorcycleLicensePlate(vehicleRegistration);
-
-                if (parkedMotorcycles[0].Equals(licensePlate))
-                {
-                    parkingGarage[spaceId] = parkedMotorcycles[1];
-                    return true;
-                }
-                else
-                {
-                    parkingGarage[spaceId] = parkedMotorcycles[0];
-                    return true;
-                }
-            }
-        }
-
-
-        return false;
-    }
-
-    static bool ParkingSpaceContainsMotorcycles(int spaceId, out int qty)
-    {
-        if (ParkingSpaceIsEmpty(spaceId) || ParkingSpaceContainsCar(spaceId))
-        {
-            qty = 0;
-            return false;
-        }
-
-        var spaceContents = InspectParkingSpace(spaceId);
-        if (spaceContents.StartsWith("MC#"))
-        {
-            qty = spaceContents.Split('|').Length;
-            return true;
-        }
-
-        qty = 0;
-        return false;
-    }
-
-    static bool FindVehicle(string vehicleRegistration, out int foundSpaceId)
-    {
-        for (int i = 1; i < parkingGarage.Length; i++)
-        {
-            if (ParkingSpaceIsEmpty(i))
-                continue;
-
-            if (ParkingSpaceContainsMotorcycles(i, out int qty))
-            {
-                var parkedVehicles = InspectParkingSpace(i).Split('|');
-                foreach (var parkedLicensePlate in parkedVehicles)
-                {
-                    if (DecodeLicensePlate(parkedLicensePlate, out _).Equals(vehicleRegistration, StringComparison.OrdinalIgnoreCase))
-                    {
-                        foundSpaceId = i;
-                        return true;
-                    }
-
-                }
-            }
-
-            var storedLicensePlate = InspectParkingSpace(i);
-            if (DecodeLicensePlate(storedLicensePlate, out _).Equals(vehicleRegistration, StringComparison.OrdinalIgnoreCase))
-            {
-                foundSpaceId = i;
-                return true;
-            }
-        }
-
-        foundSpaceId = -1;
-        return false;
-    }
-
-    static bool FindFirstParkingSpaceWithRoomForMotorcycle(out int foundSpaceId)
-    {
-        for (int i = 1; i < parkingGarage.Length; i++)
-        {
-            if (ParkingSpaceHasRoomForMotorcycle(i))
-            {
-                foundSpaceId = i;
-                return true;
-            }
-        }
-
-        foundSpaceId = -1;
-        return false;
-    }
-
-    static bool ParkingSpaceHasRoomForMotorcycle(int spaceId)
-    {
-        if (ParkingSpaceIsEmpty(spaceId))
-            return true;
-
-        if (ParkingSpaceContainsCar(spaceId))
-            return false;
-
-        if (ParkingSpaceContainsMotorcycles(spaceId, out int qty) && qty < 2)
-            return true;
-
-        return false;
-    }
-
-    static bool ParkingSpaceContainsCar(int spaceId)
-    {
-        if (ParkingSpaceIsEmpty(spaceId))
-            return false;
-
-        if (IsCar(InspectParkingSpace(spaceId)))
-            return true;
-
-        return false;
-    }
-
-    static bool ParkMotorcycle(int spaceId, string vehicleRegistration)
-    {
-        var licensePlate = EncodeMotorcycleLicensePlate(vehicleRegistration);
-
-        if (FindVehicle(vehicleRegistration, out _))
-            return false;
-
-        if (ParkingSpaceHasRoomForMotorcycle(spaceId))
-        {
-            if (InspectParkingSpace(spaceId).StartsWith("MC#"))
-            {
-                parkingGarage[spaceId] += "|" + licensePlate;
-
-            }
-            else
-            {
-                parkingGarage[spaceId] = licensePlate;
-            }
-            return true;
-        }
-
-        return false;
-    }
-
-    static bool ValidSpaceId(int spaceId)
-    {
-        var isGreaterThanZero = spaceId >= 1;
-        var isWithinCapacity = spaceId <= garageCapacity;
-        return isGreaterThanZero && isWithinCapacity;
-    }
-
-    static string InspectParkingSpace(int spaceId)
-    {
-        if (ParkingSpaceIsEmpty(spaceId))
-            return string.Empty;
-
-        return parkingGarage[spaceId];
-    }
-
-    static bool FindFirstEmptyParkingSpace(out int emptySpaceId)
-    {
-        for (int i = 1; i < parkingGarage.Length; i++)
-        {
-            if (ParkingSpaceIsEmpty(i))
-            {
-                emptySpaceId = i;
-                return true;
-            }
-        }
-
-        emptySpaceId = -1;
-        return false;
-    }
-
-    static bool ValidVehicleRegistration(string vehicleRegistration)
-    {
-        if (string.IsNullOrWhiteSpace(vehicleRegistration))
-            return false;
-
-        if (vehicleRegistration.Length > 10)
-            return false;
-
-        return true;
-    }
-
-    static bool ParkCar(int spaceId, string vehicleRegistration)
-    {
-        var licensePlate = EncodeCarLicensePlate(vehicleRegistration);
-
-        if (FindVehicle(vehicleRegistration, out _))
-            return false;
-
-        if (ParkingSpaceIsNotEmpty(spaceId))
-            return false;
-
-        parkingGarage[spaceId] = licensePlate;
-        return true;
-    }
-
-    static void ClearParkingSpace(int spaceId)
-    {
-        parkingGarage[spaceId] = "";
-    }
-
-    static bool ParkingSpaceIsNotEmpty(int spaceId)
-        => string.IsNullOrWhiteSpace(parkingGarage[spaceId]) == false;
-
-    static bool ParkingSpaceIsEmpty(int spaceId)
-        => string.IsNullOrWhiteSpace(parkingGarage[spaceId]);
-
-    static string DecodeLicensePlate(string licensePlate, out string vehicleType)
-    {
-        var parts = licensePlate.Split('#');
-        vehicleType = parts[0];
-        return parts[1].Replace('_', ' ');
-
-    }
-
-    static string EncodeMotorcycleLicensePlate(string vehicleRegistration)
-        => $"MC#{FormatVehicleRegistration(vehicleRegistration).Replace(' ', '_')}";
-
-    static string EncodeCarLicensePlate(string vehicleRegistration)
-        => $"CAR#{FormatVehicleRegistration(vehicleRegistration).Replace(' ', '_')}";
-
-    static string FormatVehicleRegistration(string vehicleRegistration)
-        => vehicleRegistration.Trim().ToUpper();
-
-    /*****************************************************************************/
-
-    static void Test(string description, Func<bool> test)
-    {
-        bool result = test();
-        if (result == true)
-        {
-            AnsiConsole.Markup("[green][[✓]][/] ");
-        }
-        else
-        {
-            AnsiConsole.Markup("[bold red][[✗]][/] ");
-        }
-        Console.Write($"{description}");
-        Console.WriteLine();
-
-    }
-
-    static void InitializeParkingGarage()
-    {
-        parkingGarage = GetEmptyParkingGarage();
-    }
-
-    static string[] GetEmptyParkingGarage()
-        => new string[garageCapacity + 1];
-
-    static void WaitKey(string message = "[ Press any key to continue ]")
-    {
-        int left = (Console.WindowWidth / 2) - (message.Length / 2);
-        int bottom = Console.WindowHeight - 1;
-        PlaceCursor(left, bottom);
-        Console.Write("[ Press any key to continue ]");
-        Console.ReadKey();
-    }
-
-
 
 }
