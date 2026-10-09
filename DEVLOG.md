@@ -345,3 +345,4 @@ Har äntligen bestämt mig gällande UI.
 
 ---
 
+Kartan / visualiseringen av parkeringshuset ser ganska bra ut nu. Tror det duger.

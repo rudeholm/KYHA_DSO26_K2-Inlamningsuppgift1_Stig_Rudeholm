@@ -1,6 +1,5 @@
 ﻿using Spectre.Console;
 using Spectre.Console.Rendering;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PragueParking_v1._1;
 
@@ -13,7 +12,8 @@ enum AppState
     CollectVehicle,
     MoveVehicle,
     FindVehicle,
-    Inspect
+    Inspect,
+    List
 }
 
 enum Option
@@ -23,6 +23,7 @@ enum Option
     Move,
     Search,
     Inspect,
+    List,
     Car,
     Motorcycle
 }
@@ -34,7 +35,7 @@ internal class Program
     const int TITLE_X = 5;
     const int TITLE_Y = 2;
 
-    static int garageCapacity = 3;
+    static int garageCapacity = 100;
     static string[] parkingGarage = GetEmptyParkingGarage();
 
     static List<string> log = [];
@@ -50,14 +51,20 @@ internal class Program
                 new Layout("Log").Size(9)
             );
 
+    static bool dirty = true;
+    static void Dirty()
+    {
+        dirty = true;
+    }
 
     static readonly Dictionary<Option, string> mainMenuOptions = new()
         {
             { Option.Park, "Park Vehicle" },
             { Option.Collect, "Collect Vehicle" },
             { Option.Move, "Move Vehicle" },
-            { Option.Search, "Locate Vehicle" },
-            { Option.Inspect, "Inspect Parking Space" }
+            { Option.Search, "Find Vehicle" },
+            { Option.Inspect, "Inspect Parking Space" },
+            { Option.List, "List Parking Spaces" }
         };
 
     static readonly Dictionary<Option, string> parkMenuOptions = new()
@@ -73,7 +80,7 @@ internal class Program
 
         InitializeParkingGarage();
 
-        log.Add("[Green]Welcome to Park-o-matix 9001![/]");
+        LogInformation("Welcome to Park-o-matix 9001!");
 
         do
         {
@@ -101,6 +108,9 @@ internal class Program
                 case AppState.Inspect:
                     ShowInspectParkingSpaceDialogue();
                     break;
+                case AppState.List:
+                    DisplayParkingGarage();
+                    break;
                 default:
                     break;
             }
@@ -124,7 +134,7 @@ internal class Program
         var logPanel = LogPanel();
         layout["Log"].Update(logPanel);
 
-        var instructionPanel = InstructionPanel(parkingGarage[0] ?? "");
+        var instructionPanel = ReplyPanel(parkingGarage[0] ?? "");
         layout["Instructions"].Update(instructionPanel);
 
         AnsiConsole.Live(layout)
@@ -137,6 +147,12 @@ internal class Program
                     else if (appState is AppState.ParkMenu)
                         menuOptions = parkMenuOptions;
 
+                    if (dirty)
+                    {
+                        var garagePanel = GaragePanel();
+                        layout["Map"].Update(garagePanel);
+                        dirty = false;
+                    }
 
                     if (appState is AppState.MainMenu || appState is AppState.ParkMenu)
                     {
@@ -203,6 +219,8 @@ internal class Program
                                 appState = AppState.FindVehicle;
                             else if (choice is Option.Inspect)
                                 appState = AppState.Inspect;
+                            else if (choice is Option.List)
+                                appState = AppState.List;
                             return;
                         }
                         else if (appState is AppState.ParkMenu)
@@ -256,9 +274,56 @@ internal class Program
     static void LogEvent(string logEntry)
         => log.Add(logEntry);
 
-    static Panel InstructionPanel(string instruction)
+    static Panel GaragePanel()
     {
-        return PanelBuilder(new Markup(instruction), "Latest instruction");
+        string empty = "[Gray]░[/]";
+        string car = "[CornflowerBlue on Blue]■[/]";
+        string motorcycle = "[Yellow on Gray19]![/]";
+        string motorcycles = "[Orange3 on Gray19]‼[/]";
+        int width = 20;
+        int height = 15;
+        var rows = new Markup[height];
+
+        for (int y = 0; y < height; y++)
+        {
+            string row = "";
+
+            for (int x = 0; x < width; x++)
+            {
+                var spaceId = (y / 3) * width + x + 1;
+
+
+                if (y % 3 == 0)
+                {
+                    row += $" {spaceId:000} ";
+                }
+                else if (y % 3 == 1)
+                {
+                    if (ParkingSpaceIsEmpty(spaceId))
+                        row += $"  {empty}  ";
+                    else if (ParkingSpaceContainsCar(spaceId))
+                        row += $"  {car}  ";
+                    else if (ParkingSpaceContainsMotorcycles(spaceId, out int qty) && qty == 1)
+                        row += $"  {motorcycle}  ";
+                    else if (ParkingSpaceContainsMotorcycles(spaceId, out qty) && qty == 2)
+                        row += $"  {motorcycles}  ";
+                }
+                else
+                {
+                    row = " ";
+                }
+            }
+            rows[y] = new Markup(row);
+        }
+
+        var map = new Rows(rows);
+
+        return PanelBuilder(map, "Parking Garage");
+    }
+
+    static Panel ReplyPanel(string text)
+    {
+        return PanelBuilder(new Markup(text), "Latest reply");
     }
 
     static Panel LogPanel()
@@ -353,6 +418,7 @@ internal class Program
             var licensePlate = FormatVehicleRegistration(vehicleRegistration);
             Reply($"Park car {PrintLicensePlate(licensePlate)} in space {PrintSpaceId(spaceId)}");
             LogVehicleReceived(EncodeCarLicensePlate(licensePlate), spaceId);
+            Dirty();
         }
         else
         {
@@ -382,6 +448,7 @@ internal class Program
             var licensePlate = FormatVehicleRegistration(vehicleRegistration);
             Reply($"Park motorcycle {PrintLicensePlate(licensePlate)} in space {PrintSpaceId(spaceId)}");
             LogVehicleReceived(EncodeMotorcycleLicensePlate(licensePlate), spaceId);
+            Dirty();
         }
         else
         {
@@ -426,6 +493,7 @@ internal class Program
             {
                 Reply(message);
                 LogVehicleCollected(encodedLicensePlate, spaceId);
+                Dirty();
             }
             else
             {
@@ -499,6 +567,7 @@ internal class Program
                 {
                     Reply($"Move car {PrintLicensePlate(licensePlate)} from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
                     LogInformation($"Car {PrintLicensePlate(licensePlate)} was moved from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
+                    Dirty();
                 }
             }
             appState = AppState.MainMenu;
@@ -516,6 +585,7 @@ internal class Program
                     {
                         Reply($"Move motorcycle {PrintLicensePlate(licensePlate)} from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
                         LogInformation($"Motorcycle {PrintLicensePlate(licensePlate)} was moved from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
+                        Dirty();
                     }
                 }
             }
@@ -593,6 +663,7 @@ internal class Program
 
         }
 
+        appState = AppState.MainMenu;
         WaitKey();
     }
 
