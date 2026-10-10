@@ -317,39 +317,6 @@ internal class Program
             });
     }
 
-
-    /*
-    ** Log
-    */
-    static void LogEvent(string logEntry)
-        => log.Add(logEntry);
-
-    static void LogInformation(string message)
-    {
-        var logEntry = $"{PrintInfo("INFO")} {message}";
-        LogEvent(logEntry);
-    }
-
-    static void LogError(string message)
-    {
-        var logEntry = $"[Red]ERROR[/] {message}";
-        LogEvent(logEntry);
-    }
-
-    static void LogVehicleCollected(string encodedLicensePlate, int spaceId)
-    {
-        var licensePlate = DecodeLicensePlate(encodedLicensePlate, out var vehicleType);
-        var logEntry = $"[DarkMagenta]VEHICLE COLLECTED[/] {PrintLicensePlate(licensePlate)} ({vehicleType}) removed from space {PrintSpaceId(spaceId)}";
-        LogEvent(logEntry);
-    }
-
-    static void LogVehicleReceived(string encodedLicensePlate, int spaceId)
-    {
-        var licensePlate = DecodeLicensePlate(encodedLicensePlate, out var vehicleType);
-        var logEntry = $"[DarkOrange]VEHICLE RECEIVED[/] {PrintLicensePlate(licensePlate)} ({vehicleType}) assigned to space {PrintSpaceId(spaceId)}";
-        LogEvent(logEntry);
-    }
-
     /*
     ** UI Panels
     */
@@ -410,12 +377,12 @@ internal class Program
         var cars = CountParkedCars();
         var motorcycles = CountParkedMotorcycles();
 
-        var panel = new Rows(
+        var panel = Align.Center(new Rows(
             map,
             new Markup(
                 $"[Gray]Empty spaces: {empty}[/] | [Blue]Cars: {cars}[/] | [DarkOrange]Motorcycles: {motorcycles} [/]"
                 )
-            );
+            ));
 
         return PanelBuilder(panel, "Parking Garage");
     }
@@ -771,6 +738,38 @@ internal class Program
     }
 
     /*
+    ** Log
+    */
+    static void LogEvent(string logEntry)
+        => log.Add(logEntry);
+
+    static void LogInformation(string message)
+    {
+        var logEntry = $"{PrintInfo("INFO")} {message}";
+        LogEvent(logEntry);
+    }
+
+    static void LogError(string message)
+    {
+        var logEntry = $"[Red]ERROR[/] {message}";
+        LogEvent(logEntry);
+    }
+
+    static void LogVehicleCollected(string encodedLicensePlate, int spaceId)
+    {
+        var licensePlate = DecodeLicensePlate(encodedLicensePlate, out var vehicleType);
+        var logEntry = $"[DarkMagenta]VEHICLE COLLECTED[/] {PrintLicensePlate(licensePlate)} ({vehicleType}) removed from space {PrintSpaceId(spaceId)}";
+        LogEvent(logEntry);
+    }
+
+    static void LogVehicleReceived(string encodedLicensePlate, int spaceId)
+    {
+        var licensePlate = DecodeLicensePlate(encodedLicensePlate, out var vehicleType);
+        var logEntry = $"[Magenta]VEHICLE RECEIVED[/] {PrintLicensePlate(licensePlate)} ({vehicleType}) assigned to space {PrintSpaceId(spaceId)}";
+        LogEvent(logEntry);
+    }
+
+    /*
     ** Reports
     */
     static void DisplayParkingGarage(Option option = Option.All)
@@ -806,7 +805,7 @@ internal class Program
 
         Console.Clear();
 
-        var table = new Table().HideHeaders();
+        var table = new Table().HideHeaders().NoBorder();
 
         for (int i = 0; i < tableWidth; i++)
         {
@@ -859,7 +858,7 @@ internal class Program
             table.AddRow(cells);
         }
 
-        AnsiConsole.Write(table);
+        AnsiConsole.Write(Align.Center(table));
 
         appState = AppState.ReportsMenu;
         WaitKey();
