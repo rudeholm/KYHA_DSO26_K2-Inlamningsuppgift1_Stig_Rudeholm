@@ -123,6 +123,18 @@ internal class Program
 
         do
         {
+
+            if (appState is AppState.DemoMode)
+            {
+                ConsoleKeyInfo consoleKey = new();
+                if (Console.KeyAvailable)
+                {
+                    consoleKey = Console.ReadKey(true);
+                    if (consoleKey.Key is ConsoleKey.Escape)
+                        appState = AppState.MainMenu;
+                }
+            }
+
             switch (appState)
             {
                 case AppState.MainMenu:
@@ -224,7 +236,7 @@ internal class Program
                     if (appState == AppState.DemoMode)
                     {
                         Random rnd = new();
-                        Thread.Sleep(rnd.Next(1000) + 1000);
+                        Thread.Sleep(rnd.Next(100) + 500);
 
                         if (rnd.Next(100) < 50)
                         {
@@ -248,14 +260,6 @@ internal class Program
                             {
                                 ParkCarInFirstEmptyParkingSpace(licensePlate);
                             }
-                        }
-
-                        ConsoleKeyInfo consoleKey = new();
-                        if (Console.KeyAvailable)
-                        {
-                            consoleKey = Console.ReadKey(true);
-                            if (consoleKey.Key is ConsoleKey.Escape)
-                                appState = AppState.MainMenu;
                         }
 
                         return;
@@ -359,43 +363,6 @@ internal class Program
             });
     }
 
-    private static void ParkCarInFirstEmptyParkingSpace(string licensePlate)
-    {
-        if (FindFirstEmptyParkingSpace(out int spaceId) == false)
-        {
-            ReplyError("No parking space available.");
-        }
-        else if (ParkCar(spaceId, licensePlate))
-        {
-            Reply($"Park car {PrintLicensePlate(licensePlate)} in space {PrintSpaceId(spaceId)}");
-            LogVehicleReceived(EncodeCarLicensePlate(licensePlate), spaceId);
-            Dirty();
-        }
-        else
-        {
-            ReplyError("Could not park car.");
-        }
-    }
-
-    static void ParkMotorcycleInFirstParkingSpaceWithRoomForMotorcycle(string vehicleRegistration)
-    {
-        if (FindFirstParkingSpaceWithRoomForMotorcycle(out int spaceId) == false)
-        {
-            ReplyError("No parking space available.");
-        }
-        else if (ParkMotorcycle(spaceId, vehicleRegistration))
-        {
-            var licensePlate = FormatVehicleRegistration(vehicleRegistration);
-            Reply($"Park motorcycle {PrintLicensePlate(licensePlate)} in space {PrintSpaceId(spaceId)}");
-            LogVehicleReceived(EncodeMotorcycleLicensePlate(licensePlate), spaceId);
-            Dirty();
-        }
-        else
-        {
-            LogError("Could not park motorcycle.");
-        }
-    }
-
     /*
     ** UI Panels
     */
@@ -429,7 +396,10 @@ internal class Program
 
                 if (y % 3 == 0)
                 {
-                    row += $" {spaceId:000} ";
+                    if (ParkingSpaceIsEmpty(spaceId))
+                        row += $" {spaceId:000} ";
+                    else
+                        row += $" [green]{spaceId:000}[/] ";
                 }
                 else if (y % 3 == 1)
                 {
@@ -456,10 +426,12 @@ internal class Program
         var cars = CountParkedCars();
         var motorcycles = CountParkedMotorcycles();
 
+        string emptyStat = $"{(empty >= 25 ? "[green]" : "[red]")}Empty spaces: {empty}[/]";
+
         var panel = Align.Center(new Rows(
             map,
             new Markup(
-                $"[Gray]Empty spaces: {empty}[/] | [Blue]Cars: {cars}[/] | [DarkOrange]Motorcycles: {motorcycles} [/]"
+                $"{emptyStat} | [Blue]Cars: {cars}[/] | [DarkOrange]Motorcycles: {motorcycles} [/]"
                 )
             ));
 
@@ -616,42 +588,6 @@ internal class Program
         appState = AppState.MainMenu;
     }
 
-    static void AttemptCollectVehicle(string vehicleRegistration)
-    {
-        string message = "";
-        string encodedLicensePlate = "";
-        string licensePlate = FormatVehicleRegistration(vehicleRegistration);
-
-        if (FindVehicle(vehicleRegistration, out int spaceId) == false)
-        {
-            ReplyError($"Could not locate vehicle {PrintLicensePlate(licensePlate)} - Please double check vehicle registration.");
-        }
-        else
-        {
-            if (ParkingSpaceContainsCar(spaceId))
-            {
-                message = $"Collect car {PrintLicensePlate(licensePlate)} from space {PrintSpaceId(spaceId)}";
-                encodedLicensePlate = EncodeCarLicensePlate(licensePlate);
-            }
-            else if (ParkingSpaceContainsMotorcycles(spaceId, out _))
-            {
-                message = $"Collect motorcycle {PrintLicensePlate(licensePlate)} from space {PrintSpaceId(spaceId)}";
-                encodedLicensePlate = EncodeMotorcycleLicensePlate(licensePlate);
-            }
-
-            if (CollectVehicle(spaceId, vehicleRegistration))
-            {
-                Reply(message);
-                LogVehicleCollected(encodedLicensePlate, spaceId);
-                Dirty();
-            }
-            else
-            {
-                ReplyError($"Error while collecting vehicle {PrintLicensePlate(licensePlate)}. Please try again.");
-            }
-        }
-    }
-
     static void ShowFindVehicleDialogue()
     {
         var layout = mainLayout;
@@ -781,6 +717,79 @@ internal class Program
         appState = AppState.MainMenu;
     }
 
+    private static void ParkCarInFirstEmptyParkingSpace(string licensePlate)
+    {
+        if (FindFirstEmptyParkingSpace(out int spaceId) == false)
+        {
+            ReplyError("No parking space available.");
+        }
+        else if (ParkCar(spaceId, licensePlate))
+        {
+            Reply($"Park car {PrintLicensePlate(licensePlate)} in space {PrintSpaceId(spaceId)}");
+            LogVehicleParked(EncodeCarLicensePlate(licensePlate), spaceId);
+            Dirty();
+        }
+        else
+        {
+            ReplyError("Could not park car.");
+        }
+    }
+
+    static void ParkMotorcycleInFirstParkingSpaceWithRoomForMotorcycle(string vehicleRegistration)
+    {
+        if (FindFirstParkingSpaceWithRoomForMotorcycle(out int spaceId) == false)
+        {
+            ReplyError("No parking space available.");
+        }
+        else if (ParkMotorcycle(spaceId, vehicleRegistration))
+        {
+            var licensePlate = FormatVehicleRegistration(vehicleRegistration);
+            Reply($"Park motorcycle {PrintLicensePlate(licensePlate)} in space {PrintSpaceId(spaceId)}");
+            LogVehicleParked(EncodeMotorcycleLicensePlate(licensePlate), spaceId);
+            Dirty();
+        }
+        else
+        {
+            LogError("Could not park motorcycle.");
+        }
+    }
+
+    static void AttemptCollectVehicle(string vehicleRegistration)
+    {
+        string message = "";
+        string encodedLicensePlate = "";
+        string licensePlate = FormatVehicleRegistration(vehicleRegistration);
+
+        if (FindVehicle(vehicleRegistration, out int spaceId) == false)
+        {
+            ReplyError($"Could not locate vehicle {PrintLicensePlate(licensePlate)} - Please double check vehicle registration.");
+        }
+        else
+        {
+            if (ParkingSpaceContainsCar(spaceId))
+            {
+                message = $"Collect car {PrintLicensePlate(licensePlate)} from space {PrintSpaceId(spaceId)}";
+                encodedLicensePlate = EncodeCarLicensePlate(licensePlate);
+            }
+            else if (ParkingSpaceContainsMotorcycles(spaceId, out _))
+            {
+                message = $"Collect motorcycle {PrintLicensePlate(licensePlate)} from space {PrintSpaceId(spaceId)}";
+                encodedLicensePlate = EncodeMotorcycleLicensePlate(licensePlate);
+            }
+
+            if (CollectVehicle(spaceId, vehicleRegistration))
+            {
+                Reply(message);
+                LogVehicleCollected(encodedLicensePlate, spaceId);
+                Dirty();
+            }
+            else
+            {
+                ReplyError($"Error while collecting vehicle {PrintLicensePlate(licensePlate)}. Please try again.");
+            }
+        }
+    }
+
     /*
     ** Replies
     */
@@ -819,10 +828,10 @@ internal class Program
         LogEvent(logEntry);
     }
 
-    static void LogVehicleReceived(string encodedLicensePlate, int spaceId)
+    static void LogVehicleParked(string encodedLicensePlate, int spaceId)
     {
         var licensePlate = DecodeLicensePlate(encodedLicensePlate, out var vehicleType);
-        var logEntry = $"[Magenta]VEHICLE RECEIVED[/] {PrintLicensePlate(licensePlate)} ({vehicleType}) assigned to space {PrintSpaceId(spaceId)}";
+        var logEntry = $"[Magenta]VEHICLE PARKED[/] {PrintLicensePlate(licensePlate)} ({vehicleType}) assigned to space {PrintSpaceId(spaceId)}";
         LogEvent(logEntry);
     }
 
@@ -879,38 +888,53 @@ internal class Program
 
                 string cell = "";
 
-                if (visible.Contains(spaceId))
-                {
-                    cell = $"{spaceId:000} ";
+                cell = $"{PrintSpaceId(spaceId)} ";
 
-                    if (ParkingSpaceIsEmpty(spaceId))
-                        cell += $"{iconEmpty}\n";
-                    else
+                if (ParkingSpaceIsEmpty(spaceId))
+                    cell += $"{iconEmpty}\n";
+                else
+                {
+                    if (ParkingSpaceContainsCar(spaceId))
                     {
-                        if (ParkingSpaceContainsCar(spaceId))
+                        if (visible.Contains(spaceId))
                         {
                             string licensePlate = DecodeLicensePlate(InspectParkingSpace(spaceId), out _);
                             cell += $"{iconCar} {PrintLicensePlate(licensePlate)}\n";
                         }
-                        else if (ParkingSpaceContainsMotorcycles(spaceId, out int qty))
+                        else
+                            cell += "\n";
+                    }
+                    else if (ParkingSpaceContainsMotorcycles(spaceId, out int qty))
+                    {
+                        if (qty == 1)
                         {
-                            if (qty == 1)
+                            if (visible.Contains(spaceId))
                             {
                                 string licensePlate = DecodeLicensePlate(InspectParkingSpace(spaceId), out _);
                                 cell += $"{iconMotorcycle} {PrintLicensePlate(licensePlate)}\n";
                             }
-                            else if (qty == 2)
+                            else
+                                cell += "\n";
+                        }
+                        else if (qty == 2)
+                        {
+                            if (visible.Contains(spaceId))
                             {
                                 var encodedLicensePlates = InspectParkingSpace(spaceId).Split('|');
                                 string licensePlate = DecodeLicensePlate(encodedLicensePlates[0], out _);
                                 cell += $"{iconMotorcycle} {PrintLicensePlate(licensePlate)}\n";
                                 licensePlate = DecodeLicensePlate(encodedLicensePlates[1], out _);
-                                cell += $"    {iconMotorcycle} {PrintLicensePlate(licensePlate)}";
+                                cell += $"     {iconMotorcycle} {PrintLicensePlate(licensePlate)}";
                             }
+                            else
+                                cell += "\n";
                         }
                     }
                 }
-                cells[column] = cell;
+                if (visible.Contains(spaceId))
+                    cells[column] = cell;
+                else
+                    cells[column] = $"[dim]{cell}[/]";
             }
             table.AddRow(cells);
         }
