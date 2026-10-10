@@ -15,7 +15,8 @@ enum AppState
     Inspect,
     List,
     SpecialMenu,
-    Testing
+    Testing,
+    Optimizing
 }
 
 enum Option
@@ -29,6 +30,7 @@ enum Option
     Car,
     Motorcycle,
     Test,
+    Optimize,
     Exit
 }
 
@@ -71,6 +73,7 @@ internal class Program
             { Option.Move, "Move Vehicle" },
             { Option.Search, "Find Vehicle" },
             { Option.Inspect, "Inspect Parking Space" },
+            { Option.Optimize, "Optimize Motorcycle Parking" },
             { Option.List, "List Parking Spaces" }
         };
 
@@ -92,6 +95,16 @@ internal class Program
         Console.Title = "Prague Parking v1.1";
 
         InitializeParkingGarage();
+
+        ParkMotorcycle(22, "foo");
+        ParkMotorcycle(47, "bar");
+        ParkMotorcycle(4, "baz");
+        ParkMotorcycle(5, "boo");
+        ParkMotorcycle(7, "goo");
+        ParkMotorcycle(22, "zoo");
+        ParkMotorcycle(79, "bork");
+        ParkMotorcycle(88, "moo");
+        ParkMotorcycle(100, "gorgor");
 
         LogInformation("Welcome to Park-o-matix 9001!");
 
@@ -124,6 +137,9 @@ internal class Program
                     break;
                 case AppState.List:
                     DisplayParkingGarage();
+                    break;
+                case AppState.Optimizing:
+                    ShowOptimizingDialogue();
                     break;
                 case AppState.Testing:
                     RunTests();
@@ -240,6 +256,8 @@ internal class Program
                                 appState = AppState.Inspect;
                             else if (choice is Option.List)
                                 appState = AppState.List;
+                            else if (choice is Option.Optimize)
+                                appState = AppState.Optimizing;
                             return;
                         }
                         else if (appState is AppState.ParkMenu)
@@ -440,6 +458,40 @@ internal class Program
     /*
     ** Dialogues
     */
+    private static void ShowOptimizingDialogue()
+    {
+        if (OptimizeMotorcycleParking(out List<string> moves) == false)
+        {
+            ReplyError("Unable to optimize further.");
+            appState = AppState.MainMenu;
+            return;
+        }
+
+        Markup[] moveOrders = new Markup[moves.Count];
+
+        LogInformation($"Motorcycle parking optimization started.");
+
+        for (var i = 0; i < moves.Count; i++)
+        {
+            var instructionParts = moves[i].Split('|');
+            string licensePlate = instructionParts[0];
+            int originSpaceId = int.Parse(instructionParts[1]);
+            int destinationSpaceId = int.Parse(instructionParts[2]);
+            moveOrders[i] = new Markup($"Move motorcycle {PrintLicensePlate(licensePlate)} from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
+            LogInformation($"Motorcycle {PrintLicensePlate(licensePlate)} was moved from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
+        }
+
+        LogInformation($"Motorcycle parking optimization finished.");
+
+        var workOrdersPanel = PanelBuilder(new Rows(moveOrders), "Instructions");
+        AnsiConsole.Write(workOrdersPanel);
+        Reply("Motorcycle parking optimized!");
+        WaitKey();
+
+        Dirty();
+        appState = AppState.MainMenu;
+    }
+
     static void ShowParkCarDialogue()
     {
         var layout = mainLayout;
@@ -708,7 +760,7 @@ internal class Program
                     if (ParkingSpaceContainsCar(spaceId))
                     {
                         string licensePlate = DecodeLicensePlate(InspectParkingSpace(spaceId), out _);
-                        cell += $"{iconCar} {PrintLicensePlate(licensePlate)}\n";                        
+                        cell += $"{iconCar} {PrintLicensePlate(licensePlate)}\n";
                     }
                     else if (ParkingSpaceContainsMotorcycles(spaceId, out int qty))
                     {
@@ -846,6 +898,66 @@ internal class Program
 
     static bool IsMotorcycle(string encodedLicensePlate)
         => encodedLicensePlate.StartsWith("MC#");
+
+    private static bool OptimizeMotorcycleParking(out List<string> moves)
+    {
+        moves = [];
+        if (CountParkingSpacesWithSingleMotorcycles() <= 1)
+            return false;
+
+        // Scan the parking garage back to front
+        for (int originSpaceId = garageCapacity; originSpaceId >= 1; originSpaceId--)
+        {
+            // If not single motorcycle, continue
+            // TODO: NEEDS clean up!
+            if ((ParkingSpaceContainsMotorcycles(originSpaceId, out int qty) && qty == 2) || ParkingSpaceContainsMotorcycles(originSpaceId, out _) == false)
+                continue;
+
+            string vehicleToBeMoved;
+            int destinationSpaceId = 0;
+            // Find the single motorcycle furthest away
+            if (ParkingSpaceContainsMotorcycles(originSpaceId, out qty) && qty == 1)
+            {
+                // Find first space with single motorcycle
+                // Alt. Find first space with room
+                for (int spaceId = 1; spaceId < garageCapacity; spaceId++)
+                {
+                    if (ParkingSpaceContainsMotorcycles(spaceId, out qty) && qty == 1)
+                    {
+                        destinationSpaceId = spaceId;
+                        break;
+
+                    }
+
+                }
+
+                if (destinationSpaceId > 0)
+                {
+                    if (originSpaceId == destinationSpaceId)
+                    {
+                        // All that can be done has been done
+                        return true;
+                    }
+
+                    vehicleToBeMoved = DecodeLicensePlate(InspectParkingSpace(originSpaceId), out _);
+                    string move = string.Join('|', [vehicleToBeMoved, originSpaceId, destinationSpaceId]);
+                    moves.Add(move);
+                    if (CollectVehicle(originSpaceId, vehicleToBeMoved))
+                    {
+                        if (ParkMotorcycle(destinationSpaceId, vehicleToBeMoved))
+                        {
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (moves.Count > 0)
+            return true;
+
+        return false;
+    }
 
     static bool MoveVehicle(int destinationSpaceId, string vehicleRegistration)
     {
@@ -1154,7 +1266,7 @@ internal class Program
         string[] stashedParkingGarage = GetEmptyParkingGarage();
         Array.Copy(parkingGarage, stashedParkingGarage, parkingGarage.Length);
 
-        garageCapacity = 5;
+        garageCapacity = 10;
         InitializeParkingGarage();
 
         Test("A vehicle registration can be cleaned up and formatted",
@@ -1693,7 +1805,7 @@ internal class Program
             ParkMotorcycle(3, "foo 2");
             return OptimizeMotorcycleParking(out _) == true;
         });
-    
+
         Test("A parking garage with zero or one single motorcycle can not be optimized to free up parking spaces", () =>
         {
             InitializeParkingGarage();
@@ -1725,6 +1837,19 @@ internal class Program
                 && moves.Count == 2;
         });
 
+        Test("When optimizing, the motorcycles can be spread out", () =>
+        {
+            InitializeParkingGarage();
+            ParkMotorcycle(2, "foo 2");
+            ParkMotorcycle(3, "foo 3");
+            ParkMotorcycle(4, "foo 4");
+            ParkMotorcycle(5, "foo 5");
+            ParkMotorcycle(7, "foo 7");
+            ParkMotorcycle(8, "foo 8");
+            return OptimizeMotorcycleParking(out List<string> moves) == true
+                && moves.Count == 3;
+        });
+
 
         // Tear down
         garageCapacity = stashedParkingGarage.Length - 1;
@@ -1734,51 +1859,4 @@ internal class Program
         WaitKey();
     }
 
-    private static bool OptimizeMotorcycleParking(out List<string> moves)
-    {
-        moves = [];
-        if (CountParkingSpacesWithSingleMotorcycles() <= 1)
-            return false;
-
-        // Scan the parking garage back to front
-        for (int spaceId = garageCapacity; spaceId >= 1; spaceId--)
-        {
-            // If not single motorcycle, continue
-            // TODO: Clean up!
-            if ((ParkingSpaceContainsMotorcycles(spaceId, out int qty) && qty == 2) || ParkingSpaceContainsMotorcycles(spaceId, out _) == false)
-                continue;
-
-            string vehicleToBeMoved;
-            int originSpaceId;
-            // Find the single motorcycle furthest away
-            if (ParkingSpaceContainsMotorcycles(spaceId, out qty) && qty == 1)
-            {
-                originSpaceId = spaceId;
-                if (FindFirstParkingSpaceWithRoomForMotorcycle(out int destinationSpaceId))
-                {
-                    if (originSpaceId == destinationSpaceId)
-                    {
-                        // All that can be done has been done
-                        return true;
-                    }
-
-                    vehicleToBeMoved = DecodeLicensePlate(InspectParkingSpace(originSpaceId), out _);
-                    string move = string.Join('|', [vehicleToBeMoved, originSpaceId, destinationSpaceId]);
-                    moves.Add(move);
-                    if (CollectVehicle(originSpaceId, vehicleToBeMoved))
-                    {
-                        if (ParkMotorcycle(destinationSpaceId, vehicleToBeMoved))
-                        {
-                            continue;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (moves.Count > 0)
-            return true;
-
-        return false;
-    }
 }

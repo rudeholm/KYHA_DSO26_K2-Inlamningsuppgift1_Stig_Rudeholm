@@ -353,3 +353,7 @@ Kartan / visualiseringen av parkeringshuset ser ganska bra ut nu. Tror det duger
 
 ---
 
+Min optimeringsrutin för enkelparkerade motorcyklar är oerhört rörig. Behöver städas upp! Men den verkar iaf fungera.
+
+---
+
