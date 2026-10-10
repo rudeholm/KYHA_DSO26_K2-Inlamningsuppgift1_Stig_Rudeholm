@@ -386,13 +386,11 @@ internal class Program
     static Panel LogPanel()
     {
         int lines = Math.Min(log.Count, 5);
-        IRenderable[] latestLogItems = new IRenderable[lines];
+        Markup[] latestLogItems = new Markup[lines];
 
-        for (int i = 0; i < lines; i++)
-        {
-            latestLogItems[i] = new Markup(log[log.Count - i - 1]);
-
-        }
+        int index = 0;
+        foreach (var item in log.TakeLast(lines))
+            latestLogItems[index++] = new Markup(item);
 
         return PanelBuilder(new Rows(latestLogItems), "Log");
     }
