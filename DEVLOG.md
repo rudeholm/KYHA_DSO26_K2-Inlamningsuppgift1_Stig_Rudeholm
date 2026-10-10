@@ -357,3 +357,11 @@ Min optimeringsrutin för enkelparkerade motorcyklar är oerhört rörig. Behöv
 
 ---
 
+#### 2026-10-10
+
+Validering av reg-nummer med hjälp av regex verkar fungera. Det var struligt att få till, men lärde mig mycket nyttigt här:
+
+`https://regexone.com/`
+
+---
+

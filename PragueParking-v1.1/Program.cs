@@ -1,5 +1,6 @@
 ﻿using Spectre.Console;
 using Spectre.Console.Rendering;
+using System.Text.RegularExpressions;
 
 namespace PragueParking_v1._1;
 
@@ -59,6 +60,10 @@ internal class Program
     {
         dirty = true;
     }
+
+    static int totalTests = 0;
+    static int failedTests = 0;
+    static int passedTests = 0;
 
     const string iconEmpty = "[Gray]░[/]";
     const string iconCar = "[CornflowerBlue on Blue]■[/]";
@@ -1225,7 +1230,12 @@ internal class Program
         if (vehicleRegistration.Length > 10)
             return false;
 
-        return true;
+        var pattern = @"^\w(\w| |-)*\w$";
+
+        if (Regex.IsMatch(vehicleRegistration, pattern))
+            return true;
+
+        return false;
     }
 
     static void InitializeParkingGarage()
@@ -1248,12 +1258,15 @@ internal class Program
     static void Test(string description, Func<bool> test)
     {
         bool result = test();
+        totalTests++;
         if (result == true)
         {
+            passedTests++;
             AnsiConsole.Markup("[green][[✓]][/] ");
         }
         else
         {
+            failedTests++;
             AnsiConsole.Markup("[bold red][[✗]][/] ");
         }
         Console.Write($"{description}");
@@ -1263,14 +1276,19 @@ internal class Program
 
     static void RunTests()
     {
-        Console.Clear();
-        Console.WriteLine("Testing...");
-
+        // Setup
         string[] stashedParkingGarage = GetEmptyParkingGarage();
         Array.Copy(parkingGarage, stashedParkingGarage, parkingGarage.Length);
 
         garageCapacity = 10;
         InitializeParkingGarage();
+
+        totalTests = 0;
+        failedTests = 0;
+        passedTests = 0;
+
+        Console.Clear();
+        Console.WriteLine("Testing...");
 
         Test("A vehicle registration can be cleaned up and formatted",
             () => FormatVehicleRegistration("  foo 666 ").Equals("FOO 666")
@@ -1306,6 +1324,16 @@ internal class Program
             () => ValidVehicleRegistration("xxx xxx xxx") == false
             );
 
+        Test("A vehicle registration can only contain approved characters",
+            () => ValidVehicleRegistration("xxx . xxx") == false
+                && ValidVehicleRegistration("foo &") == false
+                && ValidVehicleRegistration("* bork") == false
+                && ValidVehicleRegistration("# glorp") == false
+                && ValidVehicleRegistration("glorp!") == false
+                && ValidVehicleRegistration("2 ewq k !") == false
+                && ValidVehicleRegistration("Å Glürp 23") == true
+                && ValidVehicleRegistration("m-GlÄrp 69") == true
+            );
 
         Test("A parking space is empty by default", () =>
         {
@@ -1866,7 +1894,14 @@ internal class Program
                 && VehiclesInParkingSpace(testSpaceId + 2).Length == 1;
         });
 
-        // Tear down
+        // Report
+        if (failedTests == 0)
+            AnsiConsole.MarkupLine($"[green]All tests passed! ({totalTests} tests in total.)[/]");
+        else
+            AnsiConsole.MarkupLine($"[red]Some tests failed! ({totalTests} tests, {failedTests} failed.)[/]");
+
+
+        // Teardown
         garageCapacity = stashedParkingGarage.Length - 1;
         parkingGarage = stashedParkingGarage;
 
