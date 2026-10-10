@@ -692,7 +692,25 @@ internal class Program
         if (ParkingSpaceIsEmpty(spaceId))
             Reply($"Parking space {PrintSpaceId(spaceId)} is currently empty.");
         else
-            Reply($"Parking space {PrintSpaceId(spaceId)} is currently occupied by {InspectParkingSpace(spaceId)}.");
+        {
+            string reply = $"Parking space {PrintSpaceId(spaceId)} is currently occupied by ";
+            var encodedLicensePlates = VehiclesInParkingSpace(spaceId);
+            if (encodedLicensePlates.Length == 2)
+            {
+                var licensePlate1 = DecodeLicensePlate(encodedLicensePlates[0], out _);
+                var licensePlate2 = DecodeLicensePlate(encodedLicensePlates[1], out _);
+                reply += $"two motorcycles: {PrintLicensePlate(licensePlate1)} & {PrintLicensePlate(licensePlate2)}";
+            }
+            else
+            {
+                var licensePlate = DecodeLicensePlate(encodedLicensePlates[0], out string vehicleType);
+                reply += vehicleType switch
+                    { "CAR" => "a car: ", "MC" => "a motorcycle: ", _ => "a UFO: "};
+                reply += PrintLicensePlate(licensePlate);
+            }
+
+            Reply(reply);
+        }
 
         appState = AppState.MainMenu;
     }
@@ -1172,9 +1190,9 @@ internal class Program
     static bool ParkingSpaceIsEmpty(int spaceId)
         => string.IsNullOrWhiteSpace(parkingGarage[spaceId]);
 
-    static string DecodeLicensePlate(string licensePlate, out string vehicleType)
+    static string DecodeLicensePlate(string encodedLicensePlate, out string vehicleType)
     {
-        var parts = licensePlate.Split('#');
+        var parts = encodedLicensePlate.Split('#');
         vehicleType = parts[0];
         return parts[1].Replace('_', ' ');
 
