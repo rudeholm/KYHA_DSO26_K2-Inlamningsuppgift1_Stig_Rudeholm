@@ -96,16 +96,6 @@ internal class Program
 
         InitializeParkingGarage();
 
-        ParkMotorcycle(22, "foo");
-        ParkMotorcycle(47, "bar");
-        ParkMotorcycle(4, "baz");
-        ParkMotorcycle(5, "boo");
-        ParkMotorcycle(7, "goo");
-        ParkMotorcycle(22, "zoo");
-        ParkMotorcycle(79, "bork");
-        ParkMotorcycle(88, "moo");
-        ParkMotorcycle(100, "gorgor");
-
         LogInformation("Welcome to Park-o-matix 9001!");
 
         do
@@ -1850,6 +1840,18 @@ internal class Program
                 && moves.Count == 3;
         });
 
+        Test("It is possible to get an array of vehicles parked in a parking space", () =>
+        {
+            InitializeParkingGarage();
+            ParkMotorcycle(1, "mc 1");
+            ParkMotorcycle(2, "mc 2");
+            ParkMotorcycle(2, "mc 3");
+            ParkCar(3, "car");
+            var testSpaceId = 1;
+            return VehiclesInParkingSpace(testSpaceId).Length == 1
+                && VehiclesInParkingSpace(testSpaceId + 1).Length == 2
+                && VehiclesInParkingSpace(testSpaceId + 2).Length == 1;
+        });
 
         // Tear down
         garageCapacity = stashedParkingGarage.Length - 1;
@@ -1859,4 +1861,6 @@ internal class Program
         WaitKey();
     }
 
+    static string[] VehiclesInParkingSpace(int spaceId)
+        => InspectParkingSpace(spaceId).Split('|');
 }
