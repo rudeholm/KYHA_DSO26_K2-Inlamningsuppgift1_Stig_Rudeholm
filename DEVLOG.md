@@ -365,3 +365,7 @@ Validering av reg-nummer med hjälp av regex verkar fungera. Det var struligt at
 
 ---
 
+Jag har börjat experimentera med ett demo-läge. Får jag till det så kan det bli riktigt roligt.
+
+---
+

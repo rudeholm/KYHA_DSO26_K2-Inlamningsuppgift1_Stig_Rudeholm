@@ -21,7 +21,8 @@ enum AppState
     ReportEmpty,
     ReportCars,
     ReportMotorcycles,
-    Optimizing
+    Optimizing,
+    DemoMode
 }
 
 enum Option
@@ -38,7 +39,8 @@ enum Option
     Optimize,
     Exit,
     All,
-    Empty
+    Empty,
+    Demo
 }
 
 internal class Program
@@ -105,6 +107,7 @@ internal class Program
     static readonly Dictionary<Option, string> specialMenuOptions = new()
         {
             { Option.Test, "Run Tests" },
+            { Option.Demo, "Demo Mode" },
             { Option.Exit, "Exit Program" },
         };
 
@@ -125,6 +128,7 @@ internal class Program
                 case AppState.ParkMenu:
                 case AppState.ReportsMenu:
                 case AppState.SpecialMenu:
+                case AppState.DemoMode:
                     ShowMainLayout();
                     break;
                 case AppState.ParkCar:
@@ -189,14 +193,19 @@ internal class Program
             {
                 do
                 {
-                    if (appState is AppState.MainMenu)
-                        menuOptions = mainMenuOptions;
-                    else if (appState is AppState.ParkMenu)
-                        menuOptions = parkMenuOptions;
-                    else if (appState is AppState.ReportsMenu)
-                        menuOptions = reportsMenuOptions;
-                    else if (appState is AppState.SpecialMenu)
-                        menuOptions = specialMenuOptions;
+                    Panel actionPanel;
+
+                    menuOptions = appState switch
+                    {
+                        AppState.MainMenu => mainMenuOptions,
+                        AppState.ParkMenu => parkMenuOptions,
+                        AppState.ReportsMenu => reportsMenuOptions,
+                        AppState.SpecialMenu => specialMenuOptions,
+                        _ => mainMenuOptions
+                    };
+
+                    actionPanel = MenuPanel(menuOptions, selected);
+                    layout["Action"].Update(actionPanel);
 
                     if (dirty)
                     {
@@ -205,16 +214,25 @@ internal class Program
                         dirty = false;
                     }
 
-                    if (appState is AppState.MainMenu
-                        || appState is AppState.ParkMenu
-                        || appState is AppState.SpecialMenu
-                        || appState is AppState.ReportsMenu)
-                    {
-                        var actionPanel = MenuPanel(menuOptions, selected);
-                        layout["Action"].Update(actionPanel);
-                    }
-
                     ctx.Refresh();
+
+                    if (appState == AppState.DemoMode)
+                    {
+                        Thread.Sleep(2000);
+
+                        var licensePlate = GenerateLicensePlate(1).First();
+                        if (FindFirstEmptyParkingSpace(out int spaceId) == false)
+                        {
+                            ReplyError("No parking space available.");
+                        }
+                        else if (ParkCar(spaceId, licensePlate))
+                        {
+                            Reply($"Park car {PrintLicensePlate(licensePlate)} in space {PrintSpaceId(spaceId)}");
+                            LogVehicleReceived(EncodeCarLicensePlate(licensePlate), spaceId);
+                            Dirty();
+                        }
+                        break;
+                    }
 
                     //
                     ConsoleKeyInfo keypress;
@@ -304,6 +322,8 @@ internal class Program
                         {
                             if (choice is Option.Test)
                                 appState = AppState.Testing;
+                            else if (choice is Option.Demo)
+                                appState = AppState.DemoMode;
                             else if (choice is Option.Exit)
                             {
                                 Console.Clear();
@@ -1275,6 +1295,31 @@ internal class Program
     static string FormatVehicleRegistration(string vehicleRegistration)
         => vehicleRegistration.Trim().ToUpper();
 
+    static List<string> GenerateLicensePlate(int qty)
+    {
+        List<string> licensePlates = [];
+
+        Random rnd = new();
+
+        string letters = "abcdefghijklmnopqrstuvwxyzü";
+
+        for (int i = 0; i < qty; i++)
+        {
+            string vehicleRegistration = "";
+            for (int j = 0; j < 3; j++)
+                vehicleRegistration += letters[rnd.Next(letters.Length)];
+
+            vehicleRegistration += " ";
+
+            for (int j = 0; j < 3; j++)
+                vehicleRegistration += rnd.Next(10);
+
+            licensePlates.Add(FormatVehicleRegistration(vehicleRegistration));
+        }
+
+        return licensePlates;
+    }
+
     /*
     ** Validators
     */
@@ -1985,31 +2030,11 @@ internal class Program
         WaitKey();
     }
 
-    static List<string> GenerateLicensePlate(int qty)
-    {
-        List<string> licensePlates = [];
-
-        Random rnd = new();
-
-        string letters = "abcdefghijklmnopqrstuvwxyzü";
-
-        for (int i = 0; i < qty; i++)
-        {
-            string vehicleRegistration = "";
-            for (int j = 0; j < 3; j++)
-                vehicleRegistration += letters[rnd.Next(letters.Length)];
-
-            vehicleRegistration += " ";
-
-            for (int j = 0; j < 3; j++)
-                vehicleRegistration += rnd.Next(10);
-
-            licensePlates.Add(FormatVehicleRegistration(vehicleRegistration));
-        }
-
-        return licensePlates;
-    }
-
+    /*
+    ** Helpers
+    */
     static string[] VehiclesInParkingSpace(int spaceId)
         => InspectParkingSpace(spaceId).Split('|');
+
 }
+
