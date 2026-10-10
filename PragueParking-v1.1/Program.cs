@@ -8,15 +8,19 @@ enum AppState
 {
     MainMenu,
     ParkMenu,
+    ReportsMenu,
+    SpecialMenu,
     ParkCar,
     ParkMotorcycle,
     CollectVehicle,
     MoveVehicle,
     FindVehicle,
     Inspect,
-    List,
-    SpecialMenu,
     Testing,
+    ReportAll,
+    ReportEmpty,
+    ReportCars,
+    ReportMotorcycles,
     Optimizing
 }
 
@@ -27,12 +31,14 @@ enum Option
     Move,
     Search,
     Inspect,
-    List,
+    Report,
     Car,
     Motorcycle,
     Test,
     Optimize,
-    Exit
+    Exit,
+    All,
+    Empty
 }
 
 internal class Program
@@ -79,19 +85,27 @@ internal class Program
             { Option.Search, "Find Vehicle" },
             { Option.Inspect, "Inspect Parking Space" },
             { Option.Optimize, "Optimize Motorcycle Parking" },
-            { Option.List, "List Parking Spaces" }
+            { Option.Report, "View Reports" },
         };
 
     static readonly Dictionary<Option, string> parkMenuOptions = new()
         {
             { Option.Car, "Park Car" },
-            { Option.Motorcycle, "Park Motorcycle" }
+            { Option.Motorcycle, "Park Motorcycle" },
+        };
+
+    static readonly Dictionary<Option, string> reportsMenuOptions = new()
+        {
+            { Option.All, "All Parking Spaces" },
+            { Option.Car, "Cars" },
+            { Option.Motorcycle, "Motorcycles" },
+            { Option.Empty, "Empty Parking Spaces" },
         };
 
     static readonly Dictionary<Option, string> specialMenuOptions = new()
         {
             { Option.Test, "Run Tests" },
-            { Option.Exit, "Exit Program" }
+            { Option.Exit, "Exit Program" },
         };
 
 
@@ -101,7 +115,7 @@ internal class Program
 
         InitializeParkingGarage();
 
-        LogInformation("Welcome to Park-o-matix 9001!");
+        LogInformation("Welcome to Prague Parking [yellow]1.1[/]!");
 
         do
         {
@@ -109,6 +123,7 @@ internal class Program
             {
                 case AppState.MainMenu:
                 case AppState.ParkMenu:
+                case AppState.ReportsMenu:
                 case AppState.SpecialMenu:
                     ShowMainLayout();
                     break;
@@ -130,11 +145,20 @@ internal class Program
                 case AppState.Inspect:
                     ShowInspectParkingSpaceDialogue();
                     break;
-                case AppState.List:
-                    DisplayParkingGarage();
-                    break;
                 case AppState.Optimizing:
                     ShowOptimizingDialogue();
+                    break;
+                case AppState.ReportAll:
+                    DisplayParkingGarage();
+                    break;
+                case AppState.ReportEmpty:
+                    DisplayParkingGarage();
+                    break;
+                case AppState.ReportCars:
+                    DisplayParkingGarage();
+                    break;
+                case AppState.ReportMotorcycles:
+                    DisplayParkingGarage();
                     break;
                 case AppState.Testing:
                     RunTests();
@@ -169,6 +193,8 @@ internal class Program
                         menuOptions = mainMenuOptions;
                     else if (appState is AppState.ParkMenu)
                         menuOptions = parkMenuOptions;
+                    else if (appState is AppState.ReportsMenu)
+                        menuOptions = reportsMenuOptions;
                     else if (appState is AppState.SpecialMenu)
                         menuOptions = specialMenuOptions;
 
@@ -179,7 +205,10 @@ internal class Program
                         dirty = false;
                     }
 
-                    if (appState is AppState.MainMenu || appState is AppState.ParkMenu || appState is AppState.SpecialMenu)
+                    if (appState is AppState.MainMenu
+                        || appState is AppState.ParkMenu
+                        || appState is AppState.SpecialMenu
+                        || appState is AppState.ReportsMenu)
                     {
                         var actionPanel = MenuPanel(menuOptions, selected);
                         layout["Action"].Update(actionPanel);
@@ -216,15 +245,11 @@ internal class Program
                                 selected = 0;
                                 break;
                             case AppState.ParkMenu:
+                            case AppState.ReportsMenu:
+                            case AppState.SpecialMenu:
                             case AppState.CollectVehicle:
                             case AppState.MoveVehicle:
-                            case AppState.SpecialMenu:
                                 appState = AppState.MainMenu;
-                                selected = 0;
-                                break;
-                            case AppState.ParkCar:
-                            case AppState.ParkMotorcycle:
-                                appState = AppState.ParkMenu;
                                 selected = 0;
                                 break;
                             default:
@@ -249,8 +274,8 @@ internal class Program
                                 appState = AppState.FindVehicle;
                             else if (choice is Option.Inspect)
                                 appState = AppState.Inspect;
-                            else if (choice is Option.List)
-                                appState = AppState.List;
+                            else if (choice is Option.Report)
+                                appState = AppState.ReportsMenu;
                             else if (choice is Option.Optimize)
                                 appState = AppState.Optimizing;
                             return;
@@ -261,6 +286,18 @@ internal class Program
                                 appState = AppState.ParkCar;
                             else if (choice is Option.Motorcycle)
                                 appState = AppState.ParkMotorcycle;
+                            return;
+                        }
+                        else if (appState is AppState.ReportsMenu)
+                        {
+                            if (choice is Option.Car)
+                                appState = AppState.ReportCars;
+                            else if (choice is Option.Motorcycle)
+                                appState = AppState.ReportMotorcycles;
+                            else if (choice is Option.All)
+                                appState = AppState.ReportAll;
+                            else if (choice is Option.Empty)
+                                appState = AppState.ReportEmpty;
                             return;
                         }
                         else if (appState is AppState.SpecialMenu)
@@ -734,7 +771,7 @@ internal class Program
     }
 
     /*
-    ** Lists
+    ** Reports
     */
     static void DisplayParkingGarage()
     {
@@ -797,7 +834,7 @@ internal class Program
 
         AnsiConsole.Write(table);
 
-        appState = AppState.MainMenu;
+        appState = AppState.ReportsMenu;
         WaitKey();
     }
 
