@@ -210,8 +210,6 @@ internal class Program
             {
                 do
                 {
-                    Panel actionPanel;
-
                     menuOptions = appState switch
                     {
                         AppState.MainMenu => mainMenuOptions,
@@ -221,11 +219,13 @@ internal class Program
                         _ => mainMenuOptions
                     };
 
-                    actionPanel = MenuPanel(menuOptions, selected);
+                    var actionPanel = MenuPanel(menuOptions, selected);
                     layout["Action"].Update(actionPanel);
 
                     if (dirty)
                     {
+                        if (CountParkingSpacesWithSingleMotorcycles() > 4)
+                            LogWarning("Note the number of single parked motorcycles! Optimization recommended.");
                         var garagePanel = GaragePanel();
                         layout["Map"].Update(garagePanel);
                         dirty = false;
@@ -252,7 +252,7 @@ internal class Program
                         {
                             var licensePlate = GenerateLicensePlate(1).First();
 
-                            if (rnd.Next(100) < 25)
+                            if (rnd.Next(100) < 40)
                             {
                                 ParkMotorcycleInFirstParkingSpaceWithRoomForMotorcycle(licensePlate);
                             }
@@ -812,6 +812,12 @@ internal class Program
     static void LogInformation(string message)
     {
         var logEntry = $"{PrintInfo("INFO")} {message}";
+        LogEvent(logEntry);
+    }
+
+    static void LogWarning(string message)
+    {
+        var logEntry = $"[yellow]WARNING[/] {message}";
         LogEvent(logEntry);
     }
 
@@ -1415,9 +1421,9 @@ internal class Program
     static string[] GetEmptyParkingGarage()
         => new string[garageCapacity + 1];
 
-    static void WaitKey(string message = "[ Press any key to continue ]")
+    static void WaitKey(string message = "[[ Press any key to continue ]]")
     {
-        Console.Write("[ Press any key to continue ]");
+        AnsiConsole.Write(Align.Center(new Markup(message)));
         Console.ReadKey(true);
     }
 
