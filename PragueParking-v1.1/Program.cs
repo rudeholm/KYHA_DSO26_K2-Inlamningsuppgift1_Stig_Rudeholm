@@ -1015,20 +1015,17 @@ internal class Program
 
     static bool ParkingSpaceContainsMotorcycles(int spaceId, out int qty)
     {
-        if (ParkingSpaceIsEmpty(spaceId) || ParkingSpaceContainsCar(spaceId))
-        {
-            qty = 0;
+        qty = 0;
+        if (ParkingSpaceIsEmpty(spaceId))
             return false;
-        }
 
-        var spaceContents = InspectParkingSpace(spaceId);
-        if (spaceContents.StartsWith("MC#"))
+        var encodedLicensePlates = VehiclesInParkingSpace(spaceId);
+        if (IsMotorcycle(encodedLicensePlates.First()))
         {
-            qty = spaceContents.Split('|').Length;
+            qty = encodedLicensePlates.Length;
             return true;
         }
 
-        qty = 0;
         return false;
     }
 
