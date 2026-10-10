@@ -1963,6 +1963,13 @@ internal class Program
             return licensePlates.Count == 5;
         });
 
+        Test("Random license plates follow the pattern 'XXX ###'", () =>
+        {
+            var licensePlates = GenerateLicensePlate(1);
+            var pattern = @"[A-Z]{3} [0-9]{3}";
+            return Regex.IsMatch(licensePlates[0], pattern);
+        });
+
         // Report
         if (failedTests == 0)
             AnsiConsole.MarkupLine($"[green]All tests passed! ({totalTests} tests in total.)[/]");
@@ -1980,7 +1987,27 @@ internal class Program
 
     static List<string> GenerateLicensePlate(int qty)
     {
-        return ["","","","",""];
+        List<string> licensePlates = [];
+
+        Random rnd = new();
+
+        string letters = "abcdefghijklmnopqrstuvwxyzü";
+
+        for (int i = 0; i < qty; i++)
+        {
+            string vehicleRegistration = "";
+            for (int j = 0; j < 3; j++)
+                vehicleRegistration += letters[rnd.Next(letters.Length)];
+
+            vehicleRegistration += " ";
+
+            for (int j = 0; j < 3; j++)
+                vehicleRegistration += rnd.Next(10);
+
+            licensePlates.Add(FormatVehicleRegistration(vehicleRegistration));
+        }
+
+        return licensePlates;
     }
 
     static string[] VehiclesInParkingSpace(int spaceId)
