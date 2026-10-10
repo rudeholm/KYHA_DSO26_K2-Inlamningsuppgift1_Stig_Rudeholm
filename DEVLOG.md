@@ -369,3 +369,7 @@ Jag har börjat experimentera med ett demo-läge. Får jag till det så kan det 
 
 ---
 
+Demo-läget verkar funka bra, så jag fortsätter utveckla det lite till. Dessutom har det lett till några omstruktureringar som känns väldigt bra.
+
+---
+

@@ -22,7 +22,8 @@ enum AppState
     ReportCars,
     ReportMotorcycles,
     Optimizing,
-    DemoMode
+    DemoMode,
+    Exit
 }
 
 enum Option
@@ -167,6 +168,10 @@ internal class Program
                 case AppState.Testing:
                     RunTests();
                     break;
+                case AppState.Exit:
+                    Console.Clear();
+                    Environment.Exit(0);
+                    break;
                 default:
                     break;
             }
@@ -218,20 +223,42 @@ internal class Program
 
                     if (appState == AppState.DemoMode)
                     {
-                        Thread.Sleep(2000);
+                        Random rnd = new();
+                        Thread.Sleep(rnd.Next(1000) + 1000);
 
-                        var licensePlate = GenerateLicensePlate(1).First();
-                        if (FindFirstEmptyParkingSpace(out int spaceId) == false)
+                        if (rnd.Next(100) < 50)
                         {
-                            ReplyError("No parking space available.");
+                            var spaceId = rnd.Next(garageCapacity) + 1;
+                            if (ParkingSpaceIsNotEmpty(spaceId))
+                            {
+                                var encodedLicensePlate = VehiclesInParkingSpace(spaceId).First();
+                                var vehicleRegistration = DecodeLicensePlate(encodedLicensePlate, out _);
+                                AttemptCollectVehicle(vehicleRegistration);
+                            }
                         }
-                        else if (ParkCar(spaceId, licensePlate))
+                        else
                         {
-                            Reply($"Park car {PrintLicensePlate(licensePlate)} in space {PrintSpaceId(spaceId)}");
-                            LogVehicleReceived(EncodeCarLicensePlate(licensePlate), spaceId);
-                            Dirty();
+                            var licensePlate = GenerateLicensePlate(1).First();
+
+                            if (rnd.Next(100) < 25)
+                            {
+                                ParkMotorcycleInFirstParkingSpaceWithRoomForMotorcycle(licensePlate);
+                            }
+                            else
+                            {
+                                ParkCarInFirstEmptyParkingSpace(licensePlate);
+                            }
                         }
-                        break;
+
+                        ConsoleKeyInfo consoleKey = new();
+                        if (Console.KeyAvailable)
+                        {
+                            consoleKey = Console.ReadKey(true);
+                            if (consoleKey.Key is ConsoleKey.Escape)
+                                appState = AppState.MainMenu;
+                        }
+
+                        return;
                     }
 
                     //
@@ -279,62 +306,94 @@ internal class Program
                     {
                         if (appState is AppState.MainMenu)
                         {
-                            if (choice is Option.Park)
+                            appState = choice switch
                             {
-                                appState = AppState.ParkMenu;
-                                selected = 0;
-                            }
-                            else if (choice is Option.Collect)
-                                appState = AppState.CollectVehicle;
-                            else if (choice is Option.Move)
-                                appState = AppState.MoveVehicle;
-                            else if (choice is Option.Search)
-                                appState = AppState.FindVehicle;
-                            else if (choice is Option.Inspect)
-                                appState = AppState.Inspect;
-                            else if (choice is Option.Report)
-                                appState = AppState.ReportsMenu;
-                            else if (choice is Option.Optimize)
-                                appState = AppState.Optimizing;
+                                Option.Park => AppState.ParkMenu,
+                                Option.Collect => AppState.CollectVehicle,
+                                Option.Move => AppState.MoveVehicle,
+                                Option.Search => AppState.FindVehicle,
+                                Option.Inspect => AppState.Inspect,
+                                Option.Report => AppState.ReportsMenu,
+                                Option.Optimize => AppState.Optimizing,
+                                _ => AppState.MainMenu
+                            };
+                            selected = 0;
                             return;
                         }
                         else if (appState is AppState.ParkMenu)
                         {
-                            if (choice is Option.Car)
-                                appState = AppState.ParkCar;
-                            else if (choice is Option.Motorcycle)
-                                appState = AppState.ParkMotorcycle;
+                            appState = choice switch
+                            {
+                                Option.Car => AppState.ParkCar,
+                                Option.Motorcycle => AppState.ParkMotorcycle,
+                                _ => AppState.MainMenu
+                            };
                             return;
                         }
                         else if (appState is AppState.ReportsMenu)
                         {
-                            if (choice is Option.Car)
-                                appState = AppState.ReportCars;
-                            else if (choice is Option.Motorcycle)
-                                appState = AppState.ReportMotorcycles;
-                            else if (choice is Option.All)
-                                appState = AppState.ReportAll;
-                            else if (choice is Option.Empty)
-                                appState = AppState.ReportEmpty;
+                            appState = choice switch
+                            {
+                                Option.Car => AppState.ReportCars,
+                                Option.Motorcycle => AppState.ReportMotorcycles,
+                                Option.All => AppState.ReportAll,
+                                Option.Empty => AppState.ReportEmpty,
+                                _ => AppState.MainMenu
+                            };
                             return;
                         }
                         else if (appState is AppState.SpecialMenu)
                         {
-                            if (choice is Option.Test)
-                                appState = AppState.Testing;
-                            else if (choice is Option.Demo)
-                                appState = AppState.DemoMode;
-                            else if (choice is Option.Exit)
+                            appState = choice switch
                             {
-                                Console.Clear();
-                                Environment.Exit(0);
-                            }
+                                Option.Test => AppState.Testing,
+                                Option.Demo => AppState.DemoMode,
+                                Option.Exit => AppState.Exit,
+                                _ => AppState.MainMenu
+                            };
                             return;
                         }
                     }
                 }
                 while (true);
             });
+    }
+
+    private static void ParkCarInFirstEmptyParkingSpace(string licensePlate)
+    {
+        if (FindFirstEmptyParkingSpace(out int spaceId) == false)
+        {
+            ReplyError("No parking space available.");
+        }
+        else if (ParkCar(spaceId, licensePlate))
+        {
+            Reply($"Park car {PrintLicensePlate(licensePlate)} in space {PrintSpaceId(spaceId)}");
+            LogVehicleReceived(EncodeCarLicensePlate(licensePlate), spaceId);
+            Dirty();
+        }
+        else
+        {
+            ReplyError("Could not park car.");
+        }
+    }
+
+    static void ParkMotorcycleInFirstParkingSpaceWithRoomForMotorcycle(string vehicleRegistration)
+    {
+        if (FindFirstParkingSpaceWithRoomForMotorcycle(out int spaceId) == false)
+        {
+            ReplyError("No parking space available.");
+        }
+        else if (ParkMotorcycle(spaceId, vehicleRegistration))
+        {
+            var licensePlate = FormatVehicleRegistration(vehicleRegistration);
+            Reply($"Park motorcycle {PrintLicensePlate(licensePlate)} in space {PrintSpaceId(spaceId)}");
+            LogVehicleReceived(EncodeMotorcycleLicensePlate(licensePlate), spaceId);
+            Dirty();
+        }
+        else
+        {
+            LogError("Could not park motorcycle.");
+        }
     }
 
     /*
@@ -520,21 +579,7 @@ internal class Program
 
         var vehicleRegistration = ReadVehicleRegistrationInput();
 
-        if (FindFirstEmptyParkingSpace(out int spaceId) == false)
-        {
-            ReplyError("No parking space available.");
-        }
-        else if (ParkCar(spaceId, vehicleRegistration))
-        {
-            var licensePlate = FormatVehicleRegistration(vehicleRegistration);
-            Reply($"Park car {PrintLicensePlate(licensePlate)} in space {PrintSpaceId(spaceId)}");
-            LogVehicleReceived(EncodeCarLicensePlate(licensePlate), spaceId);
-            Dirty();
-        }
-        else
-        {
-            ReplyError("Could not park car.");
-        }
+        ParkCarInFirstEmptyParkingSpace(vehicleRegistration);
 
         appState = AppState.MainMenu;
     }
@@ -550,21 +595,7 @@ internal class Program
 
         var vehicleRegistration = ReadVehicleRegistrationInput();
 
-        if (FindFirstParkingSpaceWithRoomForMotorcycle(out int spaceId) == false)
-        {
-            ReplyError("No parking space available.");
-        }
-        else if (ParkMotorcycle(spaceId, vehicleRegistration))
-        {
-            var licensePlate = FormatVehicleRegistration(vehicleRegistration);
-            Reply($"Park motorcycle {PrintLicensePlate(licensePlate)} in space {PrintSpaceId(spaceId)}");
-            LogVehicleReceived(EncodeMotorcycleLicensePlate(licensePlate), spaceId);
-            Dirty();
-        }
-        else
-        {
-            LogError("Could not park motorcycle.");
-        }
+        ParkMotorcycleInFirstParkingSpaceWithRoomForMotorcycle(vehicleRegistration);
 
         appState = AppState.MainMenu;
     }
@@ -579,9 +610,17 @@ internal class Program
         AnsiConsole.Write(layout);
 
         var vehicleRegistration = ReadVehicleRegistrationInput();
-        var licensePlate = FormatVehicleRegistration(vehicleRegistration);
+
+        AttemptCollectVehicle(vehicleRegistration);
+
+        appState = AppState.MainMenu;
+    }
+
+    static void AttemptCollectVehicle(string vehicleRegistration)
+    {
         string message = "";
         string encodedLicensePlate = "";
+        string licensePlate = FormatVehicleRegistration(vehicleRegistration);
 
         if (FindVehicle(vehicleRegistration, out int spaceId) == false)
         {
@@ -611,8 +650,6 @@ internal class Program
                 ReplyError($"Error while collecting vehicle {PrintLicensePlate(licensePlate)}. Please try again.");
             }
         }
-
-        appState = AppState.MainMenu;
     }
 
     static void ShowFindVehicleDialogue()
