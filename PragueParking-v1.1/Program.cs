@@ -747,7 +747,7 @@ internal class Program
             {
                 var licensePlate = DecodeLicensePlate(encodedLicensePlates[0], out string vehicleType);
                 reply += vehicleType switch
-                    { "CAR" => "a car: ", "MC" => "a motorcycle: ", _ => "a UFO: "};
+                { "CAR" => "a car: ", "MC" => "a motorcycle: ", _ => "a UFO: " };
                 reply += PrintLicensePlate(licensePlate);
             }
 
@@ -775,15 +775,21 @@ internal class Program
     */
     static void DisplayParkingGarage(Option option = Option.All)
     {
+        List<int> visible = [];
+
         switch (option)
         {
             case Option.Car:
+                visible = ScanParkingGarage((parkingSpaceId) => ParkingSpaceContainsCar(parkingSpaceId));
                 break;
             case Option.Motorcycle:
+                visible = ScanParkingGarage((parkingSpaceId) => ParkingSpaceContainsMotorcycles(parkingSpaceId, out _));
                 break;
             case Option.All:
+                visible = ScanParkingGarage((parkingSpaceId) => true);
                 break;
             case Option.Empty:
+                visible = ScanParkingGarage((parkingSpaceId) => ParkingSpaceIsEmpty(parkingSpaceId));
                 break;
             default:
                 break;
@@ -814,30 +820,37 @@ internal class Program
             for (int column = 0; column < tableWidth; column++)
             {
                 spaceId = row * tableWidth + column + 1;
-                string cell = $"{spaceId:000} ";
-                if (ParkingSpaceIsEmpty(spaceId))
-                    cell += $"{iconEmpty}\n";
-                else
+
+                string cell = "";
+
+                if (visible.Contains(spaceId))
                 {
-                    if (ParkingSpaceContainsCar(spaceId))
+                    cell = $"{spaceId:000} ";
+
+                    if (ParkingSpaceIsEmpty(spaceId))
+                        cell += $"{iconEmpty}\n";
+                    else
                     {
-                        string licensePlate = DecodeLicensePlate(InspectParkingSpace(spaceId), out _);
-                        cell += $"{iconCar} {PrintLicensePlate(licensePlate)}\n";
-                    }
-                    else if (ParkingSpaceContainsMotorcycles(spaceId, out int qty))
-                    {
-                        if (qty == 1)
+                        if (ParkingSpaceContainsCar(spaceId))
                         {
                             string licensePlate = DecodeLicensePlate(InspectParkingSpace(spaceId), out _);
-                            cell += $"{iconMotorcycle} {PrintLicensePlate(licensePlate)}\n";
+                            cell += $"{iconCar} {PrintLicensePlate(licensePlate)}\n";
                         }
-                        else if (qty == 2)
+                        else if (ParkingSpaceContainsMotorcycles(spaceId, out int qty))
                         {
-                            var encodedLicensePlates = InspectParkingSpace(spaceId).Split('|');
-                            string licensePlate = DecodeLicensePlate(encodedLicensePlates[0], out _);
-                            cell += $"{iconMotorcycle} {PrintLicensePlate(licensePlate)}\n";
-                            licensePlate = DecodeLicensePlate(encodedLicensePlates[1], out _);
-                            cell += $"    {iconMotorcycle} {PrintLicensePlate(licensePlate)}";
+                            if (qty == 1)
+                            {
+                                string licensePlate = DecodeLicensePlate(InspectParkingSpace(spaceId), out _);
+                                cell += $"{iconMotorcycle} {PrintLicensePlate(licensePlate)}\n";
+                            }
+                            else if (qty == 2)
+                            {
+                                var encodedLicensePlates = InspectParkingSpace(spaceId).Split('|');
+                                string licensePlate = DecodeLicensePlate(encodedLicensePlates[0], out _);
+                                cell += $"{iconMotorcycle} {PrintLicensePlate(licensePlate)}\n";
+                                licensePlate = DecodeLicensePlate(encodedLicensePlates[1], out _);
+                                cell += $"    {iconMotorcycle} {PrintLicensePlate(licensePlate)}";
+                            }
                         }
                     }
                 }
