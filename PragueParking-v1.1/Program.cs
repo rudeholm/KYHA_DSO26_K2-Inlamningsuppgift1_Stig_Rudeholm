@@ -149,16 +149,16 @@ internal class Program
                     ShowOptimizingDialogue();
                     break;
                 case AppState.ReportAll:
-                    DisplayParkingGarage();
+                    DisplayParkingGarage(Option.All);
                     break;
                 case AppState.ReportEmpty:
-                    DisplayParkingGarage();
+                    DisplayParkingGarage(Option.Empty);
                     break;
                 case AppState.ReportCars:
-                    DisplayParkingGarage();
+                    DisplayParkingGarage(Option.Car);
                     break;
                 case AppState.ReportMotorcycles:
-                    DisplayParkingGarage();
+                    DisplayParkingGarage(Option.Motorcycle);
                     break;
                 case AppState.Testing:
                     RunTests();
@@ -773,8 +773,22 @@ internal class Program
     /*
     ** Reports
     */
-    static void DisplayParkingGarage()
+    static void DisplayParkingGarage(Option option = Option.All)
     {
+        switch (option)
+        {
+            case Option.Car:
+                break;
+            case Option.Motorcycle:
+                break;
+            case Option.All:
+                break;
+            case Option.Empty:
+                break;
+            default:
+                break;
+        }
+
         var tableWidth = Console.WindowWidth switch
         {
             >= 150 => 5,
@@ -782,7 +796,7 @@ internal class Program
             _ => 2,
         };
 
-        var tableHeight = parkingGarage.Length / tableWidth;
+        var tableHeight = garageCapacity / tableWidth;
 
         Console.Clear();
 
@@ -908,15 +922,15 @@ internal class Program
     /*
     ** Main workhorses
     */
-    static int ScanParkingGarage(Func<int, bool> f)
+    static List<int> ScanParkingGarage(Func<int, bool> f)
     {
-        int count = 0;
+        List<int> spaceIds = [];
         for (int i = 1; i <= garageCapacity; i++)
         {
             if (f(i))
-                count++;
+                spaceIds.Add(i);
         }
-        return count;
+        return spaceIds;
     }
 
     private static int CountParkedMotorcycles()
@@ -927,19 +941,19 @@ internal class Program
         ScanParkingGarage((parkingSpaceId) =>
             ParkingSpaceContainsMotorcycles(parkingSpaceId, out int qty)
             && qty == 2
-        );
+        ).Count;
 
     private static int CountParkingSpacesWithSingleMotorcycles() =>
         ScanParkingGarage((parkingSpaceId) =>
             ParkingSpaceContainsMotorcycles(parkingSpaceId, out int qty)
             && qty == 1
-        );
+        ).Count;
 
     static int CountParkedCars()
-        => ScanParkingGarage((parkingSpaceId) => ParkingSpaceContainsCar(parkingSpaceId));
+        => ScanParkingGarage((parkingSpaceId) => ParkingSpaceContainsCar(parkingSpaceId)).Count;
 
     static int CountEmptyParkingSpaces()
-        => ScanParkingGarage((parkingSpaceId) => ParkingSpaceIsEmpty(parkingSpaceId));
+        => ScanParkingGarage((parkingSpaceId) => ParkingSpaceIsEmpty(parkingSpaceId)).Count;
 
     static bool IsCar(string encodedLicensePlate)
         => encodedLicensePlate.StartsWith("CAR#");
