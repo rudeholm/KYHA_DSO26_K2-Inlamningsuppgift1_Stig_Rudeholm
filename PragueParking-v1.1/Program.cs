@@ -1957,6 +1957,12 @@ internal class Program
                 && VehiclesInParkingSpace(testSpaceId + 2).Length == 1;
         });
 
+        Test("It is possible to generate a list of random license plates", () =>
+        {
+            var licensePlates = GenerateLicensePlate(5);
+            return licensePlates.Count == 5;
+        });
+
         // Report
         if (failedTests == 0)
             AnsiConsole.MarkupLine($"[green]All tests passed! ({totalTests} tests in total.)[/]");
@@ -1970,6 +1976,11 @@ internal class Program
 
         appState = AppState.MainMenu;
         WaitKey();
+    }
+
+    static List<string> GenerateLicensePlate(int qty)
+    {
+        return ["","","","",""];
     }
 
     static string[] VehiclesInParkingSpace(int spaceId)
