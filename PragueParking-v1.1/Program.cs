@@ -124,7 +124,6 @@ internal class Program
 
         Console.Clear();
         ShowMainLayout();
-
     }
 
     static void ShowMainLayout()
@@ -161,22 +160,157 @@ internal class Program
                             appState = AppState.MainMenu;
                             break;
                         case AppState.ParkMotorcycle:
-                            ShowParkMotorcycleDialogue();
+                            {
+                                var vehicleRegistration = NewReadVehicleRegistration(ctx, layout);
+                                if (ValidVehicleRegistration(vehicleRegistration))
+                                    ParkMotorcycleInFirstParkingSpaceWithRoomForMotorcycle(vehicleRegistration);
+                            }
+                            appState = AppState.MainMenu;
                             break;
                         case AppState.CollectVehicle:
-                            ShowCollectVehicleDialogue();
-                            break;
-                        case AppState.MoveVehicle:
-                            ShowMoveVehicleDialogue();
+                            {
+                                var vehicleRegistration = NewReadVehicleRegistration(ctx, layout);
+                                if (ValidVehicleRegistration(vehicleRegistration))
+                                    AttemptCollectVehicle(vehicleRegistration);
+                            }
+                            appState = AppState.MainMenu;
                             break;
                         case AppState.FindVehicle:
-                            ShowFindVehicleDialogue();
+                            {
+                                var vehicleRegistration = NewReadVehicleRegistration(ctx, layout);
+                                var licensePlate = FormatVehicleRegistration(vehicleRegistration);
+                                if (ValidVehicleRegistration(vehicleRegistration))
+                                {
+                                    if (FindVehicle(vehicleRegistration, out int spaceId) && spaceId > 0)
+                                        Reply($"Vehicle {PrintLicensePlate(licensePlate)} is parked in space {PrintSpaceId(spaceId)}");
+                                    else
+                                        ReplyError($"Could not locate vehicle {PrintLicensePlate(licensePlate)} - Please double check vehicle registration.");
+                                }
+                            }
+                            appState = AppState.MainMenu;
+                            break;
+                        case AppState.MoveVehicle:
+                            {
+                                var vehicleRegistration = NewReadVehicleRegistration(ctx, layout);
+                                var licensePlate = FormatVehicleRegistration(vehicleRegistration);
+
+                                if (FindVehicle(vehicleRegistration, out int originSpaceId) == false)
+                                {
+                                    ReplyError($"Could not locate vehicle {PrintLicensePlate(licensePlate)} - Please double check vehicle registration.");
+                                    appState = AppState.MainMenu;
+                                    break;
+                                }
+
+                                var destinationSpaceId = NewReadSpaceIdInput(ctx, layout);
+
+                                if (ParkingSpaceIsEmpty(destinationSpaceId))
+                                    Reply($"Parking space {PrintSpaceId(destinationSpaceId)} is currently empty.");
+
+                                if (ParkingSpaceContainsCar(originSpaceId))
+                                {
+                                    if (ParkingSpaceIsNotEmpty(destinationSpaceId))
+                                    {
+                                        ReplyError($"Can not move car. Destination space is occupied!");
+                                        appState = AppState.MainMenu;
+                                        break;
+                                    }
+
+                                    if (CollectVehicle(originSpaceId, vehicleRegistration))
+                                    {
+                                        if (ParkCar(destinationSpaceId, vehicleRegistration))
+                                        {
+                                            Reply($"Move car {PrintLicensePlate(licensePlate)} from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
+                                            LogInformation($"Car {PrintLicensePlate(licensePlate)} was moved from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
+                                            Dirty();
+                                        }
+                                    }
+                                    appState = AppState.MainMenu;
+                                    break;
+                                }
+
+                                if (ParkingSpaceContainsMotorcycles(originSpaceId, out _))
+                                {
+                                    if (ParkingSpaceHasRoomForMotorcycle(destinationSpaceId))
+                                    {
+                                        if (CollectVehicle(originSpaceId, vehicleRegistration))
+                                        {
+                                            if (ParkMotorcycle(destinationSpaceId, vehicleRegistration))
+                                            {
+                                                Reply($"Move motorcycle {PrintLicensePlate(licensePlate)} from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
+                                                LogInformation($"Motorcycle {PrintLicensePlate(licensePlate)} was moved from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
+                                                Dirty();
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        ReplyError($"Can not move motorcycle. Destination space is full!");
+                                    }
+                                }
+                            }
+                            appState = AppState.MainMenu;
                             break;
                         case AppState.Inspect:
-                            ShowInspectParkingSpaceDialogue();
+                            {
+                                var spaceId = NewReadSpaceIdInput(ctx, layout);
+
+                                if (ParkingSpaceIsEmpty(spaceId))
+                                    Reply($"Parking space {PrintSpaceId(spaceId)} is currently empty.");
+                                else
+                                {
+                                    string reply = $"Parking space {PrintSpaceId(spaceId)} is currently occupied by ";
+                                    var encodedLicensePlates = VehiclesInParkingSpace(spaceId);
+                                    if (encodedLicensePlates.Length == 2)
+                                    {
+                                        var licensePlate1 = DecodeLicensePlate(encodedLicensePlates[0], out _);
+                                        var licensePlate2 = DecodeLicensePlate(encodedLicensePlates[1], out _);
+                                        reply += $"two motorcycles: {PrintLicensePlate(licensePlate1)} & {PrintLicensePlate(licensePlate2)}";
+                                    }
+                                    else
+                                    {
+                                        var licensePlate = DecodeLicensePlate(encodedLicensePlates[0], out string vehicleType);
+                                        reply += vehicleType switch
+                                        { "CAR" => "a car: ", "MC" => "a motorcycle: ", _ => "a UFO: " };
+                                        reply += PrintLicensePlate(licensePlate);
+                                    }
+
+                                    Reply(reply);
+                                }
+                            }
+                            appState = AppState.MainMenu;
                             break;
                         case AppState.Optimizing:
-                            ShowOptimizingDialogue();
+                            {
+                                if (OptimizeMotorcycleParking(out List<string> moves) == false)
+                                {
+                                    ReplyError("Unable to optimize further.");
+                                    appState = AppState.MainMenu;
+                                    break;
+                                }
+
+                                Markup[] moveOrders = new Markup[moves.Count];
+
+                                LogInformation($"Motorcycle parking optimization started.");
+
+                                for (var i = 0; i < moves.Count; i++)
+                                {
+                                    var instructionParts = moves[i].Split('|');
+                                    string licensePlate = instructionParts[0];
+                                    int originSpaceId = int.Parse(instructionParts[1]);
+                                    int destinationSpaceId = int.Parse(instructionParts[2]);
+                                    moveOrders[i] = new Markup($"Move motorcycle {PrintLicensePlate(licensePlate)} from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
+                                    LogInformation($"Motorcycle {PrintLicensePlate(licensePlate)} was moved from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
+                                }
+
+                                LogInformation($"Motorcycle parking optimization finished.");
+                                
+                                Reply(PrintInfo("Motorcycle parking optimized!"));
+
+                                layout["Action"].Update(PanelBuilder(new Rows(moveOrders), "Instructions"));
+                                Dirty();
+                                ctx.Refresh();
+                            }
+                            appState = AppState.MainMenu;
                             break;
                         case AppState.ReportAll:
                             ctx.UpdateTarget(ReportsPanel(Option.All));
@@ -215,13 +349,6 @@ internal class Program
                         _ => mainMenuOptions
                     };
 
-                    var actionPanel = MenuPanel(menuOptions, selected);
-                    layout["Action"].Update(actionPanel);
-                    var logPanel = LogPanel();
-                    layout["Log"].Update(logPanel);
-                    var messagePanel = MessagePanel(parkingGarage[0] ?? "");
-                    layout["Message"].Update(messagePanel);
-
                     if (dirty)
                     {
                         if (CountParkingSpacesWithSingleMotorcycles() > 4)
@@ -230,6 +357,14 @@ internal class Program
                         layout["Map"].Update(garagePanel);
                         dirty = false;
                     }
+
+                    var actionPanel = MenuPanel(menuOptions, selected);
+                    layout["Action"].Update(actionPanel);
+                    var logPanel = LogPanel();
+                    layout["Log"].Update(logPanel);
+                    var messagePanel = MessagePanel(parkingGarage[0] ?? "");
+                    layout["Message"].Update(messagePanel);
+
 
                     ctx.Refresh();
 
@@ -457,34 +592,64 @@ internal class Program
         return PanelBuilder(new Rows(latestLogItems), "Log");
     }
 
-    static Panel InspectParkingSpacePanel()
+    static Panel InspectParkingSpacePanel(string input)
     {
-        return PanelBuilder(new Markup($"Enter a parking space ID below. Valid input is a whole number in the range [Green]1-{garageCapacity}[/]. The result will be shown below."), "Inspect Parking Space");
+        var instructions = new Markup($"Enter a parking space ID. Valid input is a whole number in the range [Green]1-{garageCapacity}[/]. The result will be shown below.");
+        var inputField = Align.Center(new Panel(input) { Width = 7, Height = 3 });
+        var rows = new Rows(
+            instructions,
+            inputField
+            );
+        return PanelBuilder(rows, "Inspect Parking Space");
     }
 
-    static Panel MoveVehiclePanel()
+    static Panel MoveVehiclePanel(string input)
     {
-        return PanelBuilder(new Markup("Enter the registration number of the vehicle you wish to move, at the bottom of the screen. If it is valid and a corresponding vehicle is in the system, you will be asked to enter the destination parking space ID."), "Move Vehicle");
+        var instructions = new Markup($"Enter the registration number of the vehicle you wish to move. If it is valid and a corresponding vehicle is in the system, you will be asked to enter the destination parking space ID.");
+        var inputField = Align.Center(new Panel(input) { Width = 14, Height = 3 });
+        var rows = new Rows(
+            instructions,
+            inputField
+            );
+        return PanelBuilder(rows, "Move Vehicle");
     }
 
-    static Panel FindVehiclePanel()
+    static Panel MoveVehicleDestinationPanel(string input)
     {
-        return PanelBuilder(new Markup("Enter the registration number of the vehicle you wish to locate, at the bottom of the screen. If it is valid and a corresponding vehicle is in the system, the parking space ID assigned to it will be shown below."), "Find Vehicle");
+        var instructions = new Markup($"Enter the the destination parking space ID.");
+        var inputField = Align.Center(new Panel(input) { Width = 7, Height = 3 });
+        var rows = new Rows(
+            instructions,
+            inputField
+            );
+        return PanelBuilder(rows, "Move Vehicle");
     }
 
-    static Panel CollectVehiclePanel()
+    static Panel FindVehiclePanel(string input)
     {
-        return PanelBuilder(new Markup("Enter the registration number of the vehicle to be collected, at the bottom of the screen. If it is valid and a corresponding vehicle is in the system, instructions on where to collect the vehicle will be shown below."), "Collect Vehicle");
+        var instructions = new Markup("Enter the registration number of the vehicle you wish to locate. If it is valid and a corresponding vehicle is in the system, the parking space ID assigned to it will be shown below.");
+        var inputField = Align.Center(new Panel(input) { Width = 14, Height = 3 });
+        var rows = new Rows(
+            instructions,
+            inputField
+            );
+        return PanelBuilder(rows, "Find Vehicle");
     }
 
-    static Panel ParkCarPanelOld()
+    static Panel CollectVehiclePanel(string input)
     {
-        return PanelBuilder(new Markup("Enter the registration number of the car to be received, at the bottom of the screen. Instructions on where to park the vehicle will be shown below."), "Park Car");
+        var instructions = new Markup("Enter the registration number of the vehicle to be collected. If it is valid and a corresponding vehicle is in the system, instructions on where to collect the vehicle will be shown below.");
+        var inputField = Align.Center(new Panel(input) { Width = 14, Height = 3 });
+        var rows = new Rows(
+            instructions,
+            inputField
+            );
+        return PanelBuilder(rows, "Collect Vehicle");
     }
 
     static Panel ParkCarPanel(string input)
     {
-        var instructions = new Markup("Enter the registration number of the car to be parked. Instructions on where to park the vehicle will be shown below.");
+        var instructions = new Markup("Enter the registration number of the [blue]car[/] to be parked. Instructions on where to park the vehicle will be shown below.");
         var inputField = Align.Center(new Panel(input) { Width = 14, Height = 3 });
         var rows = new Rows(
             instructions,
@@ -493,9 +658,15 @@ internal class Program
         return PanelBuilder(rows, "Park Car");
     }
 
-    static Panel ParkMotorcyclePanel()
+    static Panel ParkMotorcyclePanel(string input)
     {
-        return PanelBuilder(new Markup("Enter the registration number of the motorcycle to be received, at the bottom of the screen. Instructions on where to park the vehicle will be shown below."), "Park Motorcycle");
+        var instructions = new Markup("Enter the registration number of the [darkorange]motorcycle[/] to be parked. Instructions on where to park the vehicle will be shown below.");
+        var inputField = Align.Center(new Panel(input) { Width = 14, Height = 3 });
+        var rows = new Rows(
+            instructions,
+            inputField
+            );
+        return PanelBuilder(rows, "Park Car");
     }
 
     /*
@@ -514,220 +685,6 @@ internal class Program
         }
 
         return new Rows(allOptions);
-    }
-
-    /*
-    ** Dialogues
-    */
-    private static void ShowOptimizingDialogue()
-    {
-        if (OptimizeMotorcycleParking(out List<string> moves) == false)
-        {
-            ReplyError("Unable to optimize further.");
-            appState = AppState.MainMenu;
-            return;
-        }
-
-        Markup[] moveOrders = new Markup[moves.Count];
-
-        LogInformation($"Motorcycle parking optimization started.");
-
-        for (var i = 0; i < moves.Count; i++)
-        {
-            var instructionParts = moves[i].Split('|');
-            string licensePlate = instructionParts[0];
-            int originSpaceId = int.Parse(instructionParts[1]);
-            int destinationSpaceId = int.Parse(instructionParts[2]);
-            moveOrders[i] = new Markup($"Move motorcycle {PrintLicensePlate(licensePlate)} from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
-            LogInformation($"Motorcycle {PrintLicensePlate(licensePlate)} was moved from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
-        }
-
-        LogInformation($"Motorcycle parking optimization finished.");
-
-        var workOrdersPanel = PanelBuilder(new Rows(moveOrders), "Instructions");
-        AnsiConsole.Write(workOrdersPanel);
-        Reply("Motorcycle parking optimized!");
-        WaitKey();
-
-        Dirty();
-        appState = AppState.MainMenu;
-    }
-
-    static void ShowParkCarDialogue()
-    {
-        var layout = mainLayout;
-
-        var actionPanel = ParkCarPanelOld();
-        layout["Action"].Update(actionPanel);
-
-        AnsiConsole.Write(layout);
-
-        var vehicleRegistration = ReadVehicleRegistrationInput();
-
-        ParkCarInFirstEmptyParkingSpace(vehicleRegistration);
-
-        appState = AppState.MainMenu;
-    }
-
-    static void ShowParkMotorcycleDialogue()
-    {
-        var layout = mainLayout;
-
-        var actionPanel = ParkMotorcyclePanel();
-        layout["Action"].Update(actionPanel);
-
-        AnsiConsole.Write(layout);
-
-        var vehicleRegistration = ReadVehicleRegistrationInput();
-
-        ParkMotorcycleInFirstParkingSpaceWithRoomForMotorcycle(vehicleRegistration);
-
-        appState = AppState.MainMenu;
-    }
-
-    static void ShowCollectVehicleDialogue()
-    {
-        var layout = mainLayout;
-
-        var actionPanel = CollectVehiclePanel();
-        layout["Action"].Update(actionPanel);
-
-        AnsiConsole.Write(layout);
-
-        var vehicleRegistration = ReadVehicleRegistrationInput();
-
-        AttemptCollectVehicle(vehicleRegistration);
-
-        appState = AppState.MainMenu;
-    }
-
-    static void ShowFindVehicleDialogue()
-    {
-        var layout = mainLayout;
-
-        var actionPanel = FindVehiclePanel();
-        layout["Action"].Update(actionPanel);
-
-        AnsiConsole.Write(layout);
-
-        var vehicleRegistration = ReadVehicleRegistrationInput();
-
-        var licensePlate = FormatVehicleRegistration(vehicleRegistration);
-        if (FindVehicle(vehicleRegistration, out int spaceId) && spaceId > 0)
-        {
-            Reply($"Vehicle {PrintLicensePlate(licensePlate)} is parked in space {PrintSpaceId(spaceId)}");
-        }
-        else
-        {
-            ReplyError($"Could not locate vehicle {PrintLicensePlate(licensePlate)} - Please double check vehicle registration.");
-        }
-
-        appState = AppState.MainMenu;
-    }
-
-    static void ShowMoveVehicleDialogue()
-    {
-        var layout = mainLayout;
-
-        var actionPanel = MoveVehiclePanel();
-        layout["Action"].Update(actionPanel);
-        AnsiConsole.Write(layout);
-
-        var vehicleRegistration = ReadVehicleRegistrationInput();
-
-        var licensePlate = FormatVehicleRegistration(vehicleRegistration);
-
-        if (FindVehicle(vehicleRegistration, out int originSpaceId) == false)
-        {
-            ReplyError($"Could not locate vehicle {PrintLicensePlate(licensePlate)} - Please double check vehicle registration.");
-            appState = AppState.MainMenu;
-            return;
-        }
-
-        layout["Action"].Update(actionPanel);
-        AnsiConsole.Write(layout);
-
-        var destinationSpaceId = ReadSpaceIdInput();
-
-        if (ParkingSpaceContainsCar(originSpaceId))
-        {
-            if (ParkingSpaceIsNotEmpty(destinationSpaceId))
-            {
-                ReplyError($"Can not move car. Destination space is occupied!");
-                appState = AppState.MainMenu;
-                return;
-            }
-
-            if (CollectVehicle(originSpaceId, vehicleRegistration))
-            {
-                if (ParkCar(destinationSpaceId, vehicleRegistration))
-                {
-                    Reply($"Move car {PrintLicensePlate(licensePlate)} from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
-                    LogInformation($"Car {PrintLicensePlate(licensePlate)} was moved from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
-                    Dirty();
-                }
-            }
-            appState = AppState.MainMenu;
-            return;
-        }
-
-        if (ParkingSpaceContainsMotorcycles(originSpaceId, out _))
-        {
-            if (ParkingSpaceHasRoomForMotorcycle(destinationSpaceId))
-            {
-                if (CollectVehicle(originSpaceId, vehicleRegistration))
-                {
-                    if (ParkMotorcycle(destinationSpaceId, vehicleRegistration))
-                    {
-                        Reply($"Move motorcycle {PrintLicensePlate(licensePlate)} from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
-                        LogInformation($"Motorcycle {PrintLicensePlate(licensePlate)} was moved from space {PrintSpaceId(originSpaceId)} to space {PrintSpaceId(destinationSpaceId)}.");
-                        Dirty();
-                    }
-                }
-            }
-            else
-            {
-                ReplyError($"Can not move motorcycle. Destination space is full!");
-            }
-        }
-
-        appState = AppState.MainMenu;
-    }
-
-    static void ShowInspectParkingSpaceDialogue()
-    {
-        var layout = mainLayout;
-
-        var actionPanel = InspectParkingSpacePanel();
-        layout["Action"].Update(actionPanel);
-        AnsiConsole.Write(layout);
-
-        var spaceId = ReadSpaceIdInput();
-
-        if (ParkingSpaceIsEmpty(spaceId))
-            Reply($"Parking space {PrintSpaceId(spaceId)} is currently empty.");
-        else
-        {
-            string reply = $"Parking space {PrintSpaceId(spaceId)} is currently occupied by ";
-            var encodedLicensePlates = VehiclesInParkingSpace(spaceId);
-            if (encodedLicensePlates.Length == 2)
-            {
-                var licensePlate1 = DecodeLicensePlate(encodedLicensePlates[0], out _);
-                var licensePlate2 = DecodeLicensePlate(encodedLicensePlates[1], out _);
-                reply += $"two motorcycles: {PrintLicensePlate(licensePlate1)} & {PrintLicensePlate(licensePlate2)}";
-            }
-            else
-            {
-                var licensePlate = DecodeLicensePlate(encodedLicensePlates[0], out string vehicleType);
-                reply += vehicleType switch
-                { "CAR" => "a car: ", "MC" => "a motorcycle: ", _ => "a UFO: " };
-                reply += PrintLicensePlate(licensePlate);
-            }
-
-            Reply(reply);
-        }
-
-        appState = AppState.MainMenu;
     }
 
     private static void ParkCarInFirstEmptyParkingSpace(string licensePlate)
@@ -969,71 +926,97 @@ internal class Program
     /*
     ** Readers
     */
-    static int ReadSpaceIdInput()
+
+    static int NewReadSpaceIdInput(LiveDisplayContext ctx, Layout layout)
     {
-        int input;
-
-        var prompt = new TextPrompt<int>("[Green]Enter parking space ID[/]: ")
-            .PromptStyle("Green")
-            .ValidationErrorMessage($"[Red]Valid numbers are 1-{garageCapacity}[/]");
-
+        string input = "";
         do
         {
-            input = AnsiConsole.Prompt(prompt);
+            var panel = appState switch
+            {
+                AppState.Inspect => InspectParkingSpacePanel(input),
+                AppState.MoveVehicle => MoveVehicleDestinationPanel(input),
+                _ => PanelBuilder(new Markup("[red]Something went wrong![/]"), "Error!")
+            };
 
-            if (ValidSpaceId(input))
+            layout["Action"].Update(panel);
+            ctx.Refresh();
+
+            while (Console.KeyAvailable is not true)
+                Thread.Sleep(250);
+
+            var keyDown = Console.ReadKey(true);
+
+            if (keyDown.Key is ConsoleKey.Backspace)
+            {
+                if (input.Length > 0)
+                    input = input.Substring(0, input.Length - 1);
+            }
+            else if (keyDown.Key is ConsoleKey.Escape)
+            {
+                appState = AppState.MainMenu;
                 break;
+            }
+            else if (keyDown.Key is ConsoleKey.Enter)
+            {
+                if (int.TryParse(input, out int result))
+                    return result;
+            }
             else
             {
-                AnsiConsole.Markup(PrintError($"Valid numbers are 1-{garageCapacity}\n"));
+                if (input.Length < 3)
+                    input += keyDown.KeyChar;
             }
-        }
-        while (true);
 
+        } while (true);
 
-        return input;
+        return 0;
     }
 
     static string NewReadVehicleRegistration(LiveDisplayContext ctx, Layout layout)
     {
-
+        string input = "";
+        do
         {
-            string input = "";
-            do
+            var panel = appState switch
             {
-                layout["Action"].Update(ParkCarPanel(input));
-                ctx.Refresh();
+                AppState.ParkCar => ParkCarPanel(input),
+                AppState.ParkMotorcycle => ParkMotorcyclePanel(input),
+                AppState.CollectVehicle => CollectVehiclePanel(input),
+                AppState.FindVehicle => FindVehiclePanel(input),
+                AppState.MoveVehicle => MoveVehiclePanel(input),
+                _ => PanelBuilder(new Markup("[red]Something went wrong![/]"), "Error!")
+            };
 
-                while (Console.KeyAvailable is not true)
-                    Thread.Sleep(250);
+            layout["Action"].Update(panel);
+            ctx.Refresh();
 
-                var keyDown = Console.ReadKey(true);
+            while (Console.KeyAvailable is not true)
+                Thread.Sleep(250);
 
-                if (keyDown.Key is ConsoleKey.Backspace)
-                {
-                    if (input.Length > 0)
-                        input = input.Substring(0, input.Length - 1);
-                }
-                else if (keyDown.Key is ConsoleKey.Escape)
-                {
-                    appState = AppState.MainMenu;
-                    break;
-                }
-                else if (keyDown.Key is ConsoleKey.Enter)
-                {
-                    if (ValidVehicleRegistration(input))
-                    {
-                        return input;
-                    }
-                }
-                else
-                {
-                    if (input.Length < 10)
-                        input += keyDown.KeyChar;
-                }
+            var keyDown = Console.ReadKey(true);
 
-            } while (true);
-        }
+            if (keyDown.Key is ConsoleKey.Backspace)
+            {
+                if (input.Length > 0)
+                    input = input.Substring(0, input.Length - 1);
+            }
+            else if (keyDown.Key is ConsoleKey.Escape)
+            {
+                appState = AppState.MainMenu;
+                break;
+            }
+            else if (keyDown.Key is ConsoleKey.Enter)
+            {
+                return input;
+            }
+            else
+            {
+                if (input.Length < 10)
+                    input += keyDown.KeyChar;
+            }
+
+        } while (true);
 
         return "";
     }
@@ -1070,6 +1053,9 @@ internal class Program
 
     static string PrintError(string text)
         => $"[Red]{text}[/]";
+
+    static string PrintWarning(string text)
+        => $"[Yellow]{text}[/]";
 
     static string PrintInfo(string text)
         => $"[Blue]{text}[/]";
@@ -1464,7 +1450,7 @@ internal class Program
         if (vehicleRegistration.Length > 10)
             return false;
 
-        var pattern = @"^\w(\w| |-)*\w$";
+        var pattern = @"^(\w| |-)*\w$";
 
         if (Regex.IsMatch(vehicleRegistration, pattern))
             return true;
@@ -1570,6 +1556,11 @@ internal class Program
             () => ValidVehicleRegistration("xxx xxx xxx") == false
             );
 
+        Test("A vehicle registration must be at least 1 characters",
+            () => ValidVehicleRegistration("") == false
+                && ValidVehicleRegistration("x") == true
+            );
+
         Test("A vehicle registration can only contain approved characters",
             () => ValidVehicleRegistration("xxx . xxx") == false
                 && ValidVehicleRegistration("foo &") == false
@@ -1579,6 +1570,7 @@ internal class Program
                 && ValidVehicleRegistration("2 ewq k !") == false
                 && ValidVehicleRegistration("Å Glürp 23") == true
                 && ValidVehicleRegistration("m-GlÄrp 69") == true
+                && ValidVehicleRegistration("m") == true
             );
 
         Test("A parking space is empty by default", () =>
@@ -2165,7 +2157,6 @@ internal class Program
         parkingGarage = stashedParkingGarage;
 
         appState = AppState.MainMenu;
-        WaitKey();
     }
 
     /*

@@ -383,3 +383,15 @@ Jag har gjort stora framsteg med användargränssnittet. Mindre flimmer, bättre
 
 ---
 
+Det nya användargränssnittet är på plats och fungerar väldigt bra. Eftersom Spectre-metoderna för input inte går att använda i en live-uppdaterande struktur så var jag tvungen att skriva egna rutiner för att kunna läsa in text inuti en panel.
+
+---
+
+Nu ska testerna få en dedikerad panel i det nya gränssnittet och sen är jag i princip klar!
+
+---
+
+Om jag hinner så vill jag snygga upp koden en hel del. Det har blivit väldigt rörigt på slutet nu. Framförallt så innehåller `ShowMainLayout()` nu en stor mängd kod som jag bör kunna omstrukturera ganska rejält och dela upp i mindre metoder.
+
+---
+
