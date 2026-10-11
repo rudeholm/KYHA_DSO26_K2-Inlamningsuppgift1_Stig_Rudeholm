@@ -479,6 +479,9 @@ internal class Program
         WriteTitle("Testing...");
         Console.WriteLine();
 
+        string[] stashedParkingGarage = GetEmptyParkingGarage();
+        Array.Copy(parkingGarage, stashedParkingGarage, parkingGarage.Length);
+
         garageCapacity = 5;
         InitializeParkingGarage();
 
@@ -961,7 +964,8 @@ internal class Program
         });
 
 
-
+        garageCapacity = stashedParkingGarage.Length - 1;
+        parkingGarage = stashedParkingGarage;
 
         WaitKey();
     }
