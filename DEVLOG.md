@@ -395,3 +395,7 @@ Om jag hinner så vill jag snygga upp koden en hel del. Det har blivit väldigt 
 
 ---
 
+Nu fungerar testerna också, men jag behöver ha en scroll-bar visare för att kunna se alla resultaten. Det hade jag tänkt bygga för loggen iaf, så förhoppningsvis hinner jag med det.
+
+---
+
