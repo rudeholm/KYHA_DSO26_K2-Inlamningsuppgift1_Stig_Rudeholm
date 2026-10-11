@@ -373,3 +373,13 @@ Demo-läget verkar funka bra, så jag fortsätter utveckla det lite till. Dessut
 
 ---
 
+#### 2026-10-11
+
+Sista dagen! Ikväll ska uppgiften lämnas in!
+
+---
+
+Jag har gjort stora framsteg med användargränssnittet. Mindre flimmer, bättre input, allt för att jag har fått bättre grepp om `Spectre.Console`.
+
+---
+

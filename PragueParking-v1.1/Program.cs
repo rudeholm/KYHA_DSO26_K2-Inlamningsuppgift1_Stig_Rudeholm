@@ -127,114 +127,6 @@ internal class Program
 
     }
 
-    static Panel ReportsPanel(Option option)
-    {
-        string header = "Parking Spaces: ";
-        List<int> visible = [];
-
-        switch (option)
-        {
-            case Option.Car:
-                visible = ScanParkingGarage((parkingSpaceId) => ParkingSpaceContainsCar(parkingSpaceId));
-                header += "Cars";
-                break;
-            case Option.Motorcycle:
-                visible = ScanParkingGarage((parkingSpaceId) => ParkingSpaceContainsMotorcycles(parkingSpaceId, out _));
-                header += "Motorcycle";
-                break;
-            case Option.All:
-                visible = ScanParkingGarage((parkingSpaceId) => true);
-                header += "All";
-                break;
-            case Option.Empty:
-                visible = ScanParkingGarage((parkingSpaceId) => ParkingSpaceIsEmpty(parkingSpaceId));
-                header += "Empty";
-                break;
-            default:
-                break;
-        }
-
-        var tableWidth = Console.WindowWidth switch
-        {
-            >= 150 => 5,
-            >= 122 => 4,
-            _ => 2,
-        };
-
-        var tableHeight = garageCapacity / tableWidth;
-
-        var table = new Table().HideHeaders().NoBorder();
-
-        for (int i = 0; i < tableWidth; i++)
-        {
-            table.AddColumn("", col => col.Width(23));
-        }
-
-        for (int row = 0; row < tableHeight; row++)
-        {
-            string[] cells = new string[tableWidth];
-            int spaceId;
-            for (int column = 0; column < tableWidth; column++)
-            {
-                spaceId = row * tableWidth + column + 1;
-
-                string cell = "";
-
-                cell = $"{PrintSpaceId(spaceId)} ";
-
-                if (ParkingSpaceIsEmpty(spaceId))
-                    cell += $"{iconEmpty}\n";
-                else
-                {
-                    if (ParkingSpaceContainsCar(spaceId))
-                    {
-                        if (visible.Contains(spaceId))
-                        {
-                            string licensePlate = DecodeLicensePlate(InspectParkingSpace(spaceId), out _);
-                            cell += $"{iconCar} {PrintLicensePlate(licensePlate)}\n";
-                        }
-                        else
-                            cell += "\n";
-                    }
-                    else if (ParkingSpaceContainsMotorcycles(spaceId, out int qty))
-                    {
-                        if (qty == 1)
-                        {
-                            if (visible.Contains(spaceId))
-                            {
-                                string licensePlate = DecodeLicensePlate(InspectParkingSpace(spaceId), out _);
-                                cell += $"{iconMotorcycle} {PrintLicensePlate(licensePlate)}\n";
-                            }
-                            else
-                                cell += "\n";
-                        }
-                        else if (qty == 2)
-                        {
-                            if (visible.Contains(spaceId))
-                            {
-                                var encodedLicensePlates = InspectParkingSpace(spaceId).Split('|');
-                                string licensePlate = DecodeLicensePlate(encodedLicensePlates[0], out _);
-                                cell += $"{iconMotorcycle} {PrintLicensePlate(licensePlate)}\n";
-                                licensePlate = DecodeLicensePlate(encodedLicensePlates[1], out _);
-                                cell += $"     {iconMotorcycle} {PrintLicensePlate(licensePlate)}";
-                            }
-                            else
-                                cell += "\n";
-                        }
-                    }
-                }
-                if (visible.Contains(spaceId))
-                    cells[column] = cell;
-                else
-                    cells[column] = $"[dim]{cell}[/]";
-            }
-            table.AddRow(cells);
-        }
-
-        return PanelBuilder(Align.Center(table), header);
-
-    }
-
     static void ShowMainLayout()
     {
         var menuOptions = mainMenuOptions;
@@ -965,23 +857,29 @@ internal class Program
     /*
     ** Reports
     */
-    static void DisplayParkingGarage(Option option = Option.All)
+
+    static Panel ReportsPanel(Option option)
     {
+        string header = "Parking Spaces: ";
         List<int> visible = [];
 
         switch (option)
         {
             case Option.Car:
                 visible = ScanParkingGarage((parkingSpaceId) => ParkingSpaceContainsCar(parkingSpaceId));
+                header += "Cars";
                 break;
             case Option.Motorcycle:
                 visible = ScanParkingGarage((parkingSpaceId) => ParkingSpaceContainsMotorcycles(parkingSpaceId, out _));
+                header += "Motorcycle";
                 break;
             case Option.All:
                 visible = ScanParkingGarage((parkingSpaceId) => true);
+                header += "All";
                 break;
             case Option.Empty:
                 visible = ScanParkingGarage((parkingSpaceId) => ParkingSpaceIsEmpty(parkingSpaceId));
+                header += "Empty";
                 break;
             default:
                 break;
@@ -995,8 +893,6 @@ internal class Program
         };
 
         var tableHeight = garageCapacity / tableWidth;
-
-        Console.Clear();
 
         var table = new Table().HideHeaders().NoBorder();
 
@@ -1066,10 +962,8 @@ internal class Program
             table.AddRow(cells);
         }
 
-        AnsiConsole.Write(Align.Center(table));
+        return PanelBuilder(Align.Center(table), header);
 
-        appState = AppState.ReportsMenu;
-        WaitKey();
     }
 
     /*
