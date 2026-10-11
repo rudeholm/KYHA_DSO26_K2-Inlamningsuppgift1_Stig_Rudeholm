@@ -118,8 +118,9 @@ internal class Program
         Console.Title = "Prague Parking v1.1";
 
         InitializeParkingGarage();
-
+        var date = DateTime.Now;
         LogInformation("Welcome to Prague Parking [yellow]1.1[/]!");
+        LogInformation($"Today is {date.DayOfWeek}, {date:MMM} {date:dd}, and the time is {date:HH:mm}");
 
         do
         {
