@@ -23,7 +23,6 @@ enum AppState
     ReportMotorcycles,
     Optimizing,
     ViewLog,
-    ViewTestResults,
     DemoMode,
     Exit
 }
@@ -332,11 +331,28 @@ internal class Program
                             WaitEscape(AppState.ReportsMenu);
                             continue;
                         case AppState.Testing:
-                            ctx.UpdateTarget(TestPanel());
-                            WaitEscape(AppState.MainMenu);
-                            continue;
-                        case AppState.ViewLog:
                             int offset = 0;
+                            var testResults = RunTests();
+                            do
+                            {
+                                List <Markup> textLines = [];
+                                int maxLine = Math.Min(testResults.Count, 25);
+                                for (int i = 0; i < maxLine; i++)
+                                {
+                                    textLines.Add(testResults[i + offset]);
+                                }
+                                var textPanel = TextViewerPanel(textLines, "Test Results");
+                                ctx.UpdateTarget(textPanel);
+                                offset = TextScroller(testResults.Count - 25, offset);
+                                if (offset == -1)
+                                {
+                                    ctx.UpdateTarget(layout);
+                                    break;
+                                }
+                            } while (true);
+                            break;
+                        case AppState.ViewLog:
+                            offset = 0;
                             do
                             {
                                 List<Markup> textLines = [];
@@ -347,7 +363,7 @@ internal class Program
                                 }
                                 var textPanel = TextViewerPanel(textLines, "Log");
                                 ctx.UpdateTarget(textPanel);
-                                offset = TextScroller(log.Count - offset, offset);
+                                offset = TextScroller(log.Count - 25, offset);
                                 if (offset == -1)
                                 {
                                     ctx.UpdateTarget(layout);
@@ -2193,7 +2209,7 @@ internal class Program
         {
             var licensePlates = GenerateLicensePlate(1);
             var pattern = @"[A-Z]{3} [0-9]{3}";
-            return Regex.IsMatch(licensePlates[0], pattern);
+            return Regex.IsMatch(licensePlates.First(), pattern);
         }),
 
         ];
@@ -2207,8 +2223,6 @@ internal class Program
         // Teardown
         garageCapacity = stashedParkingGarage.Length - 1;
         parkingGarage = stashedParkingGarage;
-
-        appState = AppState.MainMenu;
 
         return testResults;
     }
