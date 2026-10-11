@@ -12,4 +12,4 @@ Utvecklingslogg finns i filen `DEVLOG.md`.
 
 I båda versionerna kan alla funktioner nås från huvudmenyn, inkl. de automatiska testerna.
 
-Tryck `Esc` i huvudmenyn i v1.1 för att visa specialmenyn som även inkluderar ett demo-läge med en enkel simulation där fordon parkeras och hämtas ut slumpmässigt.
+Tryck `Esc` i huvudmenyn i v1.1 för att visa specialmenyn som även inkluderar ett demoläge med en enkel simulation där fordon parkeras och hämtas ut slumpmässigt.
