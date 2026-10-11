@@ -22,6 +22,8 @@ enum AppState
     ReportCars,
     ReportMotorcycles,
     Optimizing,
+    ViewLog,
+    ViewTestResults,
     DemoMode,
     Exit
 }
@@ -41,7 +43,8 @@ enum Option
     Exit,
     All,
     Empty,
-    Demo
+    Demo,
+    ViewLog
 }
 
 internal class Program
@@ -69,7 +72,6 @@ internal class Program
     {
         dirty = true;
     }
-
     static int totalTests = 0;
     static int failedTests = 0;
     static int passedTests = 0;
@@ -89,6 +91,7 @@ internal class Program
             { Option.Inspect, "Inspect Parking Space" },
             { Option.Optimize, "Optimize Motorcycle Parking" },
             { Option.Report, "View Reports" },
+            { Option.ViewLog, "View Log" },
         };
 
     static readonly Dictionary<Option, string> parkMenuOptions = new()
@@ -107,8 +110,8 @@ internal class Program
 
     static readonly Dictionary<Option, string> specialMenuOptions = new()
         {
-            { Option.Test, "Run Tests" },
             { Option.Demo, "Demo Mode" },
+            { Option.Test, "Run Tests" },
             { Option.Exit, "Exit Program" },
         };
 
@@ -332,6 +335,26 @@ internal class Program
                             ctx.UpdateTarget(TestPanel());
                             WaitEscape(AppState.MainMenu);
                             continue;
+                        case AppState.ViewLog:
+                            int offset = 0;
+                            do
+                            {
+                                List<Markup> textLines = [];
+                                int maxLine = Math.Min(log.Count, 25);
+                                for (int i = 0; i < maxLine; i++)
+                                {
+                                    textLines.Add(new Markup(log[i + offset]));
+                                }
+                                var textPanel = TextViewerPanel(textLines, "Log");
+                                ctx.UpdateTarget(textPanel);
+                                offset = TextScroller(log.Count - offset, offset);
+                                if (offset == -1)
+                                {
+                                    ctx.UpdateTarget(layout);
+                                    break;
+                                }
+                            } while (true);
+                            break;
                         case AppState.Exit:
                             Console.Clear();
                             Environment.Exit(0);
@@ -366,38 +389,11 @@ internal class Program
                     var messagePanel = MessagePanel(parkingGarage[0] ?? "");
                     layout["Message"].Update(messagePanel);
 
-
                     ctx.Refresh();
 
                     if (appState == AppState.DemoMode)
                     {
-                        Random rnd = new();
-                        Thread.Sleep(rnd.Next(100) + 500);
-
-                        if (rnd.Next(100) < 50)
-                        {
-                            var spaceId = rnd.Next(garageCapacity) + 1;
-                            if (ParkingSpaceIsNotEmpty(spaceId))
-                            {
-                                var encodedLicensePlate = VehiclesInParkingSpace(spaceId).First();
-                                var vehicleRegistration = DecodeLicensePlate(encodedLicensePlate, out _);
-                                AttemptCollectVehicle(vehicleRegistration);
-                            }
-                        }
-                        else
-                        {
-                            var licensePlate = GenerateLicensePlate(1).First();
-
-                            if (rnd.Next(100) < 40)
-                            {
-                                ParkMotorcycleInFirstParkingSpaceWithRoomForMotorcycle(licensePlate);
-                            }
-                            else
-                            {
-                                ParkCarInFirstEmptyParkingSpace(licensePlate);
-                            }
-                        }
-
+                        TickSimulation();
                         continue;
                     }
 
@@ -455,6 +451,7 @@ internal class Program
                                 Option.Inspect => AppState.Inspect,
                                 Option.Report => AppState.ReportsMenu,
                                 Option.Optimize => AppState.Optimizing,
+                                Option.ViewLog => AppState.ViewLog,
                                 _ => AppState.MainMenu
                             };
                             selected = 0;
@@ -499,6 +496,36 @@ internal class Program
                 }
                 while (true);
             });
+    }
+
+    static void TickSimulation()
+    {
+        Random rnd = new();
+        Thread.Sleep(rnd.Next(100) + 500);
+
+        if (rnd.Next(100) < 50)
+        {
+            var spaceId = rnd.Next(garageCapacity) + 1;
+            if (ParkingSpaceIsNotEmpty(spaceId))
+            {
+                var encodedLicensePlate = VehiclesInParkingSpace(spaceId).First();
+                var vehicleRegistration = DecodeLicensePlate(encodedLicensePlate, out _);
+                AttemptCollectVehicle(vehicleRegistration);
+            }
+        }
+        else
+        {
+            var licensePlate = GenerateLicensePlate(1).First();
+
+            if (rnd.Next(100) < 40)
+            {
+                ParkMotorcycleInFirstParkingSpaceWithRoomForMotorcycle(licensePlate);
+            }
+            else
+            {
+                ParkCarInFirstEmptyParkingSpace(licensePlate);
+            }
+        }
     }
 
     /*
@@ -673,6 +700,52 @@ internal class Program
     static Panel TestPanel()
     {
         return PanelBuilder(new Rows(RunTests()), "Tests");
+    }
+
+    static Panel TextViewerPanel(List<Markup> textLines, string header)
+    {
+        var instructions = new Markup("Use arrow keys up and down to scroll.");
+
+        var columns = new Columns(
+            new Rows(textLines),
+            instructions
+            );
+
+        return PanelBuilder(columns, header);
+    }
+
+    static int TextScroller(int max, int offset)
+    {
+        do
+        {
+            while (Console.KeyAvailable is not true)
+                Thread.Sleep(250);
+
+            var keyDown = Console.ReadKey(true);
+
+            if (keyDown.Key is ConsoleKey.UpArrow)
+            {
+                if (offset > 0)
+                {
+                    offset--;
+                    break;
+                }
+            }
+            else if (keyDown.Key is ConsoleKey.DownArrow)
+            {
+                if (offset < max)
+                {
+                    offset++;
+                    break;
+                }
+            }
+            else if (keyDown.Key is ConsoleKey.Escape)
+            {
+                appState = AppState.MainMenu;
+                return -1;
+            }
+        } while (true);
+        return offset;
     }
 
     static Panel ReportsPanel(Option option)
@@ -1492,15 +1565,12 @@ internal class Program
         string[] stashedParkingGarage = GetEmptyParkingGarage();
         Array.Copy(parkingGarage, stashedParkingGarage, parkingGarage.Length);
 
-        garageCapacity = 10;
-        InitializeParkingGarage();
-
         totalTests = 0;
         failedTests = 0;
         passedTests = 0;
 
-        Console.Clear();
-        Console.WriteLine("Testing...");
+        garageCapacity = 10;
+        InitializeParkingGarage();
 
         List<Markup> testResults = [
             Test("A vehicle registration can be cleaned up and formatted",
