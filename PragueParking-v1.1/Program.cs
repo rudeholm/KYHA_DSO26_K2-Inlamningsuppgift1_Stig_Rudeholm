@@ -122,95 +122,198 @@ internal class Program
         LogInformation("Welcome to Prague Parking [yellow]1.1[/]!");
         LogInformation($"Today is {date.DayOfWeek}, {date:MMM} {date:dd}, and the time is {date:HH:mm}");
 
-        do
+        Console.Clear();
+        ShowMainLayout();
+
+    }
+
+    static Panel ReportsPanel(Option option)
+    {
+        string header = "Parking Spaces: ";
+        List<int> visible = [];
+
+        switch (option)
         {
+            case Option.Car:
+                visible = ScanParkingGarage((parkingSpaceId) => ParkingSpaceContainsCar(parkingSpaceId));
+                header += "Cars";
+                break;
+            case Option.Motorcycle:
+                visible = ScanParkingGarage((parkingSpaceId) => ParkingSpaceContainsMotorcycles(parkingSpaceId, out _));
+                header += "Motorcycle";
+                break;
+            case Option.All:
+                visible = ScanParkingGarage((parkingSpaceId) => true);
+                header += "All";
+                break;
+            case Option.Empty:
+                visible = ScanParkingGarage((parkingSpaceId) => ParkingSpaceIsEmpty(parkingSpaceId));
+                header += "Empty";
+                break;
+            default:
+                break;
+        }
 
-            if (appState is AppState.DemoMode)
+        var tableWidth = Console.WindowWidth switch
+        {
+            >= 150 => 5,
+            >= 122 => 4,
+            _ => 2,
+        };
+
+        var tableHeight = garageCapacity / tableWidth;
+
+        var table = new Table().HideHeaders().NoBorder();
+
+        for (int i = 0; i < tableWidth; i++)
+        {
+            table.AddColumn("", col => col.Width(23));
+        }
+
+        for (int row = 0; row < tableHeight; row++)
+        {
+            string[] cells = new string[tableWidth];
+            int spaceId;
+            for (int column = 0; column < tableWidth; column++)
             {
-                ConsoleKeyInfo consoleKey = new();
-                if (Console.KeyAvailable)
+                spaceId = row * tableWidth + column + 1;
+
+                string cell = "";
+
+                cell = $"{PrintSpaceId(spaceId)} ";
+
+                if (ParkingSpaceIsEmpty(spaceId))
+                    cell += $"{iconEmpty}\n";
+                else
                 {
-                    consoleKey = Console.ReadKey(true);
-                    if (consoleKey.Key is ConsoleKey.Escape)
-                        appState = AppState.MainMenu;
+                    if (ParkingSpaceContainsCar(spaceId))
+                    {
+                        if (visible.Contains(spaceId))
+                        {
+                            string licensePlate = DecodeLicensePlate(InspectParkingSpace(spaceId), out _);
+                            cell += $"{iconCar} {PrintLicensePlate(licensePlate)}\n";
+                        }
+                        else
+                            cell += "\n";
+                    }
+                    else if (ParkingSpaceContainsMotorcycles(spaceId, out int qty))
+                    {
+                        if (qty == 1)
+                        {
+                            if (visible.Contains(spaceId))
+                            {
+                                string licensePlate = DecodeLicensePlate(InspectParkingSpace(spaceId), out _);
+                                cell += $"{iconMotorcycle} {PrintLicensePlate(licensePlate)}\n";
+                            }
+                            else
+                                cell += "\n";
+                        }
+                        else if (qty == 2)
+                        {
+                            if (visible.Contains(spaceId))
+                            {
+                                var encodedLicensePlates = InspectParkingSpace(spaceId).Split('|');
+                                string licensePlate = DecodeLicensePlate(encodedLicensePlates[0], out _);
+                                cell += $"{iconMotorcycle} {PrintLicensePlate(licensePlate)}\n";
+                                licensePlate = DecodeLicensePlate(encodedLicensePlates[1], out _);
+                                cell += $"     {iconMotorcycle} {PrintLicensePlate(licensePlate)}";
+                            }
+                            else
+                                cell += "\n";
+                        }
+                    }
                 }
+                if (visible.Contains(spaceId))
+                    cells[column] = cell;
+                else
+                    cells[column] = $"[dim]{cell}[/]";
             }
+            table.AddRow(cells);
+        }
 
-            switch (appState)
-            {
-                case AppState.MainMenu:
-                case AppState.ParkMenu:
-                case AppState.ReportsMenu:
-                case AppState.SpecialMenu:
-                case AppState.DemoMode:
-                    ShowMainLayout();
-                    break;
-                case AppState.ParkCar:
-                    ShowParkCarDialogue();
-                    break;
-                case AppState.ParkMotorcycle:
-                    ShowParkMotorcycleDialogue();
-                    break;
-                case AppState.CollectVehicle:
-                    ShowCollectVehicleDialogue();
-                    break;
-                case AppState.MoveVehicle:
-                    ShowMoveVehicleDialogue();
-                    break;
-                case AppState.FindVehicle:
-                    ShowFindVehicleDialogue();
-                    break;
-                case AppState.Inspect:
-                    ShowInspectParkingSpaceDialogue();
-                    break;
-                case AppState.Optimizing:
-                    ShowOptimizingDialogue();
-                    break;
-                case AppState.ReportAll:
-                    DisplayParkingGarage(Option.All);
-                    break;
-                case AppState.ReportEmpty:
-                    DisplayParkingGarage(Option.Empty);
-                    break;
-                case AppState.ReportCars:
-                    DisplayParkingGarage(Option.Car);
-                    break;
-                case AppState.ReportMotorcycles:
-                    DisplayParkingGarage(Option.Motorcycle);
-                    break;
-                case AppState.Testing:
-                    RunTests();
-                    break;
-                case AppState.Exit:
-                    Console.Clear();
-                    Environment.Exit(0);
-                    break;
-                default:
-                    break;
-            }
-        } while (true);
+        return PanelBuilder(Align.Center(table), header);
+
     }
 
     static void ShowMainLayout()
     {
-        Console.Clear();
-
         var menuOptions = mainMenuOptions;
         int selected = 0;
 
         var layout = mainLayout;
-
-        var logPanel = LogPanel();
-        layout["Log"].Update(logPanel);
-
-        var messagePanel = MessagePanel(parkingGarage[0] ?? "");
-        layout["Message"].Update(messagePanel);
 
         AnsiConsole.Live(layout)
             .Start(ctx =>
             {
                 do
                 {
+                    if (appState is AppState.DemoMode)
+                    {
+                        ConsoleKeyInfo consoleKey = new();
+                        if (Console.KeyAvailable)
+                        {
+                            consoleKey = Console.ReadKey(true);
+                            if (consoleKey.Key is ConsoleKey.Escape)
+                                appState = AppState.MainMenu;
+                        }
+                    }
+
+                    switch (appState)
+                    {
+                        case AppState.ParkCar:
+                            {
+                                var vehicleRegistration = NewReadVehicleRegistration(ctx, layout);
+                                if (ValidVehicleRegistration(vehicleRegistration))
+                                    ParkCarInFirstEmptyParkingSpace(FormatVehicleRegistration(vehicleRegistration));
+                            }
+                            appState = AppState.MainMenu;
+                            break;
+                        case AppState.ParkMotorcycle:
+                            ShowParkMotorcycleDialogue();
+                            break;
+                        case AppState.CollectVehicle:
+                            ShowCollectVehicleDialogue();
+                            break;
+                        case AppState.MoveVehicle:
+                            ShowMoveVehicleDialogue();
+                            break;
+                        case AppState.FindVehicle:
+                            ShowFindVehicleDialogue();
+                            break;
+                        case AppState.Inspect:
+                            ShowInspectParkingSpaceDialogue();
+                            break;
+                        case AppState.Optimizing:
+                            ShowOptimizingDialogue();
+                            break;
+                        case AppState.ReportAll:
+                            ctx.UpdateTarget(ReportsPanel(Option.All));
+                            WaitEscape(AppState.ReportsMenu);
+                            continue;
+                        case AppState.ReportEmpty:
+                            ctx.UpdateTarget(ReportsPanel(Option.Empty));
+                            WaitEscape(AppState.ReportsMenu);
+                            continue;
+                        case AppState.ReportCars:
+                            ctx.UpdateTarget(ReportsPanel(Option.Car));
+                            WaitEscape(AppState.ReportsMenu);
+                            continue;
+                        case AppState.ReportMotorcycles:
+                            ctx.UpdateTarget(ReportsPanel(Option.Motorcycle));
+                            WaitEscape(AppState.ReportsMenu);
+                            continue;
+                        case AppState.Testing:
+                            RunTests();
+                            break;
+                        case AppState.Exit:
+                            Console.Clear();
+                            Environment.Exit(0);
+                            break;
+                        default:
+                            ctx.UpdateTarget(layout);
+                            break;
+                    }
+
                     menuOptions = appState switch
                     {
                         AppState.MainMenu => mainMenuOptions,
@@ -222,6 +325,10 @@ internal class Program
 
                     var actionPanel = MenuPanel(menuOptions, selected);
                     layout["Action"].Update(actionPanel);
+                    var logPanel = LogPanel();
+                    layout["Log"].Update(logPanel);
+                    var messagePanel = MessagePanel(parkingGarage[0] ?? "");
+                    layout["Message"].Update(messagePanel);
 
                     if (dirty)
                     {
@@ -263,7 +370,7 @@ internal class Program
                             }
                         }
 
-                        return;
+                        continue;
                     }
 
                     //
@@ -323,7 +430,7 @@ internal class Program
                                 _ => AppState.MainMenu
                             };
                             selected = 0;
-                            return;
+                            continue;
                         }
                         else if (appState is AppState.ParkMenu)
                         {
@@ -333,7 +440,8 @@ internal class Program
                                 Option.Motorcycle => AppState.ParkMotorcycle,
                                 _ => AppState.MainMenu
                             };
-                            return;
+                            selected = 0;
+                            continue;
                         }
                         else if (appState is AppState.ReportsMenu)
                         {
@@ -345,7 +453,7 @@ internal class Program
                                 Option.Empty => AppState.ReportEmpty,
                                 _ => AppState.MainMenu
                             };
-                            return;
+                            continue;
                         }
                         else if (appState is AppState.SpecialMenu)
                         {
@@ -356,7 +464,8 @@ internal class Program
                                 Option.Exit => AppState.Exit,
                                 _ => AppState.MainMenu
                             };
-                            return;
+                            selected = 0;
+                            continue;
                         }
                     }
                 }
@@ -476,9 +585,20 @@ internal class Program
         return PanelBuilder(new Markup("Enter the registration number of the vehicle to be collected, at the bottom of the screen. If it is valid and a corresponding vehicle is in the system, instructions on where to collect the vehicle will be shown below."), "Collect Vehicle");
     }
 
-    static Panel ParkCarPanel()
+    static Panel ParkCarPanelOld()
     {
         return PanelBuilder(new Markup("Enter the registration number of the car to be received, at the bottom of the screen. Instructions on where to park the vehicle will be shown below."), "Park Car");
+    }
+
+    static Panel ParkCarPanel(string input)
+    {
+        var instructions = new Markup("Enter the registration number of the car to be parked. Instructions on where to park the vehicle will be shown below.");
+        var inputField = Align.Center(new Panel(input) { Width = 14, Height = 3 });
+        var rows = new Rows(
+            instructions,
+            inputField
+            );
+        return PanelBuilder(rows, "Park Car");
     }
 
     static Panel ParkMotorcyclePanel()
@@ -545,7 +665,7 @@ internal class Program
     {
         var layout = mainLayout;
 
-        var actionPanel = ParkCarPanel();
+        var actionPanel = ParkCarPanelOld();
         layout["Action"].Update(actionPanel);
 
         AnsiConsole.Write(layout);
@@ -978,6 +1098,50 @@ internal class Program
 
 
         return input;
+    }
+
+    static string NewReadVehicleRegistration(LiveDisplayContext ctx, Layout layout)
+    {
+
+        {
+            string input = "";
+            do
+            {
+                layout["Action"].Update(ParkCarPanel(input));
+                ctx.Refresh();
+
+                while (Console.KeyAvailable is not true)
+                    Thread.Sleep(250);
+
+                var keyDown = Console.ReadKey(true);
+
+                if (keyDown.Key is ConsoleKey.Backspace)
+                {
+                    if (input.Length > 0)
+                        input = input.Substring(0, input.Length - 1);
+                }
+                else if (keyDown.Key is ConsoleKey.Escape)
+                {
+                    appState = AppState.MainMenu;
+                    break;
+                }
+                else if (keyDown.Key is ConsoleKey.Enter)
+                {
+                    if (ValidVehicleRegistration(input))
+                    {
+                        return input;
+                    }
+                }
+                else
+                {
+                    if (input.Length < 10)
+                        input += keyDown.KeyChar;
+                }
+
+            } while (true);
+        }
+
+        return "";
     }
 
     static string ReadVehicleRegistrationInput()
@@ -1426,6 +1590,18 @@ internal class Program
     {
         AnsiConsole.Write(Align.Center(new Markup(message)));
         Console.ReadKey(true);
+        Console.Clear();
+    }
+
+    static void WaitEscape(AppState next = AppState.MainMenu)
+    {
+        ConsoleKeyInfo keypress;
+        do
+        {
+            keypress = Console.ReadKey(true);
+        } while (keypress.Key is not ConsoleKey.Escape);
+
+        appState = next;
     }
 
     /*
