@@ -333,22 +333,14 @@ internal class Program
                             continue;
                         case AppState.Testing:
                             var testResults = RunTests();
-                            viewerOffset = Math.Max(testResults.Count - 25, 0);
+                            var testOffset = Math.Max(testResults.Count - 25, 0);
                             Console.Clear();
                             do
                             {
-                                List<Markup> textLines = [];
-                                int maxLine = Math.Min(testResults.Count, 25);
-                                for (int i = 0; i < maxLine; i++)
-                                {
-                                    textLines.Add(testResults[i + viewerOffset]);
-                                }
-                                var textPanel = TextViewerPanel(textLines, "Test Results");
-                                ctx.UpdateTarget(textPanel);
-                                viewerOffset = TextScroller(testResults.Count - 25, viewerOffset);
-                                if (viewerOffset == -1)
-                                    break;
-                            } while (true);
+                                ctx.UpdateTarget(TextViewerPanel(testResults, testOffset, "Test Results"));
+                                testOffset = HandleScrollInput(testResults.Count - 25, testOffset);
+                            } while (testOffset > -1);
+                            appState = AppState.MainMenu;
                             ctx.UpdateTarget(layout);
                             break;
                         case AppState.ViewLog:
@@ -713,9 +705,26 @@ internal class Program
         return PanelBuilder(rows, "Park Car");
     }
 
-    static Panel TestPanel()
+    static Panel TextViewerPanel(List<string> data, int offset, string header)
     {
-        return PanelBuilder(new Rows(RunTests()), "Tests");
+        var instructions = Align.Right(new Markup(
+            "[Black on White] ▲ [/] & [Black on White] ▼ [/] to scroll" +
+            "\n\n" +
+            "[Black on White] ESC [/] to exit"));
+
+        List<Markup> textLines = [];
+        int maxLine = Math.Min(data.Count, 25);
+        for (int i = 0; i < maxLine; i++)
+        {
+            textLines.Add(new Markup($"[dim] {i+offset+1} [/] {data[i + offset]}"));
+        }
+
+        var columns = new Columns(
+            new Rows(textLines),
+            instructions
+            );
+
+        return PanelBuilder(columns, header);
     }
 
     static Panel TextViewerPanel(List<Markup> textLines, string header)
@@ -730,6 +739,39 @@ internal class Program
         return PanelBuilder(columns, header);
     }
 
+    static int HandleScrollInput(int max, int offset)
+    {
+        do
+        {
+            while (Console.KeyAvailable is not true)
+                Thread.Sleep(250);
+
+            var keyDown = Console.ReadKey(true);
+
+            if (keyDown.Key is ConsoleKey.UpArrow)
+            {
+                if (offset > 0)
+                {
+                    offset--;
+                    break;
+                }
+            }
+            else if (keyDown.Key is ConsoleKey.DownArrow)
+            {
+                if (offset < max)
+                {
+                    offset++;
+                    break;
+                }
+            }
+            else if (keyDown.Key is ConsoleKey.Escape)
+            {
+                offset = -1;
+            }
+        } while (offset > -1);
+
+        return offset;
+    }
     static int TextScroller(int max, int offset)
     {
         do
@@ -1553,7 +1595,7 @@ internal class Program
     /*
     ** Tests
     */
-    static Markup Test(string description, Func<bool> test)
+    static string Test(string description, Func<bool> test)
     {
         bool result = test();
         totalTests++;
@@ -1572,10 +1614,10 @@ internal class Program
         Console.Write($"{description}");
         Console.WriteLine();
 
-        return new Markup($"{passOrFail} {description}");
+        return $"{passOrFail} {description}";
     }
 
-    static List<Markup> RunTests()
+    static List<string> RunTests()
     {
         // Setup
         string[] stashedParkingGarage = GetEmptyParkingGarage();
@@ -1588,7 +1630,7 @@ internal class Program
         garageCapacity = 10;
         InitializeParkingGarage();
 
-        List<Markup> testResults = [
+        List<string> testResults = [
             Test("A vehicle registration can be cleaned up and formatted",
                 () => FormatVehicleRegistration("  foo 666 ").Equals("FOO 666")
                 ),
@@ -1710,515 +1752,515 @@ internal class Program
                     && emptySpaceId == testSpaceId;
             }),
 
-        Test("When inspecting an empty parking space, return empty string", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 2;
-            return InspectParkingSpace(testSpaceId).Equals(string.Empty);
-        }),
+            Test("When inspecting an empty parking space, return empty string", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 2;
+                return InspectParkingSpace(testSpaceId).Equals(string.Empty);
+            }),
 
-        Test("When inspecting a non-empty parking space, return contents of space", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 2;
-            var testContents = "xxx";
-            parkingGarage[testSpaceId] = testContents;
-            return InspectParkingSpace(testSpaceId).Equals(testContents);
-        }),
+            Test("When inspecting a non-empty parking space, return contents of space", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 2;
+                var testContents = "xxx";
+                parkingGarage[testSpaceId] = testContents;
+                return InspectParkingSpace(testSpaceId).Equals(testContents);
+            }),
 
-        Test("A valid parking space ID is greater than zero", () =>
-        {
-            InitializeParkingGarage();
-            var validSpaceId = 1;
-            var invalidSpaceId = 0;
-            return ValidSpaceId(validSpaceId) == true
-                && ValidSpaceId(invalidSpaceId) == false;
-        }),
+            Test("A valid parking space ID is greater than zero", () =>
+            {
+                InitializeParkingGarage();
+                var validSpaceId = 1;
+                var invalidSpaceId = 0;
+                return ValidSpaceId(validSpaceId) == true
+                    && ValidSpaceId(invalidSpaceId) == false;
+            }),
 
-        Test("A valid parking space ID is smaller than or equal to the parking garage capacity", () =>
-        {
-            InitializeParkingGarage();
-            var validSpaceId = garageCapacity;
-            var invalidSpaceId = garageCapacity + 1;
-            return ValidSpaceId(validSpaceId) == true
-                && ValidSpaceId(invalidSpaceId) == false;
-        }),
+            Test("A valid parking space ID is smaller than or equal to the parking garage capacity", () =>
+            {
+                InitializeParkingGarage();
+                var validSpaceId = garageCapacity;
+                var invalidSpaceId = garageCapacity + 1;
+                return ValidSpaceId(validSpaceId) == true
+                    && ValidSpaceId(invalidSpaceId) == false;
+            }),
 
-        Test("A motorcycle can be parked in an empty parking space", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            var vehicleRegistration = "foo m-666";
-            return ParkMotorcycle(testSpaceId, vehicleRegistration) == true;
-        }),
+            Test("A motorcycle can be parked in an empty parking space", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                var vehicleRegistration = "foo m-666";
+                return ParkMotorcycle(testSpaceId, vehicleRegistration) == true;
+            }),
 
-        Test("After a motorcycle has been parked in an empty parking space, the space is not empty", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            var vehicleRegistration = "foo m-666";
-            ParkMotorcycle(testSpaceId, vehicleRegistration);
-            return ParkingSpaceIsNotEmpty(testSpaceId) == true;
-        }),
+            Test("After a motorcycle has been parked in an empty parking space, the space is not empty", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                var vehicleRegistration = "foo m-666";
+                ParkMotorcycle(testSpaceId, vehicleRegistration);
+                return ParkingSpaceIsNotEmpty(testSpaceId) == true;
+            }),
 
-        Test("Parking a motorcycle in a parking space stores the motorcycle's encoded license plate in that space", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            var vehicleRegistration = "foo m-666";
-            ParkMotorcycle(testSpaceId, vehicleRegistration);
-            return parkingGarage[testSpaceId].Equals(EncodeMotorcycleLicensePlate(vehicleRegistration));
-        }),
+            Test("Parking a motorcycle in a parking space stores the motorcycle's encoded license plate in that space", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                var vehicleRegistration = "foo m-666";
+                ParkMotorcycle(testSpaceId, vehicleRegistration);
+                return parkingGarage[testSpaceId].Equals(EncodeMotorcycleLicensePlate(vehicleRegistration));
+            }),
 
-        Test("An empty parking space does not contain a car", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            return ParkingSpaceContainsCar(testSpaceId) == false;
-        }),
+            Test("An empty parking space does not contain a car", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                return ParkingSpaceContainsCar(testSpaceId) == false;
+            }),
 
-        Test("A parking space with a car contains a car", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            ParkCar(testSpaceId, "foo");
-            return ParkingSpaceContainsCar(testSpaceId) == true;
-        }),
+            Test("A parking space with a car contains a car", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                ParkCar(testSpaceId, "foo");
+                return ParkingSpaceContainsCar(testSpaceId) == true;
+            }),
 
-        Test("A parking space with something that is not a car does not contain a car", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            parkingGarage[testSpaceId] = "xxx";
-            return ParkingSpaceContainsCar(testSpaceId) == false;
-        }),
+            Test("A parking space with something that is not a car does not contain a car", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                parkingGarage[testSpaceId] = "xxx";
+                return ParkingSpaceContainsCar(testSpaceId) == false;
+            }),
 
-        Test("An empty parking space has room for a motorcycle", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            return ParkingSpaceHasRoomForMotorcycle(testSpaceId) == true;
-        }),
+            Test("An empty parking space has room for a motorcycle", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                return ParkingSpaceHasRoomForMotorcycle(testSpaceId) == true;
+            }),
 
-        Test("A parking space with a car does not have room for a motorcycle", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            ParkCar(testSpaceId, "foo");
-            return ParkingSpaceHasRoomForMotorcycle(testSpaceId) == false;
-        }),
+            Test("A parking space with a car does not have room for a motorcycle", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                ParkCar(testSpaceId, "foo");
+                return ParkingSpaceHasRoomForMotorcycle(testSpaceId) == false;
+            }),
 
-        Test("A parking space with one motorcycle has room for another motorcycle", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            ParkMotorcycle(testSpaceId, "foo");
-            return ParkingSpaceHasRoomForMotorcycle(testSpaceId) == true;
-        }),
+            Test("A parking space with one motorcycle has room for another motorcycle", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                ParkMotorcycle(testSpaceId, "foo");
+                return ParkingSpaceHasRoomForMotorcycle(testSpaceId) == true;
+            }),
 
-        Test("A motorcycle can be parked in a parking space with another motorcycle", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            ParkMotorcycle(testSpaceId, "foo");
-            return ParkMotorcycle(testSpaceId, "bar") == true;
-        }),
+            Test("A motorcycle can be parked in a parking space with another motorcycle", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                ParkMotorcycle(testSpaceId, "foo");
+                return ParkMotorcycle(testSpaceId, "bar") == true;
+            }),
 
-        Test("Parking a second motorcycle in a parking space stores both encoded license plates in that space", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            var vehicleRegistration1 = "foo";
-            var vehicleRegistration2 = "bar";
-            ParkMotorcycle(testSpaceId, vehicleRegistration1);
-            ParkMotorcycle(testSpaceId, vehicleRegistration2);
-            return parkingGarage[testSpaceId].Contains(EncodeMotorcycleLicensePlate(vehicleRegistration1))
-                && parkingGarage[testSpaceId].Contains(EncodeMotorcycleLicensePlate(vehicleRegistration2));
-        }),
+            Test("Parking a second motorcycle in a parking space stores both encoded license plates in that space", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                var vehicleRegistration1 = "foo";
+                var vehicleRegistration2 = "bar";
+                ParkMotorcycle(testSpaceId, vehicleRegistration1);
+                ParkMotorcycle(testSpaceId, vehicleRegistration2);
+                return parkingGarage[testSpaceId].Contains(EncodeMotorcycleLicensePlate(vehicleRegistration1))
+                    && parkingGarage[testSpaceId].Contains(EncodeMotorcycleLicensePlate(vehicleRegistration2));
+            }),
 
-        Test("A parking space with two motorcycles does not have room for another motorcycle", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            ParkMotorcycle(testSpaceId, "foo");
-            ParkMotorcycle(testSpaceId, "bar");
-            return ParkingSpaceHasRoomForMotorcycle(testSpaceId) == false;
-        }),
+            Test("A parking space with two motorcycles does not have room for another motorcycle", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                ParkMotorcycle(testSpaceId, "foo");
+                ParkMotorcycle(testSpaceId, "bar");
+                return ParkingSpaceHasRoomForMotorcycle(testSpaceId) == false;
+            }),
 
-        Test("A motorcycle can not be parked in a parking space with two motorcycles", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            ParkMotorcycle(testSpaceId, "foo");
-            ParkMotorcycle(testSpaceId, "bar");
-            return ParkMotorcycle(testSpaceId, "baz") == false;
-        }),
+            Test("A motorcycle can not be parked in a parking space with two motorcycles", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                ParkMotorcycle(testSpaceId, "foo");
+                ParkMotorcycle(testSpaceId, "bar");
+                return ParkMotorcycle(testSpaceId, "baz") == false;
+            }),
 
-        Test("It is possible to find the first available parking space with room for a motorcycle", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 2;
-            ParkCar(testSpaceId - 1, "car");
-            ParkMotorcycle(testSpaceId, "mc");
-            return FindFirstParkingSpaceWithRoomForMotorcycle(out int foundSpaceId) == true
-                && foundSpaceId == testSpaceId;
-        }),
+            Test("It is possible to find the first available parking space with room for a motorcycle", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 2;
+                ParkCar(testSpaceId - 1, "car");
+                ParkMotorcycle(testSpaceId, "mc");
+                return FindFirstParkingSpaceWithRoomForMotorcycle(out int foundSpaceId) == true
+                    && foundSpaceId == testSpaceId;
+            }),
 
-        Test("An empty parking space does not contain motorcycles", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            return ParkingSpaceContainsMotorcycles(testSpaceId, out _) == false;
-        }),
+            Test("An empty parking space does not contain motorcycles", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                return ParkingSpaceContainsMotorcycles(testSpaceId, out _) == false;
+            }),
 
-        Test("A parking space with a single motorcycle contain motorcycles", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            ParkMotorcycle(testSpaceId, "foo");
-            return ParkingSpaceContainsMotorcycles(testSpaceId, out _) == true;
-        }),
+            Test("A parking space with a single motorcycle contain motorcycles", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                ParkMotorcycle(testSpaceId, "foo");
+                return ParkingSpaceContainsMotorcycles(testSpaceId, out _) == true;
+            }),
 
-        Test("A parking space with a car does not contain motorcycles", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            ParkCar(testSpaceId, "foo");
-            return ParkingSpaceContainsMotorcycles(testSpaceId, out _) == false;
-        }),
+            Test("A parking space with a car does not contain motorcycles", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                ParkCar(testSpaceId, "foo");
+                return ParkingSpaceContainsMotorcycles(testSpaceId, out _) == false;
+            }),
 
-        Test("A parking space with something that is not a motorcycle does not contain motorcycles", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            parkingGarage[testSpaceId] = "xxx";
-            return ParkingSpaceContainsMotorcycles(testSpaceId, out _) == false;
-        }),
+            Test("A parking space with something that is not a motorcycle does not contain motorcycles", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                parkingGarage[testSpaceId] = "xxx";
+                return ParkingSpaceContainsMotorcycles(testSpaceId, out _) == false;
+            }),
 
-        Test("A parking space with a single motorcycle contains one motorcycle", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            ParkMotorcycle(testSpaceId, "foo");
-            return ParkingSpaceContainsMotorcycles(testSpaceId, out int qty) == true
-                && qty == 1;
-        }),
+            Test("A parking space with a single motorcycle contains one motorcycle", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                ParkMotorcycle(testSpaceId, "foo");
+                return ParkingSpaceContainsMotorcycles(testSpaceId, out int qty) == true
+                    && qty == 1;
+            }),
 
-        Test("A parking space with two motorcycles contains two motorcycles", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            ParkMotorcycle(testSpaceId, "foo");
-            ParkMotorcycle(testSpaceId, "bar");
-            return ParkingSpaceContainsMotorcycles(testSpaceId, out int qty) == true
-                && qty == 2;
-        }),
+            Test("A parking space with two motorcycles contains two motorcycles", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                ParkMotorcycle(testSpaceId, "foo");
+                ParkMotorcycle(testSpaceId, "bar");
+                return ParkingSpaceContainsMotorcycles(testSpaceId, out int qty) == true
+                    && qty == 2;
+            }),
 
-        Test("A parking space with motorcycles does not contain a car", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            ParkMotorcycle(testSpaceId, "foo");
-            return ParkingSpaceContainsCar(testSpaceId) == false;
-        }),
+            Test("A parking space with motorcycles does not contain a car", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                ParkMotorcycle(testSpaceId, "foo");
+                return ParkingSpaceContainsCar(testSpaceId) == false;
+            }),
 
-        Test("When searching for a vehicle, not finding it returns false", () =>
-        {
-            InitializeParkingGarage();
-            return FindVehicle("foo", out _) == false;
-        }),
+            Test("When searching for a vehicle, not finding it returns false", () =>
+            {
+                InitializeParkingGarage();
+                return FindVehicle("foo", out _) == false;
+            }),
 
-        Test("When searching for a vehicle, finding it returns true", () =>
-        {
-            InitializeParkingGarage();
-            var vehicleRegistration = "foo 666";
-            ParkCar(parkingGarage.Length - 1, vehicleRegistration);
-            return FindVehicle(vehicleRegistration, out _) == true;
-        }),
+            Test("When searching for a vehicle, finding it returns true", () =>
+            {
+                InitializeParkingGarage();
+                var vehicleRegistration = "foo 666";
+                ParkCar(parkingGarage.Length - 1, vehicleRegistration);
+                return FindVehicle(vehicleRegistration, out _) == true;
+            }),
 
-        Test("When searching for a vehicle, finding it delivers the parking space ID", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = parkingGarage.Length - 1;
-            var vehicleRegistration = "foo m 666";
-            ParkMotorcycle(testSpaceId, vehicleRegistration);
-            var search = vehicleRegistration;
-            return FindVehicle(search, out int foundSpaceId) == true
-                && foundSpaceId == testSpaceId;
-        }),
+            Test("When searching for a vehicle, finding it delivers the parking space ID", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = parkingGarage.Length - 1;
+                var vehicleRegistration = "foo m 666";
+                ParkMotorcycle(testSpaceId, vehicleRegistration);
+                var search = vehicleRegistration;
+                return FindVehicle(search, out int foundSpaceId) == true
+                    && foundSpaceId == testSpaceId;
+            }),
 
-        Test("Search finds motorcycle parked with another motorcycle", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = parkingGarage.Length - 1;
-            var vehicleRegistration1 = "foo m-666";
-            var vehicleRegistration2 = "bar m-999";
-            ParkMotorcycle(testSpaceId, vehicleRegistration1);
-            ParkMotorcycle(testSpaceId, vehicleRegistration2);
-            var search = vehicleRegistration2;
-            return FindVehicle(search, out int foundSpaceId) == true
-                && foundSpaceId == testSpaceId;
-        }),
+            Test("Search finds motorcycle parked with another motorcycle", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = parkingGarage.Length - 1;
+                var vehicleRegistration1 = "foo m-666";
+                var vehicleRegistration2 = "bar m-999";
+                ParkMotorcycle(testSpaceId, vehicleRegistration1);
+                ParkMotorcycle(testSpaceId, vehicleRegistration2);
+                var search = vehicleRegistration2;
+                return FindVehicle(search, out int foundSpaceId) == true
+                    && foundSpaceId == testSpaceId;
+            }),
 
-        Test("Collecting a car removes it from the database", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = parkingGarage.Length - 1;
-            var vehicleRegistration = "foo 666";
-            ParkCar(testSpaceId, vehicleRegistration);
-            return CollectVehicle(testSpaceId, vehicleRegistration) == true
-                && ParkingSpaceIsEmpty(testSpaceId) == true;
-        }),
+            Test("Collecting a car removes it from the database", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = parkingGarage.Length - 1;
+                var vehicleRegistration = "foo 666";
+                ParkCar(testSpaceId, vehicleRegistration);
+                return CollectVehicle(testSpaceId, vehicleRegistration) == true
+                    && ParkingSpaceIsEmpty(testSpaceId) == true;
+            }),
 
-        Test("Collecting a lonely motorcycle removes it from the database", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = parkingGarage.Length - 1;
-            var vehicleRegistration = "foo-m 23";
-            ParkMotorcycle(testSpaceId, vehicleRegistration);
-            return CollectVehicle(testSpaceId, vehicleRegistration) == true
-                && ParkingSpaceIsEmpty(testSpaceId) == true;
-        }),
+            Test("Collecting a lonely motorcycle removes it from the database", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = parkingGarage.Length - 1;
+                var vehicleRegistration = "foo-m 23";
+                ParkMotorcycle(testSpaceId, vehicleRegistration);
+                return CollectVehicle(testSpaceId, vehicleRegistration) == true
+                    && ParkingSpaceIsEmpty(testSpaceId) == true;
+            }),
 
-        Test("Collecting a motorcycle from a pair removes it from the database and leaves the other", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = parkingGarage.Length - 1;
-            var vehicleRegistration1 = "foo 666";
-            var vehicleRegistration2 = "bar 999";
-            ParkMotorcycle(testSpaceId, vehicleRegistration1);
-            ParkMotorcycle(testSpaceId, vehicleRegistration2);
-            return CollectVehicle(testSpaceId, vehicleRegistration1) == true
-                && ParkingSpaceContainsMotorcycles(testSpaceId, out var qty) == true
-                && qty == 1
-                && FindVehicle(vehicleRegistration2, out var foundSpaceId) == true
-                && foundSpaceId == testSpaceId;
-        }),
+            Test("Collecting a motorcycle from a pair removes it from the database and leaves the other", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = parkingGarage.Length - 1;
+                var vehicleRegistration1 = "foo 666";
+                var vehicleRegistration2 = "bar 999";
+                ParkMotorcycle(testSpaceId, vehicleRegistration1);
+                ParkMotorcycle(testSpaceId, vehicleRegistration2);
+                return CollectVehicle(testSpaceId, vehicleRegistration1) == true
+                    && ParkingSpaceContainsMotorcycles(testSpaceId, out var qty) == true
+                    && qty == 1
+                    && FindVehicle(vehicleRegistration2, out var foundSpaceId) == true
+                    && foundSpaceId == testSpaceId;
+            }),
 
-        Test("Moving a car removes it from its parking space", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            var destinationSpaceId = testSpaceId + 1;
-            var vehicleRegistration = "foo 666";
-            ParkCar(testSpaceId, vehicleRegistration);
-            return MoveVehicle(destinationSpaceId, vehicleRegistration) == true
-                && ParkingSpaceIsEmpty(testSpaceId) == true;
-        }),
+            Test("Moving a car removes it from its parking space", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                var destinationSpaceId = testSpaceId + 1;
+                var vehicleRegistration = "foo 666";
+                ParkCar(testSpaceId, vehicleRegistration);
+                return MoveVehicle(destinationSpaceId, vehicleRegistration) == true
+                    && ParkingSpaceIsEmpty(testSpaceId) == true;
+            }),
 
-        Test("Moving a car stores it in its new parking space", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            var destinationSpaceId = testSpaceId + 1;
-            var vehicleRegistration = "foo 666";
-            ParkCar(testSpaceId, vehicleRegistration);
-            return MoveVehicle(destinationSpaceId, vehicleRegistration) == true
-                && ParkingSpaceContainsCar(destinationSpaceId) == true
-                && FindVehicle(vehicleRegistration, out var newSpaceId) == true
-                && newSpaceId == destinationSpaceId;
-        }),
+            Test("Moving a car stores it in its new parking space", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                var destinationSpaceId = testSpaceId + 1;
+                var vehicleRegistration = "foo 666";
+                ParkCar(testSpaceId, vehicleRegistration);
+                return MoveVehicle(destinationSpaceId, vehicleRegistration) == true
+                    && ParkingSpaceContainsCar(destinationSpaceId) == true
+                    && FindVehicle(vehicleRegistration, out var newSpaceId) == true
+                    && newSpaceId == destinationSpaceId;
+            }),
 
-        Test("Moving a motorcycle removes it from its parking space", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            var destinationSpaceId = testSpaceId + 1;
-            var vehicleRegistration = "foo-m 666";
-            ParkMotorcycle(testSpaceId, vehicleRegistration);
-            return MoveVehicle(destinationSpaceId, vehicleRegistration) == true
-                && ParkingSpaceIsEmpty(testSpaceId) == true;
-        }),
+            Test("Moving a motorcycle removes it from its parking space", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                var destinationSpaceId = testSpaceId + 1;
+                var vehicleRegistration = "foo-m 666";
+                ParkMotorcycle(testSpaceId, vehicleRegistration);
+                return MoveVehicle(destinationSpaceId, vehicleRegistration) == true
+                    && ParkingSpaceIsEmpty(testSpaceId) == true;
+            }),
 
-        Test("Moving a motorcycle stores it in its new parking space", () =>
-        {
-            InitializeParkingGarage();
-            var testSpaceId = 1;
-            var destinationSpaceId = testSpaceId + 1;
-            var vehicleRegistration = "foo-m 666";
-            ParkMotorcycle(testSpaceId, vehicleRegistration);
-            return MoveVehicle(destinationSpaceId, vehicleRegistration) == true
-                && ParkingSpaceContainsMotorcycles(destinationSpaceId, out _) == true
-                && FindVehicle(vehicleRegistration, out var newSpaceId) == true
-                && newSpaceId == destinationSpaceId;
-        }),
+            Test("Moving a motorcycle stores it in its new parking space", () =>
+            {
+                InitializeParkingGarage();
+                var testSpaceId = 1;
+                var destinationSpaceId = testSpaceId + 1;
+                var vehicleRegistration = "foo-m 666";
+                ParkMotorcycle(testSpaceId, vehicleRegistration);
+                return MoveVehicle(destinationSpaceId, vehicleRegistration) == true
+                    && ParkingSpaceContainsMotorcycles(destinationSpaceId, out _) == true
+                    && FindVehicle(vehicleRegistration, out var newSpaceId) == true
+                    && newSpaceId == destinationSpaceId;
+            }),
 
-        Test("A car can not be parked if its vehicle registration is already in the system", () =>
-        {
-            InitializeParkingGarage();
-            var vehicleRegistration = "foo 666";
-            ParkCar(1, vehicleRegistration);
-            return ParkCar(2, vehicleRegistration) == false;
-        }),
+            Test("A car can not be parked if its vehicle registration is already in the system", () =>
+            {
+                InitializeParkingGarage();
+                var vehicleRegistration = "foo 666";
+                ParkCar(1, vehicleRegistration);
+                return ParkCar(2, vehicleRegistration) == false;
+            }),
 
-        Test("A motorcycle can not be parked if its vehicle registration is already in the system", () =>
-        {
-            InitializeParkingGarage();
-            var vehicleRegistration = "foo 666";
-            ParkCar(1, vehicleRegistration);
-            return ParkMotorcycle(2, vehicleRegistration) == false;
-        }),
+            Test("A motorcycle can not be parked if its vehicle registration is already in the system", () =>
+            {
+                InitializeParkingGarage();
+                var vehicleRegistration = "foo 666";
+                ParkCar(1, vehicleRegistration);
+                return ParkMotorcycle(2, vehicleRegistration) == false;
+            }),
 
-        Test("An encoded motorcycle license plate is a motorcycle", () =>
-        {
-            var encodedLicensePlate = EncodeMotorcycleLicensePlate("foo");
-            return IsMotorcycle(encodedLicensePlate) == true;
-        }),
+            Test("An encoded motorcycle license plate is a motorcycle", () =>
+            {
+                var encodedLicensePlate = EncodeMotorcycleLicensePlate("foo");
+                return IsMotorcycle(encodedLicensePlate) == true;
+            }),
 
-        Test("An encoded car license plate is not a motorcycle", () =>
-        {
-            var encodedLicensePlate = EncodeCarLicensePlate("foo");
-            return IsMotorcycle(encodedLicensePlate) == false;
-        }),
+            Test("An encoded car license plate is not a motorcycle", () =>
+            {
+                var encodedLicensePlate = EncodeCarLicensePlate("foo");
+                return IsMotorcycle(encodedLicensePlate) == false;
+            }),
 
-        Test("An encoded car license plate is a car", () =>
-        {
-            var encodedLicensePlate = EncodeCarLicensePlate("foo");
-            return IsCar(encodedLicensePlate) == true;
-        }),
+            Test("An encoded car license plate is a car", () =>
+            {
+                var encodedLicensePlate = EncodeCarLicensePlate("foo");
+                return IsCar(encodedLicensePlate) == true;
+            }),
 
-        Test("An encoded motorcycle license plate is not a car", () =>
-        {
-            var encodedLicensePlate = EncodeMotorcycleLicensePlate("foo");
-            return IsCar(encodedLicensePlate) == false;
-        }),
+            Test("An encoded motorcycle license plate is not a car", () =>
+            {
+                var encodedLicensePlate = EncodeMotorcycleLicensePlate("foo");
+                return IsCar(encodedLicensePlate) == false;
+            }),
 
-        Test("It is possible to count the number of empty parking spaces", () =>
-        {
-            InitializeParkingGarage();
-            ParkCar(2, "foo");
-            return CountEmptyParkingSpaces() == garageCapacity - 1;
-        }),
+            Test("It is possible to count the number of empty parking spaces", () =>
+            {
+                InitializeParkingGarage();
+                ParkCar(2, "foo");
+                return CountEmptyParkingSpaces() == garageCapacity - 1;
+            }),
 
-        Test("It is possible to count the number of parked cars", () =>
-        {
-            InitializeParkingGarage();
-            ParkCar(1, "foo");
-            ParkMotorcycle(2, "bar");
-            ParkCar(3, "baz");
-            return CountParkedCars() == 2;
-        }),
+            Test("It is possible to count the number of parked cars", () =>
+            {
+                InitializeParkingGarage();
+                ParkCar(1, "foo");
+                ParkMotorcycle(2, "bar");
+                ParkCar(3, "baz");
+                return CountParkedCars() == 2;
+            }),
 
-        Test("It is possible to count the number of parking spaces with a single motorcycle", () =>
-        {
-            InitializeParkingGarage();
-            ParkMotorcycle(1, "foo 1");
-            ParkMotorcycle(2, "bar 1");
-            ParkMotorcycle(2, "bar 2");
-            ParkCar(3, "baz");
-            ParkMotorcycle(4, "foo 2");
-            return CountParkingSpacesWithSingleMotorcycles() == 2;
-        }),
+            Test("It is possible to count the number of parking spaces with a single motorcycle", () =>
+            {
+                InitializeParkingGarage();
+                ParkMotorcycle(1, "foo 1");
+                ParkMotorcycle(2, "bar 1");
+                ParkMotorcycle(2, "bar 2");
+                ParkCar(3, "baz");
+                ParkMotorcycle(4, "foo 2");
+                return CountParkingSpacesWithSingleMotorcycles() == 2;
+            }),
 
-        Test("It is possible to count the number of parking spaces with two motorcycles", () =>
-        {
-            InitializeParkingGarage();
-            ParkMotorcycle(1, "foo 1");
-            ParkMotorcycle(2, "bar 1");
-            ParkMotorcycle(2, "bar 2");
-            ParkCar(3, "baz");
-            ParkMotorcycle(4, "foo 2");
-            return CountParkingSpacesWithDoubleMotorcycles() == 1;
-        }),
+            Test("It is possible to count the number of parking spaces with two motorcycles", () =>
+            {
+                InitializeParkingGarage();
+                ParkMotorcycle(1, "foo 1");
+                ParkMotorcycle(2, "bar 1");
+                ParkMotorcycle(2, "bar 2");
+                ParkCar(3, "baz");
+                ParkMotorcycle(4, "foo 2");
+                return CountParkingSpacesWithDoubleMotorcycles() == 1;
+            }),
 
-        Test("It is possible to count the number of parked motorcycles", () =>
-        {
-            InitializeParkingGarage();
-            ParkMotorcycle(1, "foo 1");
-            ParkMotorcycle(2, "bar 1");
-            ParkMotorcycle(2, "bar 2");
-            ParkCar(3, "baz");
-            ParkMotorcycle(4, "foo 2");
-            return CountParkedMotorcycles() == 4;
-        }),
+            Test("It is possible to count the number of parked motorcycles", () =>
+            {
+                InitializeParkingGarage();
+                ParkMotorcycle(1, "foo 1");
+                ParkMotorcycle(2, "bar 1");
+                ParkMotorcycle(2, "bar 2");
+                ParkCar(3, "baz");
+                ParkMotorcycle(4, "foo 2");
+                return CountParkedMotorcycles() == 4;
+            }),
 
-        Test("A parking garage with single motorcycles can be optimized to free up parking spaces", () =>
-        {
-            InitializeParkingGarage();
-            ParkMotorcycle(1, "foo 1");
-            ParkMotorcycle(2, "bar 1");
-            ParkMotorcycle(2, "bar 2");
-            ParkMotorcycle(3, "foo 2");
-            return OptimizeMotorcycleParking(out _) == true;
-        }),
+            Test("A parking garage with single motorcycles can be optimized to free up parking spaces", () =>
+            {
+                InitializeParkingGarage();
+                ParkMotorcycle(1, "foo 1");
+                ParkMotorcycle(2, "bar 1");
+                ParkMotorcycle(2, "bar 2");
+                ParkMotorcycle(3, "foo 2");
+                return OptimizeMotorcycleParking(out _) == true;
+            }),
 
-        Test("A parking garage with zero or one single motorcycle can not be optimized to free up parking spaces", () =>
-        {
-            InitializeParkingGarage();
-            return CountParkingSpacesWithSingleMotorcycles() <= 1
-                && OptimizeMotorcycleParking(out _) == false;
-        }),
+            Test("A parking garage with zero or one single motorcycle can not be optimized to free up parking spaces", () =>
+            {
+                InitializeParkingGarage();
+                return CountParkingSpacesWithSingleMotorcycles() <= 1
+                    && OptimizeMotorcycleParking(out _) == false;
+            }),
 
-        Test("A parking garage with single motorcycles can be optimized to free up parking spaces", () =>
-        {
-            InitializeParkingGarage();
-            ParkMotorcycle(1, "foo 1");
-            ParkMotorcycle(2, "bar 1");
-            ParkMotorcycle(2, "bar 2");
-            ParkMotorcycle(3, "foo 2");
-            ParkMotorcycle(4, "foo 3");
-            return OptimizeMotorcycleParking(out _) == true
-                && CountParkingSpacesWithSingleMotorcycles() == 1;
-        }),
+            Test("A parking garage with single motorcycles can be optimized to free up parking spaces", () =>
+            {
+                InitializeParkingGarage();
+                ParkMotorcycle(1, "foo 1");
+                ParkMotorcycle(2, "bar 1");
+                ParkMotorcycle(2, "bar 2");
+                ParkMotorcycle(3, "foo 2");
+                ParkMotorcycle(4, "foo 3");
+                return OptimizeMotorcycleParking(out _) == true
+                    && CountParkingSpacesWithSingleMotorcycles() == 1;
+            }),
 
-        Test("When a parking garage is optimized it delivers a list of required moves", () =>
-        {
-            InitializeParkingGarage();
-            ParkMotorcycle(1, "foo 1");
-            ParkMotorcycle(2, "foo 2");
-            ParkMotorcycle(3, "foo 3");
-            ParkMotorcycle(4, "foo 4");
-            ParkMotorcycle(5, "foo 5");
-            return OptimizeMotorcycleParking(out List<string> moves) == true
-                && moves.Count == 2;
-        }),
+            Test("When a parking garage is optimized it delivers a list of required moves", () =>
+            {
+                InitializeParkingGarage();
+                ParkMotorcycle(1, "foo 1");
+                ParkMotorcycle(2, "foo 2");
+                ParkMotorcycle(3, "foo 3");
+                ParkMotorcycle(4, "foo 4");
+                ParkMotorcycle(5, "foo 5");
+                return OptimizeMotorcycleParking(out List<string> moves) == true
+                    && moves.Count == 2;
+            }),
 
-        Test("When optimizing, the motorcycles can be spread out", () =>
-        {
-            InitializeParkingGarage();
-            ParkMotorcycle(2, "foo 2");
-            ParkMotorcycle(3, "foo 3");
-            ParkMotorcycle(4, "foo 4");
-            ParkMotorcycle(5, "foo 5");
-            ParkMotorcycle(7, "foo 7");
-            ParkMotorcycle(8, "foo 8");
-            return OptimizeMotorcycleParking(out List<string> moves) == true
-                && moves.Count == 3;
-        }),
+            Test("When optimizing, the motorcycles can be spread out", () =>
+            {
+                InitializeParkingGarage();
+                ParkMotorcycle(2, "foo 2");
+                ParkMotorcycle(3, "foo 3");
+                ParkMotorcycle(4, "foo 4");
+                ParkMotorcycle(5, "foo 5");
+                ParkMotorcycle(7, "foo 7");
+                ParkMotorcycle(8, "foo 8");
+                return OptimizeMotorcycleParking(out List<string> moves) == true
+                    && moves.Count == 3;
+            }),
 
-        Test("It is possible to get an array of vehicles parked in a parking space", () =>
-        {
-            InitializeParkingGarage();
-            ParkMotorcycle(1, "mc 1");
-            ParkMotorcycle(2, "mc 2");
-            ParkMotorcycle(2, "mc 3");
-            ParkCar(3, "car");
-            var testSpaceId = 1;
-            return VehiclesInParkingSpace(testSpaceId).Length == 1
-                && VehiclesInParkingSpace(testSpaceId + 1).Length == 2
-                && VehiclesInParkingSpace(testSpaceId + 2).Length == 1;
-        }),
+            Test("It is possible to get an array of vehicles parked in a parking space", () =>
+            {
+                InitializeParkingGarage();
+                ParkMotorcycle(1, "mc 1");
+                ParkMotorcycle(2, "mc 2");
+                ParkMotorcycle(2, "mc 3");
+                ParkCar(3, "car");
+                var testSpaceId = 1;
+                return VehiclesInParkingSpace(testSpaceId).Length == 1
+                    && VehiclesInParkingSpace(testSpaceId + 1).Length == 2
+                    && VehiclesInParkingSpace(testSpaceId + 2).Length == 1;
+            }),
 
-        Test("It is possible to generate a list of random license plates", () =>
-        {
-            var licensePlates = GenerateLicensePlate(5);
-            return licensePlates.Count == 5;
-        }),
+            Test("It is possible to generate a list of random license plates", () =>
+            {
+                var licensePlates = GenerateLicensePlate(5);
+                return licensePlates.Count == 5;
+            }),
 
-        Test("Random license plates follow the pattern 'XXX ###'", () =>
-        {
-            var licensePlates = GenerateLicensePlate(1);
-            var pattern = @"[A-Z]{3} [0-9]{3}";
-            return Regex.IsMatch(licensePlates.First(), pattern);
-        }),
+            Test("Random license plates follow the pattern 'XXX ###'", () =>
+            {
+                var licensePlates = GenerateLicensePlate(1);
+                var pattern = @"[A-Z]{3} [0-9]{3}";
+                return Regex.IsMatch(licensePlates.First(), pattern);
+            }),
 
         ];
 
         // Report
         if (failedTests == 0)
-            testResults.Add(new Markup($"[green]All tests passed! ({totalTests} tests in total.)[/]"));
+            testResults.Add($"[green]All tests passed! ({totalTests} tests in total.)[/]");
         else
-            testResults.Add(new Markup($"[red]Some tests failed! ({totalTests} tests, {failedTests} failed.)[/]"));
+            testResults.Add($"[red]Some tests failed! ({totalTests} tests, {failedTests} failed.)[/]");
 
         // Teardown
         garageCapacity = stashedParkingGarage.Length - 1;
