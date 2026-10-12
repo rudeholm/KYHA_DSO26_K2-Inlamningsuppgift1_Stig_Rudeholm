@@ -333,6 +333,7 @@ internal class Program
                         case AppState.Testing:
                             int offset = 0;
                             var testResults = RunTests();
+                            Console.Clear();
                             do
                             {
                                 List <Markup> textLines = [];
