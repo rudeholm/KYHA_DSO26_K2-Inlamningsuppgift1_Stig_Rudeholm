@@ -132,6 +132,7 @@ internal class Program
     {
         var menuOptions = mainMenuOptions;
         int selected = 0;
+        int viewerOffset = 0;
 
         var layout = mainLayout;
 
@@ -331,8 +332,8 @@ internal class Program
                             WaitEscape(AppState.ReportsMenu);
                             continue;
                         case AppState.Testing:
-                            int offset = 0;
                             var testResults = RunTests();
+                            viewerOffset = Math.Max(testResults.Count - 25, 0);
                             Console.Clear();
                             do
                             {
@@ -340,12 +341,12 @@ internal class Program
                                 int maxLine = Math.Min(testResults.Count, 25);
                                 for (int i = 0; i < maxLine; i++)
                                 {
-                                    textLines.Add(testResults[i + offset]);
+                                    textLines.Add(testResults[i + viewerOffset]);
                                 }
                                 var textPanel = TextViewerPanel(textLines, "Test Results");
                                 ctx.UpdateTarget(textPanel);
-                                offset = TextScroller(testResults.Count - 25, offset);
-                                if (offset == -1)
+                                viewerOffset = TextScroller(testResults.Count - 25, viewerOffset);
+                                if (viewerOffset == -1)
                                 {
                                     ctx.UpdateTarget(layout);
                                     break;
@@ -353,19 +354,19 @@ internal class Program
                             } while (true);
                             break;
                         case AppState.ViewLog:
-                            offset = 0;
+                            viewerOffset = Math.Max(log.Count-25,0);
                             do
                             {
                                 List<Markup> textLines = [];
                                 int maxLine = Math.Min(log.Count, 25);
                                 for (int i = 0; i < maxLine; i++)
                                 {
-                                    textLines.Add(new Markup(log[i + offset]));
+                                    textLines.Add(new Markup(log[i + viewerOffset]));
                                 }
                                 var textPanel = TextViewerPanel(textLines, "Log");
                                 ctx.UpdateTarget(textPanel);
-                                offset = TextScroller(log.Count - 25, offset);
-                                if (offset == -1)
+                                viewerOffset = TextScroller(log.Count - 25, viewerOffset);
+                                if (viewerOffset == -1)
                                 {
                                     ctx.UpdateTarget(layout);
                                     break;
