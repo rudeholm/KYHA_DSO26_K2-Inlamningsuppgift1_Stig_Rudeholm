@@ -344,24 +344,15 @@ internal class Program
                             ctx.UpdateTarget(layout);
                             break;
                         case AppState.ViewLog:
-                            viewerOffset = Math.Max(log.Count - 25, 0);
+                            var logOffset = Math.Max(log.Count - 25, 0);
+                            Console.Clear();
                             do
                             {
-                                List<Markup> textLines = [];
-                                int maxLine = Math.Min(log.Count, 25);
-                                for (int i = 0; i < maxLine; i++)
-                                {
-                                    textLines.Add(new Markup(log[i + viewerOffset]));
-                                }
-                                var textPanel = TextViewerPanel(textLines, "Log");
-                                ctx.UpdateTarget(textPanel);
-                                viewerOffset = TextScroller(log.Count - 25, viewerOffset);
-                                if (viewerOffset == -1)
-                                {
-                                    ctx.UpdateTarget(layout);
-                                    break;
-                                }
-                            } while (true);
+                                ctx.UpdateTarget(TextViewerPanel(log, logOffset, "Test Results"));
+                                logOffset = HandleScrollInput(log.Count - 25, logOffset);
+                            } while (logOffset > -1);
+                            appState = AppState.MainMenu;
+                            ctx.UpdateTarget(layout);
                             break;
                         case AppState.Exit:
                             Console.Clear();
