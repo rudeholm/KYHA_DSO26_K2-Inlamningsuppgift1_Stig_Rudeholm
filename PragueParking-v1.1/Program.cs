@@ -337,7 +337,7 @@ internal class Program
                             Console.Clear();
                             do
                             {
-                                List <Markup> textLines = [];
+                                List<Markup> textLines = [];
                                 int maxLine = Math.Min(testResults.Count, 25);
                                 for (int i = 0; i < maxLine; i++)
                                 {
@@ -347,14 +347,12 @@ internal class Program
                                 ctx.UpdateTarget(textPanel);
                                 viewerOffset = TextScroller(testResults.Count - 25, viewerOffset);
                                 if (viewerOffset == -1)
-                                {
-                                    ctx.UpdateTarget(layout);
                                     break;
-                                }
                             } while (true);
+                            ctx.UpdateTarget(layout);
                             break;
                         case AppState.ViewLog:
-                            viewerOffset = Math.Max(log.Count-25,0);
+                            viewerOffset = Math.Max(log.Count - 25, 0);
                             do
                             {
                                 List<Markup> textLines = [];
