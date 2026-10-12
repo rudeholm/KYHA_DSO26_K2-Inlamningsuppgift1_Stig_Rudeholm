@@ -1128,7 +1128,7 @@ internal class Program
     /*
     ** Main workhorses
     */
-    private static void ParkCarInFirstEmptyParkingSpace(string licensePlate)
+    static void ParkCarInFirstEmptyParkingSpace(string licensePlate)
     {
         if (FindFirstEmptyParkingSpace(out int spaceId) == false)
         {
@@ -1176,17 +1176,17 @@ internal class Program
         return spaceIds;
     }
 
-    private static int CountParkedMotorcycles()
+    static int CountParkedMotorcycles()
         => CountParkingSpacesWithDoubleMotorcycles() * 2
             + CountParkingSpacesWithSingleMotorcycles();
 
-    private static int CountParkingSpacesWithDoubleMotorcycles() =>
+    static int CountParkingSpacesWithDoubleMotorcycles() =>
         ScanParkingGarage((parkingSpaceId) =>
             ParkingSpaceContainsMotorcycles(parkingSpaceId, out int qty)
             && qty == 2
         ).Count;
 
-    private static int CountParkingSpacesWithSingleMotorcycles() =>
+    static int CountParkingSpacesWithSingleMotorcycles() =>
         ScanParkingGarage((parkingSpaceId) =>
             ParkingSpaceContainsMotorcycles(parkingSpaceId, out int qty)
             && qty == 1
@@ -1204,7 +1204,7 @@ internal class Program
     static bool IsMotorcycle(string encodedLicensePlate)
         => encodedLicensePlate.StartsWith("MC#");
 
-    private static bool OptimizeMotorcycleParking(out List<string> moves)
+    static bool OptimizeMotorcycleParking(out List<string> moves)
     {
         moves = [];
         if (CountParkingSpacesWithSingleMotorcycles() <= 1)
@@ -1484,7 +1484,7 @@ internal class Program
     }
 
     static bool ParkingSpaceIsNotEmpty(int spaceId)
-        => string.IsNullOrWhiteSpace(parkingGarage[spaceId]) == false;
+        => ParkingSpaceIsEmpty(spaceId) == false;
 
     static bool ParkingSpaceIsEmpty(int spaceId)
         => string.IsNullOrWhiteSpace(parkingGarage[spaceId]);
@@ -1557,6 +1557,9 @@ internal class Program
         return false;
     }
 
+    /*
+    ** Helpers
+    */
     static void InitializeParkingGarage()
     {
         parkingGarage = GetEmptyParkingGarage();
@@ -1565,12 +1568,8 @@ internal class Program
     static string[] GetEmptyParkingGarage()
         => new string[garageCapacity + 1];
 
-    static void WaitKey(string message = "[[ Press any key to continue ]]")
-    {
-        AnsiConsole.Write(Align.Center(new Markup(message)));
-        Console.ReadKey(true);
-        Console.Clear();
-    }
+    static string[] VehiclesInParkingSpace(int spaceId)
+        => InspectParkingSpace(spaceId).Split('|');
 
     static void WaitEscape(AppState next = AppState.MainMenu)
     {
@@ -2259,12 +2258,5 @@ internal class Program
 
         return testResults;
     }
-
-    /*
-    ** Helpers
-    */
-    static string[] VehiclesInParkingSpace(int spaceId)
-        => InspectParkingSpace(spaceId).Split('|');
-
 }
 
