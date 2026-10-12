@@ -132,7 +132,6 @@ internal class Program
     {
         var menuOptions = mainMenuOptions;
         int selected = 0;
-        int viewerOffset = 0;
 
         var layout = mainLayout;
 
@@ -718,18 +717,6 @@ internal class Program
         return PanelBuilder(columns, header);
     }
 
-    static Panel TextViewerPanel(List<Markup> textLines, string header)
-    {
-        var instructions = new Markup("Use arrow keys up and down to scroll.");
-
-        var columns = new Columns(
-            new Rows(textLines),
-            instructions
-            );
-
-        return PanelBuilder(columns, header);
-    }
-
     static int HandleScrollInput(int max, int offset)
     {
         do
@@ -761,39 +748,6 @@ internal class Program
             }
         } while (offset > -1);
 
-        return offset;
-    }
-    static int TextScroller(int max, int offset)
-    {
-        do
-        {
-            while (Console.KeyAvailable is not true)
-                Thread.Sleep(250);
-
-            var keyDown = Console.ReadKey(true);
-
-            if (keyDown.Key is ConsoleKey.UpArrow)
-            {
-                if (offset > 0)
-                {
-                    offset--;
-                    break;
-                }
-            }
-            else if (keyDown.Key is ConsoleKey.DownArrow)
-            {
-                if (offset < max)
-                {
-                    offset++;
-                    break;
-                }
-            }
-            else if (keyDown.Key is ConsoleKey.Escape)
-            {
-                appState = AppState.MainMenu;
-                return -1;
-            }
-        } while (true);
         return offset;
     }
 
